@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/cloudvoyant/lib/compare/v1.0.1...v1.0.2) (2025-10-06)
+
+
+### Bug Fixes
+
+* resolving github action not publishing by using available action ([2fa1e94](https://github.com/cloudvoyant/lib/commit/2fa1e94b207284a661a11afc1d620fbe393ad111))
+
 ## [1.0.1](https://github.com/cloudvoyant/lib/compare/v1.0.0...v1.0.1) (2025-10-06)
 
 
