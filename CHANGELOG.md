@@ -1,3 +1,11 @@
+## [1.0.1](https://github.com/cloudvoyant/lib/compare/v1.0.0...v1.0.1) (2025-10-06)
+
+
+### Bug Fixes
+
+* publishing during release pipeline to work around ci-skip not triggerring tag pipeline ([33d0f89](https://github.com/cloudvoyant/lib/commit/33d0f8925e152ffdca540bcf474846e424bb85d1))
+* publishing during release pipeline to work around ci-skip not triggerring tag pipeline ([1a9f2a9](https://github.com/cloudvoyant/lib/commit/1a9f2a9e2b21c7d2f6b7c14a3e3d5080cfe4869d))
+
 # 1.0.0 (2025-10-04)
 
 
