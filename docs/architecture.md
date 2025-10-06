@@ -33,8 +33,7 @@ lib/
 ├── .editorconfig            # Cross-editor configuration
 └── .github/workflows/
     ├── ci.yml               # PR testing
-    ├── release.yml          # Release automation
-    └── publish.yml          # Package publishing
+    └── release.yml          # Release and publish automation
 ```
 
 ## Implementation Details
@@ -180,15 +179,11 @@ All workflows run on Ubuntu latest for consistency.
 - Runs semantic-release to analyze commits
 - Creates version tags (e.g., `v1.2.3`)
 - Updates CHANGELOG.md
+- If new release created:
+  - Executes `just publish` (builds production artifacts and publishes)
+  - Creates GitHub release with RELEASE_NOTES.md if present
 - Uses `GITHUB_TOKEN` secret
-
-`publish.yml`:
-
-- Triggers on tag creation (`v*`)
-- Checks out code, runs setup
-- Executes `just build` and `just publish`
-- Creates GitHub release with generated notes
-- Users customize `just publish` for their package registry
+- Combined workflow for simplicity (no separate publish workflow needed)
 
 ### Development Container
 
@@ -438,3 +433,113 @@ git push                    # Release includes both CHANGELOG.md and RELEASE_NOT
 ```
 
 The GitHub release will use RELEASE_NOTES.md if present, otherwise falls back to auto-generated notes from commits.
+
+## Publishing
+
+The `publish` recipe handles all publishing logic. Default implementation uploads to GCP Artifact Registry.
+
+### Default Publish Recipe
+
+```just
+publish: test build-prod
+    @gcloud artifacts generic upload \
+        --project={{GCP_PROJECT_ID}} \
+        --location={{GCP_REGION}} \
+        --repository={{GCP_REPOSITORY}} \
+        --package={{PROJECT}} \
+        --version={{VERSION}} \
+        --source=dist/artifact.txt
+```
+
+Uses `gcloud artifacts generic upload` to upload any file to GCP generic artifact repository. Organizes by project name and version automatically.
+
+**Customization:**
+
+Users customize by editing the `publish` recipe directly in `justfile`. No separate scripts or complex SWAP sections needed.
+
+Examples:
+
+npm:
+```just
+publish: test build-prod
+    @npm publish
+```
+
+PyPI:
+```just
+publish: test build-prod
+    @python -m twine upload dist/*
+```
+
+Docker Hub:
+```just
+publish: test build-prod
+    @docker tag myimage:latest username/myimage:{{VERSION}}
+    @docker push username/myimage:{{VERSION}}
+```
+
+Multi-registry (publish to both npm and GCP):
+```just
+publish: test build-prod
+    @npm publish
+    @tar -czf dist/package.tar.gz dist/
+    @gcloud artifacts generic upload \
+        --project={{GCP_PROJECT_ID}} \
+        --location={{GCP_REGION}} \
+        --repository={{GCP_REPOSITORY}} \
+        --package={{PROJECT}} \
+        --version={{VERSION}} \
+        --source=dist/package.tar.gz
+```
+
+### GitHub Actions Integration
+
+The `release.yml` workflow authenticates with GCP and runs `just publish`:
+
+```yaml
+# GCP Authentication
+- name: Authenticate to Google Cloud
+  if: steps.semantic_release.outputs.new_release_published == 'true'
+  uses: google-github-actions/auth@v2
+  with:
+    credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+- name: Set up Cloud SDK
+  if: steps.semantic_release.outputs.new_release_published == 'true'
+  uses: google-github-actions/setup-gcloud@v2
+
+- name: Publish package
+  if: steps.semantic_release.outputs.new_release_published == 'true'
+  env:
+    GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+    GCP_REGION: ${{ secrets.GCP_REGION }}
+    GCP_REPOSITORY: ${{ secrets.GCP_REPOSITORY }}
+  run: |
+    source .envrc
+    just publish
+```
+
+**Required Organization Secrets:**
+- `GCP_SA_KEY` - Service account JSON key for authentication
+- `GCP_PROJECT_ID`, `GCP_REGION`, `GCP_REPOSITORY` - Registry configuration
+
+Configure these once at the organization level (Organization → Settings → Secrets). All repositories scaffolded from this platform automatically inherit them.
+
+**For other registries:** Comments in the workflow explain what to change:
+- npm: Remove GCP steps, add `NPM_TOKEN`
+- PyPI: Remove GCP steps, add `TWINE_USERNAME`/`TWINE_PASSWORD`
+- Docker Hub: Remove GCP steps, add docker login
+- AWS ECR: Replace with `aws-actions/configure-aws-credentials@v4`
+- Azure ACR: Replace with `azure/login@v1`
+
+### Environment Variables
+
+GCP registry configuration in `.envrc`:
+
+```bash
+export GCP_PROJECT_ID="your-gcp-project-id"
+export GCP_REGION="us-central1"
+export GCP_REPOSITORY="your-artifact-repository"
+```
+
+GCP-specific variable names (GCP_*) make it clear what registry is being used. For other registries, update the `publish` recipe and use appropriate env vars.

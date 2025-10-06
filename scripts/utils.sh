@@ -277,7 +277,11 @@ get_version() {
 
     # Get latest git tag
     if command -v git &>/dev/null; then
-        version=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')
+        # Fetch tags from remote first
+        git fetch --tags 2>/dev/null || true
+
+        # Get latest tag sorted by version
+        version=$(git tag -l --sort=-v:refname | head -n1 | sed 's/^v//')
         if [[ -n "$version" ]]; then
             echo "$version"
             return 0

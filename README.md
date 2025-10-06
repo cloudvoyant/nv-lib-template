@@ -40,9 +40,12 @@ just --list
 
 Fork this repository for your project:
 
-1. Run `just scaffold` to initialize
-2. Edit `justfile` - replace TODO placeholders with your build commands
-3. Configure GitHub Secrets for publishing (optional)
+1. **One-time organization setup** (optional) - See [Setup Guide](docs/setup.md)
+   - Configure organization secrets for publishing (GCP_SA_KEY, NPM_TOKEN, etc.)
+   - All scaffolded projects automatically inherit these secrets
+   - Only needed if publishing to external registries
+2. Run `just scaffold` to initialize
+3. Edit `justfile` - replace TODO placeholders with your build commands
 4. Commit using conventional commit format (feat:, fix:, docs:, etc.)
 5. Push - CI/CD runs automatically
 
@@ -86,6 +89,7 @@ publish: test build-prod
 
 ## Documentation
 
+- [Setup Guide](docs/setup.md) - GitHub secrets, PAT configuration, and troubleshooting
 - [Design](docs/design.md) - System overview, features, and key components
 - [Architecture](docs/architecture.md) - Implementation details and internals
 
@@ -99,8 +103,13 @@ Run `just setup` to install remaining dependencies (just, docker, direnv, node).
 ## CI/CD Workflow
 
 - Push to feature branch → Tests run
-- Merge to main → Release created (semantic-release analyzes commits)
-- Version tag created → Package published
+- Merge to main → Release workflow runs
+  - semantic-release analyzes commits and creates version tag
+  - Builds production artifacts
+  - Publishes to registry (uses organization secrets)
+  - Creates GitHub release
+
+**Note:** Configure organization secrets once, and all scaffolded projects automatically work with CI/CD. See [Setup Guide](docs/setup.md).
 
 ## License
 

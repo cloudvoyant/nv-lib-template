@@ -71,10 +71,18 @@ build-prod: _load
     NODE_ENV=production npm run build
 
 publish: test build-prod
-    npm publish              # Publish production build
+    gcloud artifacts generic upload \
+        --project={{REGISTRY_PROJECT_ID}} \
+        --location={{REGISTRY_REGION}} \
+        --repository={{REGISTRY_NAME}} \
+        --package={{PROJECT}} \
+        --version={{VERSION}} \
+        --source=dist/artifact.tar.gz
 ```
 
 Tests always run on the development build. Production builds are created for publishing but not separately tested.
+
+Default implementation publishes to GCP Artifact Registry. Customize the `publish` recipe for your needs (npm, PyPI, Docker, etc.).
 
 ### Reusable Utilities
 
@@ -114,11 +122,12 @@ The `scripts/scaffold.sh` initializes a forked project by prompting for project 
 
 ### CI/CD Workflows
 
-Three GitHub Actions workflows handle automation:
+Two GitHub Actions workflows handle automation:
 
 - `ci.yml` - Runs tests and builds on pull requests
-- `release.yml` - Creates releases when merged to main (uses semantic-release)
-- `publish.yml` - Publishes packages when version tags are created
+- `release.yml` - Creates releases, publishes, and tags when merged to main
+
+The release workflow is combined for simplicity - it runs semantic-release, then immediately publishes if a new version was created. No separate workflows or Personal Access Tokens required.
 
 ### Versioning
 
@@ -151,6 +160,51 @@ git push                    # Triggers release with both changelogs
 
 Claude CLI generates user-focused descriptions explaining impact and improvements, while the automated changelog maintains a complete technical record.
 
+### Publishing
+
+The `publish` recipe handles publishing artifacts. Default implementation uploads to GCP Artifact Registry:
+
+```just
+publish: test build-prod
+    gcloud artifacts generic upload \
+        --project={{GCP_PROJECT_ID}} \
+        --location={{GCP_REGION}} \
+        --repository={{GCP_REPOSITORY}} \
+        --package={{PROJECT}} \
+        --version={{VERSION}} \
+        --source=dist/artifact.txt
+```
+
+Customize for your language/registry by editing the `publish` recipe directly:
+
+**npm:**
+```just
+publish: test build-prod
+    npm publish
+```
+
+**PyPI:**
+```just
+publish: test build-prod
+    python -m twine upload dist/*
+```
+
+**Docker Hub:**
+```just
+publish: test build-prod
+    docker tag myimage:latest username/myimage:{{VERSION}}
+    docker push username/myimage:{{VERSION}}
+```
+
+Configure registry variables in `.envrc`:
+```bash
+export GCP_PROJECT_ID="your-project-id"
+export GCP_REGION="us-central1"
+export GCP_REPOSITORY="your-repository"
+```
+
+See [Setup Guide](setup.md) for detailed configuration.
+
 ## Usage Patterns
 
 ### Daily Development
@@ -173,7 +227,7 @@ just run      # Run locally
 
 ### Customization Examples
 
-Node.js:
+Node.js (with GCP Artifact Registry):
 ```just
 install: _load
     npm install
@@ -183,18 +237,26 @@ build: _load
 
 build-prod: _load
     NODE_ENV=production npm run build
+    tar -czf dist/package.tar.gz dist/
 
 test: build
     npm test
 
 publish: test build-prod
     npm publish
+    gcloud artifacts generic upload \
+        --project={{GCP_PROJECT_ID}} \
+        --location={{GCP_REGION}} \
+        --repository={{GCP_REPOSITORY}} \
+        --package={{PROJECT}} \
+        --version={{VERSION}} \
+        --source=dist/package.tar.gz
 
 clean: _load
     rm -rf dist/ node_modules/
 ```
 
-Python:
+Python (with PyPI):
 ```just
 install: _load
     pip install -r requirements.txt
@@ -215,7 +277,7 @@ clean: _load
     rm -rf dist/ build/ *.egg-info/
 ```
 
-Go:
+Go (with Docker):
 ```just
 install: _load
     go mod download
@@ -230,13 +292,14 @@ test: build
     go test ./...
 
 publish: test build-prod
-    # Push to container registry or release binary
+    docker build -t myapp:{{VERSION}} .
+    docker push myapp:{{VERSION}}
 
 clean: _load
     rm -rf bin/
 ```
 
-Rust:
+Rust (with crates.io):
 ```just
 install: _load
     cargo fetch

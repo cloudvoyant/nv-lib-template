@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version: "lts/*"
 
       - name: Install semantic-release
         run: |
@@ -38,6 +38,52 @@ jobs:
             @semantic-release/github
 
       - name: Run semantic-release
+        id: semantic_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
+
+      - name: Setup environment
+        if: steps.semantic_release.outputs.new_release_published == 'true'
+        run: bash scripts/setup.sh
+
+      # ========================================================================
+      # GCP Authentication - CUSTOMIZE for other registries
+      #
+      # For npm: Remove GCP steps, add NPM_TOKEN to env in publish step
+      # For PyPI: Remove GCP steps, add TWINE_USERNAME/TWINE_PASSWORD to env
+      # For Docker Hub: Remove GCP steps, add docker login with DOCKER_USERNAME/DOCKER_PASSWORD
+      # For AWS ECR: Replace with aws-actions/configure-aws-credentials@v4
+      # For Azure ACR: Replace with azure/login@v1
+      # ========================================================================
+      - name: Authenticate to Google Cloud
+        if: steps.semantic_release.outputs.new_release_published == 'true'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        if: steps.semantic_release.outputs.new_release_published == 'true'
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Publish package
+        if: steps.semantic_release.outputs.new_release_published == 'true'
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
+          GCP_REPOSITORY: ${{ secrets.GCP_REPOSITORY }}
+        run: |
+          source .envrc
+          just publish
+
+      - name: Create GitHub Release
+        if: steps.semantic_release.outputs.new_release_published == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.semantic_release.outputs.new_release_version }}
+          body_path: RELEASE_NOTES.md
+          generate_release_notes: true
+          files: |
+            src/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
