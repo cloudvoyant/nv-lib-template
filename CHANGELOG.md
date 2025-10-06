@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/cloudvoyant/lib/compare/v1.0.2...v1.0.3) (2025-10-06)
+
+
+### Bug Fixes
+
+* fixed issues with release note gen script ([d399312](https://github.com/cloudvoyant/lib/commit/d399312ab5d6f53f90b6ebe6fd906b17824aae65))
+
 ## [1.0.2](https://github.com/cloudvoyant/lib/compare/v1.0.1...v1.0.2) (2025-10-06)
 
 
