@@ -80,6 +80,7 @@ temp/
 .sass-cache/
 .npm/
 .yarn/
+.nv/
 
 # Coverage and test reports
 coverage/

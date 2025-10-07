@@ -13,9 +13,11 @@ lib/
 ├── scripts/
 │   ├── utils.sh             # Shared bash functions
 │   ├── setup.sh             # Dependency installation
-│   └── scaffold.sh          # Project initialization
+│   ├── scaffold.sh          # Project initialization
+│   └── platform-install.sh  # Platform dev dependencies (removed after scaffolding)
 ├── src/                      # User source code
-├── test/                     # User tests
+├── test/
+│   └── scaffold.bats        # Platform tests (removed after scaffolding)
 ├── docs/
 │   ├── design.md            # System design and features
 │   ├── architecture.md      # This file
@@ -373,6 +375,8 @@ clean: _load
 
 ## Testing Considerations
 
+### User Tests
+
 Users should implement tests in their language of choice.
 
 The `just test` command should:
@@ -390,6 +394,52 @@ test: build
 ```
 
 CI workflow expects `just test` to fail on test failures (exit code 1).
+
+### Platform Tests
+
+Platform development uses **bats-core** (Bash Automated Testing System) for testing bash scripts.
+
+**Installation:**
+
+```bash
+just platform-install
+```
+
+Or manually:
+- macOS: `brew install bats-core`
+- Linux: `apt-get install bats` or `yum install bats`
+
+**Running Tests:**
+
+```bash
+just platform-test
+```
+
+Tests are in `test/*.bats` and cover:
+- scaffold.sh validation and functionality
+- Non-interactive mode behavior
+- .envrc updates
+- Git history reset
+- Platform file cleanup
+
+**Example test:**
+
+```bash
+@test "validates project name" {
+    run bash scripts/scaffold.sh --non-interactive --project "my project"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Invalid project name"* ]]
+}
+```
+
+**Platform Cleanup:**
+
+The scaffold script automatically removes platform development files:
+- `scripts/platform-install.sh`
+- `test/` directory
+- Platform development section in justfile
+
+This ensures scaffolded projects don't include platform testing infrastructure.
 
 ## Production Builds
 

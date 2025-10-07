@@ -92,3 +92,23 @@ version-next: _load
 # Generate release notes with Claude
 release-notes: _load
     @bash scripts/release-notes.sh
+
+# ==============================================================================
+# PLATFORM DEVELOPMENT (Remove after scaffolding)
+# ==============================================================================
+
+# Install platform development dependencies
+[group('platform')]
+platform-install: _load
+    @bash scripts/platform-install.sh
+
+# Run platform tests
+[group('platform')]
+platform-test: _load
+    @if command -v bats >/dev/null 2>&1; then \
+        echo -e "{{INFO}}Running platform tests...{{NORMAL}}"; \
+        bats test/; \
+    else \
+        echo -e "{{ERROR}}bats not installed. Run: just platform-install{{NORMAL}}"; \
+        exit 1; \
+    fi
