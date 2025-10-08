@@ -25,6 +25,35 @@ setup_script_lifecycle
 # CONFIGURATION ----------------------------------------------------------------
 # Platform name will be read from source .envrc PROJECT variable
 
+# Track if we've started making changes (for cleanup on error)
+SCAFFOLD_STARTED=false
+BACKUP_DIR=""
+
+# Cleanup function for failed scaffolds
+cleanup_on_error() {
+    local exit_code=$?
+    if [ "$exit_code" -ne 0 ] && [ "$SCAFFOLD_STARTED" = true ]; then
+        log_error "Scaffolding failed. Restoring original files..."
+
+        if [ -n "$BACKUP_DIR" ] && [ -d "$BACKUP_DIR" ]; then
+            # Restore backed up files
+            if [ -f "$BACKUP_DIR/.envrc" ]; then
+                cp "$BACKUP_DIR/.envrc" "$DEST_DIR/.envrc"
+            fi
+            if [ -f "$BACKUP_DIR/justfile" ]; then
+                cp "$BACKUP_DIR/justfile" "$DEST_DIR/justfile"
+            fi
+
+            # Remove backup
+            rm -rf "$BACKUP_DIR"
+        fi
+
+        log_error "Destination directory has been restored to its original state"
+    fi
+}
+
+trap cleanup_on_error EXIT
+
 # PARSE OPTIONS ----------------------------------------------------------------
 NON_INTERACTIVE=false
 KEEP_CLAUDE=false
@@ -155,6 +184,23 @@ fi
 
 log_info "Platform: $PLATFORM_NAME v$PLATFORM_VERSION"
 
+# BACKUP CRITICAL FILES -------------------------------------------------------
+log_info "Creating backup of original files..."
+
+BACKUP_DIR="$DEST_DIR/.nv/.scaffold-backup"
+mkdir -p "$BACKUP_DIR"
+
+# Backup files that will be modified
+if [ -f "$DEST_DIR/.envrc" ]; then
+    cp "$DEST_DIR/.envrc" "$BACKUP_DIR/.envrc"
+fi
+if [ -f "$DEST_DIR/justfile" ]; then
+    cp "$DEST_DIR/justfile" "$BACKUP_DIR/justfile"
+fi
+
+# Mark that we've started making changes
+SCAFFOLD_STARTED=true
+
 # UPDATE .ENVRC ----------------------------------------------------------------
 log_info "Configuring .envrc..."
 
@@ -223,7 +269,32 @@ if [ -f "$JUSTFILE" ]; then
     sed_inplace '/# PLATFORM DEVELOPMENT/,$d' "$JUSTFILE"
 fi
 
+# Remove platform-specific documentation
+rm -f "$DEST_DIR/CHANGELOG.md"
+rm -f "$DEST_DIR/RELEASE_NOTES.md"
+
+# Replace README.md with template
+if [ -f "$SRC_DIR/README.template.md" ]; then
+    log_info "Creating README from template..."
+
+    # Copy template and substitute variables
+    sed "s/{{PROJECT_NAME}}/$PROJECT_NAME/g; \
+         s/{{PLATFORM_NAME}}/$PLATFORM_NAME/g; \
+         s/{{PLATFORM_VERSION}}/$PLATFORM_VERSION/g" \
+        "$SRC_DIR/README.template.md" > "$DEST_DIR/README.md"
+
+    log_success "Created README.md from template"
+else
+    log_warning "README.template.md not found, keeping original README.md"
+fi
+
 log_success "Removed platform development files"
+
+# CLEANUP BACKUP ---------------------------------------------------------------
+# Remove backup on success
+if [ -n "$BACKUP_DIR" ] && [ -d "$BACKUP_DIR" ]; then
+    rm -rf "$BACKUP_DIR"
+fi
 
 # SUMMARY ----------------------------------------------------------------------
 echo ""
@@ -239,3 +310,6 @@ echo "  3. Add your source code to src/"
 echo "  4. Configure GitHub organization secrets (see docs/setup.md)"
 echo "  5. Initialize git and commit: git init && git add . && git commit -m 'Initial commit'"
 echo ""
+
+# Mark successful completion (prevents cleanup on exit)
+SCAFFOLD_STARTED=false
