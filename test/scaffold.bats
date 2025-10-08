@@ -7,27 +7,22 @@
 setup() {
     export ORIGINAL_DIR="$PWD"
 
-    # Create temporary project directory
-    export PROJECT_DIR="$ORIGINAL_DIR/.nv/test-project-$$"
+    # Create temporary project directory with test name for easier debugging
+    # BATS encodes special chars as -XX (hex), decode them using perl
+    TEST_NAME_DECODED=$(printf '%s' "$BATS_TEST_NAME" | perl -pe 's/-([0-9a-f]{2})/chr(hex($1))/gie')
+    TEST_NAME_SANITIZED=$(printf '%s' "$TEST_NAME_DECODED" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g')
+    export PROJECT_DIR="$ORIGINAL_DIR/.nv/$TEST_NAME_SANITIZED"
     mkdir -p "$PROJECT_DIR"
 
-    # Clone platform repo to project/.nv/yin (simulating nv CLI behavior)
-    export PLATFORM_CLONE="$PROJECT_DIR/.nv/yin"
+    # Clone platform repo to project/.nv/$PROJECT (simulating nv CLI behavior)
+    export PLATFORM_CLONE="$PROJECT_DIR/.nv/$PROJECT"
     mkdir -p "$PLATFORM_CLONE"
 
     # Copy all files except .git and gitignored directories to platform clone
     rsync -a \
         --exclude='.git' \
         --exclude='.nv' \
-        --exclude='node_modules' \
-        --exclude='dist' \
         "$ORIGINAL_DIR/" "$PLATFORM_CLONE/"
-
-    # Copy platform files to project root (simulating nv CLI copying files)
-    rsync -a \
-        --exclude='.git' \
-        --exclude='.nv' \
-        "$PLATFORM_CLONE/" "$PROJECT_DIR/"
 
     # Set up test variables
     export DEST_DIR="$PROJECT_DIR"
@@ -40,7 +35,7 @@ setup() {
 teardown() {
     # Clean up test directories
     cd "$ORIGINAL_DIR"
-    # rm -rf "$PROJECT_DIR"
+    rm -rf "$PROJECT_DIR"
 }
 
 @test "scaffold.sh requires --src and --dest" {
@@ -116,7 +111,7 @@ teardown() {
 
     run grep "NV_PLATFORM=" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"yin"* ]]
+    [[ "$output" == *"$PROJECT"* ]]
 }
 
 @test "adds NV_PLATFORM_VERSION to destination .envrc" {
@@ -128,7 +123,7 @@ teardown() {
 
     run grep "NV_PLATFORM_VERSION=" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"1.0.3"* ]]
+    [[ "$output" == *"$VERSION"* ]]
 }
 
 @test "resets VERSION to 0.1.0 in destination .envrc" {
@@ -200,10 +195,10 @@ teardown() {
 
     # Should use values from source .envrc
     run grep "NV_PLATFORM=" "$DEST_DIR/.envrc"
-    [[ "$output" == *"yin"* ]]
+    [[ "$output" == *"$PROJECT"* ]]
 
     run grep "NV_PLATFORM_VERSION=" "$DEST_DIR/.envrc"
-    [[ "$output" == *"1.0.3"* ]]
+    [[ "$output" == *"$VERSION"* ]]
 }
 
 @test "removes platform-install.sh from destination" {
@@ -272,11 +267,11 @@ teardown() {
     [ "$status" -eq 0 ]
 
     # Should contain platform name
-    run grep "yin" "$DEST_DIR/README.md"
+    run grep "$PROJECT" "$DEST_DIR/README.md"
     [ "$status" -eq 0 ]
 
     # Should contain platform version
-    run grep "v1.0.3" "$DEST_DIR/README.md"
+    run grep "v$VERSION" "$DEST_DIR/README.md"
     [ "$status" -eq 0 ]
 
     # Should not contain template placeholders
@@ -319,16 +314,15 @@ teardown() {
     rm -rf "$NEW_DEST"
 }
 
-@test "restores original files on failure" {
-    # Save original .envrc and justfile content
-    ORIGINAL_PROJECT=$(grep "^export PROJECT=" "$DEST_DIR/.envrc" | cut -d= -f2)
-    ORIGINAL_VERSION=$(grep "^export VERSION=" "$DEST_DIR/.envrc" | cut -d= -f2)
-    ORIGINAL_JUSTFILE_LINES=$(wc -l < "$DEST_DIR/justfile")
+@test "restores original directory on failure" {
+    # Destination starts empty (only .nv directory from setup)
+    INITIAL_FILE_COUNT=$(find "$DEST_DIR" -mindepth 1 -maxdepth 1 ! -name '.nv' | wc -l)
+    [ "$INITIAL_FILE_COUNT" -eq 0 ]
 
-    # Make justfile directory read-only to cause failure during cleanup
-    chmod 000 "$DEST_DIR/scripts"
+    # Make README.template.md unreadable to cause failure during template substitution
+    chmod 000 "$SRC_DIR/README.template.md"
 
-    # Try to run scaffold (should fail when trying to remove platform-install.sh)
+    # Try to run scaffold (should fail during README template substitution)
     run bash ./scripts/scaffold.sh \
         --src . \
         --dest ../.. \
@@ -336,22 +330,15 @@ teardown() {
         --project testproject
 
     # Restore permissions
-    chmod 755 "$DEST_DIR/scripts"
+    chmod 644 "$SRC_DIR/README.template.md"
 
     # Should have failed
     [ "$status" -ne 0 ]
-    [[ "$output" == *"Restoring original files"* ]]
+    [[ "$output" == *"Restoring original directory"* ]]
 
-    # Should have restored original .envrc values
-    run grep "^export PROJECT=" "$DEST_DIR/.envrc"
-    [[ "$output" == *"$ORIGINAL_PROJECT"* ]]
-
-    run grep "^export VERSION=" "$DEST_DIR/.envrc"
-    [[ "$output" == *"$ORIGINAL_VERSION"* ]]
-
-    # Should have restored original justfile
-    RESTORED_LINES=$(wc -l < "$DEST_DIR/justfile")
-    [ "$RESTORED_LINES" -eq "$ORIGINAL_JUSTFILE_LINES" ]
+    # Should be restored to empty (only .nv directory should exist)
+    FILE_COUNT=$(find "$DEST_DIR" -mindepth 1 -maxdepth 1 ! -name '.nv' | wc -l)
+    [ "$FILE_COUNT" -eq 0 ]
 }
 
 @test "removes backup directory on success" {

@@ -19,7 +19,18 @@ Options:
 DOCUMENTATION
 
 # IMPORTS ----------------------------------------------------------------------
-source "$(dirname "$0")/utils.sh"
+# Unset PROJECT and VERSION to force fresh read from .envrc
+unset PROJECT VERSION
+
+# Source .envrc first to get PROJECT and VERSION
+if [ -f ".envrc" ]; then
+    # Note: .envrc also sources utils.sh, so we don't need to source it again
+    source ".envrc"
+else
+    # Fallback: source utils.sh directly if .envrc doesn't exist
+    source "$(dirname "$0")/utils.sh"
+fi
+
 setup_script_lifecycle
 
 # CONFIGURATION ----------------------------------------------------------------
@@ -33,16 +44,18 @@ BACKUP_DIR=""
 cleanup_on_error() {
     local exit_code=$?
     if [ "$exit_code" -ne 0 ] && [ "$SCAFFOLD_STARTED" = true ]; then
-        log_error "Scaffolding failed. Restoring original files..."
+        log_error "Scaffolding failed. Restoring original directory..."
 
         if [ -n "$BACKUP_DIR" ] && [ -d "$BACKUP_DIR" ]; then
-            # Restore backed up files
-            if [ -f "$BACKUP_DIR/.envrc" ]; then
-                cp "$BACKUP_DIR/.envrc" "$DEST_DIR/.envrc"
-            fi
-            if [ -f "$BACKUP_DIR/justfile" ]; then
-                cp "$BACKUP_DIR/justfile" "$DEST_DIR/justfile"
-            fi
+            # Ensure destination and all contents are writable for cleanup
+            chmod u+w "$DEST_DIR" 2>/dev/null || true
+            chmod -R u+w "$DEST_DIR" 2>/dev/null || true
+
+            # Remove all files from destination (except .nv backup)
+            find "$DEST_DIR" -mindepth 1 -maxdepth 1 ! -name '.nv' -exec rm -rf {} + 2>/dev/null || true
+
+            # Restore entire directory from backup
+            rsync -a "$BACKUP_DIR/" "$DEST_DIR/"
 
             # Remove backup
             rm -rf "$BACKUP_DIR"
@@ -97,15 +110,16 @@ if [ -z "$SRC_DIR" ] || [ -z "$DEST_DIR" ]; then
     exit 1
 fi
 
-if [ ! -d "$SRC_DIR" ]; then
+# Convert to absolute paths
+SRC_DIR=$(cd "$SRC_DIR" 2>/dev/null && pwd) || {
     log_error "Source directory does not exist: $SRC_DIR"
     exit 1
-fi
+}
 
-if [ ! -d "$DEST_DIR" ]; then
+DEST_DIR=$(cd "$DEST_DIR" 2>/dev/null && pwd) || {
     log_error "Destination directory does not exist: $DEST_DIR"
     exit 1
-fi
+}
 
 validate_project_name() {
     local name=$1
@@ -171,35 +185,53 @@ fi
 # GET PLATFORM NAME AND VERSION -----------------------------------------------
 log_info "Detecting platform name and version..."
 
-# Read platform name and version from source .envrc
-PLATFORM_NAME=$(grep "^export PROJECT=" "$SRC_DIR/.envrc" | cut -d= -f2)
-PLATFORM_VERSION=$(grep "^export VERSION=" "$SRC_DIR/.envrc" | cut -d= -f2)
+# Use environment variables from sourced .envrc
+PLATFORM_NAME="$PROJECT"
+PLATFORM_VERSION="$VERSION"
 
-# Fallback to git tag if VERSION not in .envrc
+# Validate we have the required values
+if [ -z "$PLATFORM_NAME" ]; then
+    log_error "Could not determine platform name (PROJECT not set)"
+    exit 1
+fi
+
 if [ -z "$PLATFORM_VERSION" ]; then
-    cd "$SRC_DIR"
-    PLATFORM_VERSION=$(get_version)
-    cd - > /dev/null
+    log_error "Could not determine platform version (VERSION not set)"
+    exit 1
 fi
 
 log_info "Platform: $PLATFORM_NAME v$PLATFORM_VERSION"
 
-# BACKUP CRITICAL FILES -------------------------------------------------------
-log_info "Creating backup of original files..."
+# BACKUP DESTINATION DIRECTORY ------------------------------------------------
+log_info "Creating backup of destination directory..."
 
 BACKUP_DIR="$DEST_DIR/.nv/.scaffold-backup"
 mkdir -p "$BACKUP_DIR"
 
-# Backup files that will be modified
-if [ -f "$DEST_DIR/.envrc" ]; then
-    cp "$DEST_DIR/.envrc" "$BACKUP_DIR/.envrc"
-fi
-if [ -f "$DEST_DIR/justfile" ]; then
-    cp "$DEST_DIR/justfile" "$BACKUP_DIR/justfile"
-fi
+# Backup entire destination directory (excluding .nv to avoid recursion)
+rsync -a \
+    --exclude='.nv' \
+    "$DEST_DIR/" "$BACKUP_DIR/"
 
 # Mark that we've started making changes
 SCAFFOLD_STARTED=true
+
+log_success "Backup created"
+
+# COPY PLATFORM FILES TO DESTINATION -------------------------------------------
+log_info "Copying platform files to destination..."
+
+# Copy all files from source to destination, excluding platform-specific files
+rsync -a \
+    --exclude='.git' \
+    --exclude='.nv' \
+    --exclude='scripts/platform-install.sh' \
+    --exclude='test/' \
+    --exclude='CHANGELOG.md' \
+    --exclude='RELEASE_NOTES.md' \
+    "$SRC_DIR/" "$DEST_DIR/"
+
+log_success "Platform files copied"
 
 # UPDATE .ENVRC ----------------------------------------------------------------
 log_info "Configuring .envrc..."
@@ -256,22 +288,12 @@ fi
 # CLEAN UP PLATFORM DEVELOPMENT FILES ------------------------------------------
 log_info "Cleaning platform development files..."
 
-# Remove platform-specific scripts
-rm -f "$DEST_DIR/scripts/platform-install.sh"
-
-# Remove platform tests
-rm -rf "$DEST_DIR/test/"
-
 # Remove platform development section from justfile
 JUSTFILE="$DEST_DIR/justfile"
 if [ -f "$JUSTFILE" ]; then
     # Remove everything from "# PLATFORM DEVELOPMENT" to end of file
     sed_inplace '/# PLATFORM DEVELOPMENT/,$d' "$JUSTFILE"
 fi
-
-# Remove platform-specific documentation
-rm -f "$DEST_DIR/CHANGELOG.md"
-rm -f "$DEST_DIR/RELEASE_NOTES.md"
 
 # Replace README.md with template
 if [ -f "$SRC_DIR/README.template.md" ]; then
