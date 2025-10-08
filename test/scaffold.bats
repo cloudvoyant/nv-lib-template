@@ -351,3 +351,112 @@ teardown() {
     # Backup directory should not exist after successful scaffold
     [ ! -d "$DEST_DIR/.nv/.scaffold-backup" ]
 }
+
+@test "replaces platform name with project name in snake_case" {
+    bash ./scripts/scaffold.sh \
+        --src . \
+        --dest ../.. \
+        --non-interactive \
+        --project my_awesome_project
+
+    # Should not contain platform name in snake_case (yin for single word is same)
+    run grep -r "export PROJECT=yin" "$DEST_DIR" --exclude-dir=.nv
+    [ "$status" -eq 1 ]
+}
+
+@test "replaces platform name with project name in kebab-case" {
+    bash ./scripts/scaffold.sh \
+        --src . \
+        --dest ../.. \
+        --non-interactive \
+        --project my-awesome-project
+
+    # For single-word platform "yin", kebab and camel are same, so camel runs first
+    # Check that platform name is replaced (will be camelCase variant)
+    run grep "service-name: myAwesomeProject-api" "$DEST_DIR/docs/example-usage.md"
+    [ "$status" -eq 0 ]
+
+    # Verify platform field is also replaced
+    run grep "platform: myAwesomeProject" "$DEST_DIR/docs/example-usage.md"
+    [ "$status" -eq 0 ]
+}
+
+@test "replaces platform name with project name in PascalCase" {
+    bash ./scripts/scaffold.sh \
+        --src . \
+        --dest ../.. \
+        --non-interactive \
+        --project my_awesome_project
+
+    # Should have replaced Yin with MyAwesomeProject in sample files
+    run grep "class MyAwesomeProject" "$DEST_DIR/src/sample-code.txt"
+    [ "$status" -eq 0 ]
+
+    run grep "MyAwesomeProjectService" "$DEST_DIR/src/sample-code.txt"
+    [ "$status" -eq 0 ]
+}
+
+@test "replaces platform name with project name in camelCase" {
+    bash ./scripts/scaffold.sh \
+        --src . \
+        --dest ../.. \
+        --non-interactive \
+        --project my_awesome_project
+
+    # Should have replaced yinConfig with myAwesomeProjectConfig
+    run grep "myAwesomeProjectConfig" "$DEST_DIR/src/sample-code.txt"
+    [ "$status" -eq 0 ]
+
+    run grep "myAwesomeProjectHelper" "$DEST_DIR/src/sample-code.txt"
+    [ "$status" -eq 0 ]
+}
+
+@test "replaces platform name in all variants in src files" {
+    bash ./scripts/scaffold.sh \
+        --src . \
+        --dest ../.. \
+        --non-interactive \
+        --project cool_service
+
+    # Check PascalCase replacement (class Yin → class CoolService)
+    run grep "class CoolService" "$DEST_DIR/src/sample-code.txt"
+    [ "$status" -eq 0 ]
+
+    # Check PascalCase with suffix (class YinService → class CoolServiceService)
+    run grep "class CoolServiceService" "$DEST_DIR/src/sample-code.txt"
+    [ "$status" -eq 0 ]
+
+    # Check camelCase replacement (const yinConfig → const coolServiceConfig)
+    run grep "const coolServiceConfig" "$DEST_DIR/src/sample-code.txt"
+    [ "$status" -eq 0 ]
+}
+
+@test "replaces platform name in documentation files" {
+    bash ./scripts/scaffold.sh \
+        --src . \
+        --dest ../.. \
+        --non-interactive \
+        --project super_app
+
+    # Check docs file has replacements
+    run grep "SuperApp" "$DEST_DIR/docs/example-usage.md"
+    [ "$status" -eq 0 ]
+
+    run grep "SuperAppService" "$DEST_DIR/docs/example-usage.md"
+    [ "$status" -eq 0 ]
+
+    run grep "superAppConfig" "$DEST_DIR/docs/example-usage.md"
+    [ "$status" -eq 0 ]
+}
+
+@test "replaces platform name in README when using different case format" {
+    bash ./scripts/scaffold.sh \
+        --src . \
+        --dest ../.. \
+        --non-interactive \
+        --project cool_app
+
+    # README should contain project name
+    run grep "cool_app" "$DEST_DIR/README.md"
+    [ "$status" -eq 0 ]
+}

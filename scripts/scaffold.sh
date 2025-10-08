@@ -130,6 +130,50 @@ validate_project_name() {
     return 0
 }
 
+# Convert string to word array (split on _ - or camelCase boundaries)
+string_to_words() {
+    local input=$1
+    # First, insert underscores before capital letters (for camelCase/PascalCase)
+    input=$(echo "$input" | sed 's/\([A-Z]\)/_\1/g' | sed 's/^_//')
+    # Replace hyphens with underscores
+    input=$(echo "$input" | tr '-' '_')
+    # Convert to lowercase and split on underscores, output one word per line
+    echo "$input" | tr '[:upper:]' '[:lower:]' | tr '_' '\n' | grep -v '^$'
+}
+
+# Convert word array to snake_case
+words_to_snake() {
+    echo "$1" | tr '\n' '_' | sed 's/_$//'
+}
+
+# Convert word array to kebab-case
+words_to_kebab() {
+    echo "$1" | tr '\n' '-' | sed 's/-$//'
+}
+
+# Convert word array to PascalCase
+words_to_pascal() {
+    echo "$1" | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))}1' | tr -d '\n'
+}
+
+# Convert word array to camelCase
+words_to_camel() {
+    local words="$1"
+    local first=$(echo "$words" | head -1)
+    local rest=$(echo "$words" | tail -n +2)
+    if [ -n "$rest" ]; then
+        echo -n "$first"
+        echo "$rest" | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))}1' | tr -d '\n'
+    else
+        echo -n "$first"
+    fi
+}
+
+# Convert word array to flatcase (no separators)
+words_to_flat() {
+    echo "$1" | tr -d '\n'
+}
+
 # DEFAULT PROJECT NAME ---------------------------------------------------------
 DEFAULT_PROJECT=$(basename "$DEST_DIR")
 
@@ -232,6 +276,39 @@ rsync -a \
     "$SRC_DIR/" "$DEST_DIR/"
 
 log_success "Platform files copied"
+
+# REPLACE PLATFORM NAME WITH PROJECT NAME IN ALL VARIANTS ---------------------
+log_info "Replacing platform name with project name..."
+
+# Generate all variants of platform name and project name
+PLATFORM_WORDS=$(string_to_words "$PLATFORM_NAME")
+PROJECT_WORDS=$(string_to_words "$PROJECT_NAME")
+
+# Platform name variants
+PLATFORM_SNAKE=$(words_to_snake "$PLATFORM_WORDS")
+PLATFORM_KEBAB=$(words_to_kebab "$PLATFORM_WORDS")
+PLATFORM_PASCAL=$(words_to_pascal "$PLATFORM_WORDS")
+PLATFORM_CAMEL=$(words_to_camel "$PLATFORM_WORDS")
+PLATFORM_FLAT=$(words_to_flat "$PLATFORM_WORDS")
+
+# Project name variants
+PROJECT_SNAKE=$(words_to_snake "$PROJECT_WORDS")
+PROJECT_KEBAB=$(words_to_kebab "$PROJECT_WORDS")
+PROJECT_PASCAL=$(words_to_pascal "$PROJECT_WORDS")
+PROJECT_CAMEL=$(words_to_camel "$PROJECT_WORDS")
+PROJECT_FLAT=$(words_to_flat "$PROJECT_WORDS")
+
+# Replace in all text files (excluding binary files and .git)
+find "$DEST_DIR" -type f ! -path "*/.git/*" ! -path "$DEST_DIR/.nv/*" 2>/dev/null | while IFS= read -r file; do
+    # Replace all variants (order matters: longer strings first to avoid partial replacements)
+    sed_inplace "s/${PLATFORM_PASCAL}/${PROJECT_PASCAL}/g" "$file" || true
+    sed_inplace "s/${PLATFORM_CAMEL}/${PROJECT_CAMEL}/g" "$file" || true
+    sed_inplace "s/${PLATFORM_SNAKE}/${PROJECT_SNAKE}/g" "$file" || true
+    sed_inplace "s/${PLATFORM_KEBAB}/${PROJECT_KEBAB}/g" "$file" || true
+    sed_inplace "s/${PLATFORM_FLAT}/${PROJECT_FLAT}/g" "$file" || true
+done
+
+log_success "Replaced platform name with project name"
 
 # UPDATE .ENVRC ----------------------------------------------------------------
 log_info "Configuring .envrc..."

@@ -7,6 +7,7 @@ Build a **language-agnostic build system platform** for **Nedavellir (nv)** - a 
 This repository is **one platform option** that nv can scaffold and manage. Other platforms will exist in separate repositories with different setups (e.g., microservices platform, monorepo platform, serverless platform, etc.).
 
 Nedavellir (nv) provides:
+
 - Platform scaffolding via GitHub Templates
 - Version-aware migrations between platform versions
 - Multi-platform management
@@ -49,6 +50,7 @@ Support common development workflows across any language:
 **This Repo (Platform Repository):**
 
 Contains minimal `.envrc`:
+
 ```bash
 source ./scripts/utils.sh
 
@@ -83,6 +85,7 @@ sed -i 's/^export NV_PLATFORM_VERSION=.*/export NV_PLATFORM_VERSION="2.0.0"/' .e
 ```
 
 **Benefits:**
+
 - No JSON parsing or jq dependency
 - Shell-native, direnv auto-loads
 - Simple sed-based updates
@@ -373,9 +376,6 @@ Publishing to PyPI...
   - Remove `plan.md` (this implementation plan)
   - Remove migration docs/workflows (added in Phase 10)
   - Optionally keep empty .claude/ for user's own AI context
-- [ ] Initialize git history:
-  - Option to squash/reset commit history
-  - Create initial commit with scaffolded project
 - [ ] Non-interactive mode for automation
 - [ ] Validation of inputs (project name format, etc.)
 

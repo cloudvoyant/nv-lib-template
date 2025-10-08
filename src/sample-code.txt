@@ -1,0 +1,28 @@
+# Sample Code File for Testing Case Replacements
+
+# Platform name in different formats:
+# snake_case
+platform_name = yin
+
+# kebab-case
+platform-name: yin
+
+# PascalCase
+class Yin:
+    pass
+
+class YinService:
+    pass
+
+# camelCase
+const yin = "platform";
+const yinConfig = {};
+
+# flatcase
+yinproject
+
+# Mixed examples
+def create_yin_instance():
+    return Yin()
+
+export const yinHelper = new YinService();
