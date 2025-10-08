@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/cloudvoyant/lib/compare/v1.0.3...v1.0.4) (2025-10-06)
+
+
+### Bug Fixes
+
+* getting rid of redundant BERSION file ([c5a1e47](https://github.com/cloudvoyant/lib/commit/c5a1e4740fedd6420bf42f3b00b2631d5eb6eaeb))
+
 ## [1.0.3](https://github.com/cloudvoyant/lib/compare/v1.0.2...v1.0.3) (2025-10-06)
 
 
