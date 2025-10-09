@@ -1,3 +1,18 @@
+# [1.1.0](https://github.com/cloudvoyant/lib/compare/v1.0.4...v1.1.0) (2025-10-09)
+
+
+### Bug Fixes
+
+* added error handling in scaffold.sh ([07cb982](https://github.com/cloudvoyant/lib/commit/07cb982c77b43ca91bee52688977797784f97ce0))
+* added error handling in scaffold.sh ([99f4ad2](https://github.com/cloudvoyant/lib/commit/99f4ad2202bdea5291dc22701e05365919454461))
+* added scripts to install platform deps ([84389ed](https://github.com/cloudvoyant/lib/commit/84389ed459c8cc7874bf3f301f9741e22933d37a))
+
+
+### Features
+
+* add GitHub template support and migration workflows ([0325a6f](https://github.com/cloudvoyant/lib/commit/0325a6faf6d76a9f72c84419c365cdb956c3e338))
+* enhanced string replacement in scaffold.sh ([bce0569](https://github.com/cloudvoyant/lib/commit/bce056919d9a2eadf663839c1d2e99a8331185c4))
+
 ## [1.0.4](https://github.com/cloudvoyant/lib/compare/v1.0.3...v1.0.4) (2025-10-06)
 
 
