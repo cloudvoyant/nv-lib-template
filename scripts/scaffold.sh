@@ -271,6 +271,7 @@ rsync -a \
     --exclude='.nv' \
     --exclude='scripts/platform-install.sh' \
     --exclude='test/' \
+    --exclude='docs/migrations/' \
     --exclude='CHANGELOG.md' \
     --exclude='RELEASE_NOTES.md' \
     "$SRC_DIR/" "$DEST_DIR/"
@@ -353,11 +354,16 @@ if [ "$KEEP_CLAUDE" = false ]; then
     # Remove implementation plan
     rm -f "$DEST_DIR/.claude/plan.md"
 
-    # Remove migration docs/workflows (will be added in Phase 10)
-    rm -rf "$DEST_DIR/.claude/migrations/"
+    # Remove platform-specific migration workflows and commands
+    rm -f "$DEST_DIR/.claude/migrations/generate-migration-guide.md"
+    rm -f "$DEST_DIR/.claude/commands/new-migration.md"
 
-    # Keep workflows.md and tasks.md for user reference
-    log_success "Removed .claude/plan.md"
+    # Keep user-facing migration workflows:
+    # - detect-scaffolded-version.md
+    # - assist-project-migration.md
+    # - validate-project-migration.md
+
+    log_success "Removed platform development files from .claude/"
 else
     log_info "Keeping .claude/ directory"
 fi

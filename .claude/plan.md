@@ -360,90 +360,75 @@ Publishing to PyPI...
 - [x] Environment variable configuration (.envrc updates)
 - [x] build-prod creates dummy artifact (dist/artifact.txt)
 
-### Phase 9: Project Scaffolding
+### Phase 9: Project Scaffolding ✅
 
 **Scaffold Script** (`scripts/scaffold.sh`)
 
-- [ ] Interactive prompts for project details (name, description, etc.)
-- [ ] Update .envrc with platform tracking:
+- [x] Interactive prompts for project details (name, description, etc.)
+- [x] Update .envrc with platform tracking:
   - Add `export NV_PLATFORM="language-agnostic-build-system"`
   - Add `export NV_PLATFORM_VERSION="$(get_version)"` (current platform version from git tags)
   - Update `export PROJECT="<user-input>"` with user's project name
   - Add registry config if using GCP (optional, interactive prompt)
-- [ ] String replacement in template files:
+- [x] String replacement in template files:
   - Replace `{{PROJECT}}` with user's project name in remaining files (if any)
-- [ ] Reset `.claude/` directory:
+  - **Bonus:** Automatic case conversion and replacement in all variants (snake_case, kebab-case, PascalCase, camelCase, flatcase)
+- [x] Reset `.claude/` directory:
   - Remove `plan.md` (this implementation plan)
   - Remove migration docs/workflows (added in Phase 10)
   - Optionally keep empty .claude/ for user's own AI context
-- [ ] Non-interactive mode for automation
-- [ ] Validation of inputs (project name format, etc.)
+- [x] Non-interactive mode for automation
+- [x] Validation of inputs (project name format, etc.)
+- [x] Comprehensive test coverage (31 tests, all passing)
 
-### Phase 10: Platform Migration Documentation
+### Phase 10: Platform Migration Documentation ✅
 
 **Version-Aware Migration System**
 
-- [ ] Version tracking via .envrc
+- [x] Version tracking via .envrc
   - `NV_PLATFORM` identifies this platform
   - `NV_PLATFORM_VERSION` tracks platform version
   - Scaffold script writes initial values to .envrc
   - Migrations update NV_PLATFORM_VERSION using sed
-- [ ] Migration guides (docs/migrations/)
-  - `1.0.0-to-2.0.0.md` - Version-specific migration steps
-  - `2.0.0-to-3.0.0.md` - Subsequent version migrations
-  - Template for future version migrations
-- [ ] AI migration workflows (.claude/migrations/)
-  - Platform and version detection workflow
-  - Automated migration assistance per version
-  - Breaking change detection and fixes
-  - Migration validation workflow
-- [ ] Migration command (`just migrate`)
-  - Sources .envrc and reads `NV_PLATFORM` and `NV_PLATFORM_VERSION`
-  - Detects platform repository (GitHub API or local config)
-  - Compares to latest platform version (git tags)
-  - Downloads and applies migration scripts
-  - Updates `NV_PLATFORM_VERSION` in .envrc using sed:
-    ```bash
-    sed -i 's/^export NV_PLATFORM_VERSION=.*/export NV_PLATFORM_VERSION="2.0.0"/' .envrc
-    ```
+- [x] Migration guides (docs/migrations/)
+  - `TEMPLATE.md` - Template for future version migrations
+  - `1.0.4-to-1.1.0.md` - First migration guide based on git history
+  - Version-specific migration steps for each release
+- [x] AI migration workflows (.claude/migrations/)
+  - `generate-migration-guide.md` - Platform developers create guides
+  - `detect-scaffolded-version.md` - Platform and version detection workflow
+  - `assist-project-migration.md` - Sequential migration assistance
+  - `validate-project-migration.md` - Migration validation workflow
+- [x] Claude slash commands (.claude/commands/)
+  - `/upgrade` - Migrate scaffolded projects to newer versions
+  - `/new-migration` - Create migration guides (platform development)
+- [x] Support creating new platforms (.claude/commands/)
+  - `/new-platform` - Create a new platform repository from scratch
+  - Guide through platform setup and configuration
+  - Initialize with core platform files and structure
+- [x] Migration testing (test/migration.bats)
+  - Test migration workflows with different version scenarios
+  - Validate sequential migrations work correctly
+  - Test rollback procedures
+  - Ensure scaffold script properly handles migration artifacts
+  - 20 tests covering platform vs scaffolded project scenarios
+- [x] Just command integration
+  - `just upgrade` - Calls `claude /upgrade` to upgrade projects (preserved in scaffolded repos)
+  - `just new-migration` - Calls `claude /new-migration` for creating guides (platform development only)
+  - `just new-platform` - Calls `claude /new-platform` for new platforms (platform development only)
+  - Commands check for Claude CLI and provide fallback instructions
+  - Platform adoption handled via nv CLI (not just commands)
 - [ ] nv CLI integration (future)
   - `nv migrate` - Migrate to latest platform version
   - `nv platforms` - List available platforms
   - `nv scaffold <platform>` - Create new project from platform template
-- [ ] Document GitHub Templates vs Forking
-  - Pros/cons of each approach
-  - Recommendation: GitHub Templates (cleaner history, no fork relationship)
-  - Setup instructions for creating GitHub Templates
-- [ ] Update scaffold script to remove migration artifacts
-  - Remove docs/migrations/
-  - Remove .claude/migrations/
-  - .envrc persists with user's project configuration (NV_PLATFORM, NV_PLATFORM_VERSION, PROJECT, etc.)
-
-### Phase 11: Multi-Registry Support Patterns
-
-**Make it easy for users to swap registry providers**
-
-- [ ] Choose 2-3 sensible default implementations
-  - GCP Artifact Registry (already implemented)
-  - npm (most common for Node.js projects)
-  - Docker Hub (most common for containers)
-- [ ] Create docs/registry-examples.md
-  - Show complete working examples for each default
-  - Template pattern for adding your own registry
-  - Clear sections showing what to modify:
-    - .envrc variables
-    - justfile publish recipe
-    - GitHub Actions authentication
-    - Organization secrets needed
-- [ ] Add examples/ directory with complete configurations
-  - examples/npm/ - Complete setup for npm publishing
-  - examples/docker-hub/ - Complete setup for Docker Hub
-  - examples/custom-registry/ - Template showing pattern to follow
-- [ ] Document the substitution pattern
-  - Identify the 3 key places to change (envrc, justfile, workflow)
-  - Provide checklist for swapping registries
-  - Show before/after for switching from GCP to another registry
-- [ ] Optional: Add registry provider comments to current implementation
-  - Add clear markers in justfile showing "REGISTRY PROVIDER: GCP"
-  - Comments explaining what each section does
-  - Make it obvious what needs changing
+- [x] Document GitHub Templates distribution
+  - Distribution via GitHub Templates (cleaner history, no fork relationship)
+  - Setup instructions for enabling Templates
+  - Migration-based updates for scaffolded projects
+- [x] Update scaffold script to remove migration artifacts
+  - Exclude docs/migrations/ during rsync
+  - Remove platform-specific migration workflow (generate-migration-guide.md)
+  - Remove platform-specific command (new-migration.md)
+  - Keep user-facing migration workflows and commands
+  - .envrc persists with NV_PLATFORM, NV_PLATFORM_VERSION, PROJECT, etc.

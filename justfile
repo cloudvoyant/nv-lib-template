@@ -93,6 +93,24 @@ version-next: _load
 release-notes: _load
     @bash scripts/release-notes.sh
 
+# Upgrade to newer platform version (requires Claude Code)
+upgrade: _load
+    @if command -v claude >/dev/null 2>&1; then \
+        if grep -q "NV_PLATFORM=" .envrc 2>/dev/null; then \
+            claude /upgrade; \
+        else \
+            echo -e "{{ERROR}}This project is not based on a platform{{NORMAL}}"; \
+            echo ""; \
+            echo "To adopt a platform, use the nv CLI:"; \
+            echo "  nv scaffold <platform>"; \
+            exit 1; \
+        fi; \
+    else \
+        echo -e "{{ERROR}}Claude Code CLI not found{{NORMAL}}"; \
+        echo "Install Claude Code or run: /upgrade"; \
+        exit 1; \
+    fi
+
 # ==============================================================================
 # PLATFORM DEVELOPMENT (Remove after scaffolding)
 # ==============================================================================
@@ -110,5 +128,27 @@ platform-test: _load
         bats test/; \
     else \
         echo -e "{{ERROR}}bats not installed. Run: just platform-install{{NORMAL}}"; \
+        exit 1; \
+    fi
+
+# Create a new migration guide (requires Claude Code)
+[group('platform')]
+new-migration: _load
+    @if command -v claude >/dev/null 2>&1; then \
+        claude /new-migration; \
+    else \
+        echo -e "{{ERROR}}Claude Code CLI not found{{NORMAL}}"; \
+        echo "Install Claude Code or run: /new-migration"; \
+        exit 1; \
+    fi
+
+# Create a new platform repository (requires Claude Code)
+[group('platform')]
+new-platform: _load
+    @if command -v claude >/dev/null 2>&1; then \
+        claude /new-platform; \
+    else \
+        echo -e "{{ERROR}}Claude Code CLI not found{{NORMAL}}"; \
+        echo "Install Claude Code or run: /new-platform"; \
         exit 1; \
     fi
