@@ -2,33 +2,33 @@
 
 # Test cases using platform name in different formats:
 
-test_yin_functionality() {
+test_platform_lib_functionality() {
     # snake_case usage
-    assert yin == "platform"
+    assert platform_lib == "platform"
 }
 
-test-yin-integration() {
+test-platform-lib-integration() {
     # kebab-case usage
-    config.platform-name = yin
+    config.platform-name = platform-lib
 }
 
-class TestYin {
+class TestPlatformLib {
     // PascalCase usage
-    Yin instance;
-    YinService service;
+    PlatformLib instance;
+    PlatformLibService service;
 }
 
-describe('yin', () => {
+describe('platformLib', () => {
     // camelCase usage
-    const yinInstance = new Yin();
-    const yinConfig = getYinConfig();
+    const platformLibInstance = new PlatformLib();
+    const platformLibConfig = getPlatformLibConfig();
 });
 
 # Configuration examples
-YIN_CONFIG_PATH=/etc/yin/config
-yin_database_url=postgres://yin:password@localhost/yin
+PLATFORM_LIB_CONFIG_PATH=/etc/platform-lib/config
+platform_lib_database_url=postgres://platform-lib:password@localhost/platform_lib
 
 # Function names
-function initialize_yin() { }
-function createYinService() { }
-function YinFactory() { }
+function initialize_platform_lib() { }
+function createPlatformLibService() { }
+function PlatformLibFactory() { }

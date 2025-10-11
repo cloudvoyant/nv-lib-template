@@ -95,7 +95,7 @@ teardown() {
     # Adds platform tracking (reads from source .envrc)
     run grep "NV_PLATFORM=" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"$PROJECT"* ]]
+    [[ "$output" == *"platform-lib"* ]]
 
     run grep "NV_PLATFORM_VERSION=" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
@@ -181,7 +181,7 @@ teardown() {
     [ "$status" -eq 0 ]
 
     # Should contain platform name
-    run grep "$PROJECT" "$DEST_DIR/README.md"
+    run grep "platform-lib" "$DEST_DIR/README.md"
     [ "$status" -eq 0 ]
 
     # Should contain platform version
@@ -299,6 +299,44 @@ teardown() {
     [ "$status" -eq 0 ]
 
     # Verify platform name no longer appears in .envrc
-    run grep -r "export PROJECT=yin" "$DEST_DIR" --exclude-dir=.nv
+    run grep -r "export PROJECT=platform-lib" "$DEST_DIR" --exclude-dir=.nv
     [ "$status" -eq 1 ]
+}
+
+@test "scaffolds new platform with --platform flag" {
+    bash ./scripts/scaffold.sh \
+        --src . \
+        --dest ../.. \
+        --non-interactive \
+        --project new-platform \
+        --platform
+
+    # Platform development files should be kept
+    [ -d "$DEST_DIR/test" ]
+    [ -f "$DEST_DIR/scripts/platform-install.sh" ]
+
+    # Platform development justfile commands should be kept
+    run grep "# PLATFORM DEVELOPMENT" "$DEST_DIR/justfile"
+    [ "$status" -eq 0 ]
+
+    run grep "^platform-test: _load" "$DEST_DIR/justfile"
+    [ "$status" -eq 0 ]
+
+    run grep "^new-migration: _load" "$DEST_DIR/justfile"
+    [ "$status" -eq 0 ]
+
+    # Platform-specific Claude commands should be kept
+    [ -f "$DEST_DIR/.claude/commands/validate-platform.md" ]
+    [ -f "$DEST_DIR/.claude/commands/new-migration.md" ]
+    [ -f "$DEST_DIR/.claude/migrations/generate-migration-guide.md" ]
+
+    # Instance-specific files should still be removed
+    [ ! -f "$DEST_DIR/.claude/plan.md" ]
+    [ ! -f "$DEST_DIR/.claude/tasks.md" ]
+
+    # Migrations and decisions should be removed
+    [ ! -d "$DEST_DIR/docs/migrations" ]
+    [ ! -d "$DEST_DIR/docs/decisions" ]
+    [ ! -f "$DEST_DIR/CHANGELOG.md" ]
+    [ ! -f "$DEST_DIR/RELEASE_NOTES.md" ]
 }

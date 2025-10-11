@@ -9,6 +9,7 @@ Usage:
   bash scripts/scaffold.sh --src /path/to/platform --dest /path/to/project
   bash scripts/scaffold.sh --src /path/to/platform --dest /path/to/project --non-interactive
   bash scripts/scaffold.sh --src /path/to/platform --dest /path/to/project --project myapp
+  bash scripts/scaffold.sh --src /path/to/platform --dest /path/to/project --platform
 
 Options:
   --src PATH           Path to platform source directory (required)
@@ -16,6 +17,7 @@ Options:
   --non-interactive    Skip prompts, use defaults
   --project NAME       Project name (default: destination directory name)
   --keep-claude        Keep .claude/ directory for AI workflows
+  --platform           Scaffold a new platform (keeps platform development tools)
 DOCUMENTATION
 
 # IMPORTS ----------------------------------------------------------------------
@@ -70,6 +72,7 @@ trap cleanup_on_error EXIT
 # PARSE OPTIONS ----------------------------------------------------------------
 NON_INTERACTIVE=false
 KEEP_CLAUDE=false
+SCAFFOLD_PLATFORM=false
 PROJECT_NAME=""
 SRC_DIR=""
 DEST_DIR=""
@@ -94,6 +97,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --keep-claude)
             KEEP_CLAUDE=true
+            shift
+            ;;
+        --platform)
+            SCAFFOLD_PLATFORM=true
             shift
             ;;
         *)
@@ -265,16 +272,32 @@ log_success "Backup created"
 # COPY PLATFORM FILES TO DESTINATION -------------------------------------------
 log_info "Copying platform files to destination..."
 
-# Copy all files from source to destination, excluding platform-specific files
-rsync -a \
-    --exclude='.git' \
-    --exclude='.nv' \
-    --exclude='scripts/platform-install.sh' \
-    --exclude='test/' \
-    --exclude='docs/migrations/' \
-    --exclude='CHANGELOG.md' \
-    --exclude='RELEASE_NOTES.md' \
-    "$SRC_DIR/" "$DEST_DIR/"
+# Copy all files from source to destination
+# Always exclude: .git, .nv, docs/migrations/, docs/decisions/, CHANGELOG.md, RELEASE_NOTES.md
+# For regular projects (not platforms): also exclude test/ and scripts/platform-install.sh
+if [ "$SCAFFOLD_PLATFORM" = true ]; then
+    # Scaffolding a new platform - keep platform development files
+    rsync -a \
+        --exclude='.git' \
+        --exclude='.nv' \
+        --exclude='docs/migrations/' \
+        --exclude='docs/decisions/' \
+        --exclude='CHANGELOG.md' \
+        --exclude='RELEASE_NOTES.md' \
+        "$SRC_DIR/" "$DEST_DIR/"
+else
+    # Scaffolding a regular project - exclude platform development files
+    rsync -a \
+        --exclude='.git' \
+        --exclude='.nv' \
+        --exclude='scripts/platform-install.sh' \
+        --exclude='test/' \
+        --exclude='docs/migrations/' \
+        --exclude='docs/decisions/' \
+        --exclude='CHANGELOG.md' \
+        --exclude='RELEASE_NOTES.md' \
+        "$SRC_DIR/" "$DEST_DIR/"
+fi
 
 log_success "Platform files copied"
 
@@ -349,35 +372,54 @@ log_success "Updated .envrc"
 
 # CLEAN UP .CLAUDE/ DIRECTORY --------------------------------------------------
 if [ "$KEEP_CLAUDE" = false ]; then
-    log_info "Cleaning .claude/ directory..."
+    if [ "$SCAFFOLD_PLATFORM" = true ]; then
+        log_info "Cleaning .claude/ directory for new platform..."
 
-    # Remove platform development files
-    rm -f "$DEST_DIR/.claude/plan.md"
-    rm -f "$DEST_DIR/.claude/tasks.md"
+        # For platforms: keep platform development files, remove instance-specific files
+        rm -f "$DEST_DIR/.claude/plan.md"
+        rm -f "$DEST_DIR/.claude/tasks.md"
 
-    # Remove platform-specific migration workflows and commands
-    rm -f "$DEST_DIR/.claude/migrations/generate-migration-guide.md"
-    rm -f "$DEST_DIR/.claude/commands/new-migration.md"
-    rm -f "$DEST_DIR/.claude/commands/validate-platform.md"
+        # Keep platform-specific commands and workflows:
+        # - commands: new-migration.md, validate-platform.md (platform development)
+        # - migrations: generate-migration-guide.md (platform development)
 
-    # Keep user-facing files:
-    # - instructions.md, style.md, workflows.md
-    # - commands: upgrade.md, new-decision.md, capture-decisions.md
-    # - migrations: detect-scaffolded-version.md, assist-project-migration.md, validate-project-migration.md
+        log_success "Removed instance-specific files from .claude/"
+    else
+        log_info "Cleaning .claude/ directory..."
 
-    log_success "Removed platform development files from .claude/"
+        # For regular projects: remove all platform development files
+        rm -f "$DEST_DIR/.claude/plan.md"
+        rm -f "$DEST_DIR/.claude/tasks.md"
+
+        # Remove platform-specific migration workflows and commands
+        rm -f "$DEST_DIR/.claude/migrations/generate-migration-guide.md"
+        rm -f "$DEST_DIR/.claude/commands/new-migration.md"
+        rm -f "$DEST_DIR/.claude/commands/validate-platform.md"
+        rm -f "$DEST_DIR/.claude/commands/validate-docs.md"
+
+        # Keep user-facing files:
+        # - instructions.md, style.md, workflows.md
+        # - commands: upgrade.md, new-decision.md, capture-decisions.md
+        # - migrations: detect-scaffolded-version.md, assist-project-migration.md, validate-project-migration.md
+
+        log_success "Removed platform development files from .claude/"
+    fi
 else
     log_info "Keeping .claude/ directory"
 fi
 
 # CLEAN UP PLATFORM DEVELOPMENT FILES ------------------------------------------
-log_info "Cleaning platform development files..."
+if [ "$SCAFFOLD_PLATFORM" = false ]; then
+    log_info "Cleaning platform development files..."
 
-# Remove platform development section from justfile
-JUSTFILE="$DEST_DIR/justfile"
-if [ -f "$JUSTFILE" ]; then
-    # Remove everything from "# PLATFORM DEVELOPMENT" to end of file
-    sed_inplace '/# PLATFORM DEVELOPMENT/,$d' "$JUSTFILE"
+    # Remove platform development section from justfile (only for regular projects)
+    JUSTFILE="$DEST_DIR/justfile"
+    if [ -f "$JUSTFILE" ]; then
+        # Remove everything from "# PLATFORM DEVELOPMENT" to end of file
+        sed_inplace '/# PLATFORM DEVELOPMENT/,$d' "$JUSTFILE"
+    fi
+else
+    log_info "Keeping platform development files for new platform..."
 fi
 
 # Replace README.md with template
@@ -395,7 +437,9 @@ else
     log_warning "README.template.md not found, keeping original README.md"
 fi
 
-log_success "Removed platform development files"
+if [ "$SCAFFOLD_PLATFORM" = false ]; then
+    log_success "Removed platform development files"
+fi
 
 # CLEANUP BACKUP ---------------------------------------------------------------
 # Remove backup on success

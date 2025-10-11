@@ -1,6 +1,6 @@
 # User Guide
 
-**yin** is a language-agnostic platform template for building scaffolded projects with automated versioning, testing, and CI/CD workflows.
+**platform-lib** is a language-agnostic platform template for building scaffolded projects with automated versioning, testing, and CI/CD workflows.
 
 ## Table of Contents
 
@@ -39,10 +39,27 @@ Platform development files (tests, migrations, changelogs) are automatically exc
 If you have the Nedavellir CLI installed:
 
 ```bash
-nv create your-project-name --platform yin
+nv create your-project-name --platform platform-lib
 ```
 
 This handles everything automatically - cloning, scaffolding, and cleanup.
+
+### Option 3: Create a New Platform (Advanced)
+
+If you want to create a **new platform** (not a regular project), use the `--platform` flag:
+
+```bash
+bash scripts/scaffold.sh --src . --dest /path/to/new-platform --project new-platform-name --platform
+```
+
+This keeps platform development tools:
+- ✅ Test suite (`test/` directory)
+- ✅ Platform commands (`just platform-test`, `just new-migration`)
+- ✅ Platform Claude commands (`/validate-platform`, `/new-migration`)
+- ❌ Removes migrations and decisions (specific to parent platform)
+- ❌ Removes changelogs (CHANGELOG.md, RELEASE_NOTES.md)
+
+Use this when forking the platform to create your own customized version.
 
 ---
 

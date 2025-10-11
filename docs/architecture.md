@@ -152,7 +152,7 @@ Currently a stub with TODO. Will implement:
 Loaded by direnv or sourced by `_load` recipe:
 
 ```bash
-export PROJECT=yin
+export PROJECT=platform-lib
 
 # Read version from VERSION file if exists, otherwise default
 if [ -f VERSION ]; then

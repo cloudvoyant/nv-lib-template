@@ -79,7 +79,7 @@ This will provide:
 ```
 I've detected your project configuration:
 
-📦 Platform: yin
+📦 Platform: platform-lib
 📌 Current Version: 1.0.4
 🎯 Project Name: my-awesome-app
 🆕 Latest Version: 1.1.0

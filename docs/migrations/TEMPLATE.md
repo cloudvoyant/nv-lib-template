@@ -3,7 +3,7 @@
 ## Overview
 
 - **Summary**: Brief description of what changed in this version and why users need to migrate.
-- **Platform**: yin
+- **Platform**: platform-lib
 - **From Version**: X.Y.Z
 - **To Version**: A.B.C
 - **Date**: YYYY-MM-DD

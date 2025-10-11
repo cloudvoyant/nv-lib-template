@@ -69,6 +69,22 @@ Capture significant decisions from the current session as ADRs.
 /capture-decisions
 ```
 
+#### `/validate-docs`
+
+Validate documentation for completeness and consistency.
+
+- Checks documentation structure
+- Validates internal links
+- Verifies code examples
+- Checks version references
+- Finds TODOs and placeholders
+
+**Usage:**
+
+```
+/validate-docs
+```
+
 ## Workflows
 
 These commands invoke workflows in `.claude/migrations/`:

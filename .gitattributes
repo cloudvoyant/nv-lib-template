@@ -117,6 +117,7 @@ CMakeLists.txt text
 # These files are for platform development and should not be copied to new projects
 test/ export-ignore
 docs/migrations/ export-ignore
+docs/decisions/ export-ignore
 CHANGELOG.md export-ignore
 RELEASE_NOTES.md export-ignore
 scripts/platform-install.sh export-ignore

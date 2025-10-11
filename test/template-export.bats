@@ -54,6 +54,7 @@ teardown() {
     [ -f "$EXTRACT_DIR/.claude/commands/upgrade.md" ]
     [ -f "$EXTRACT_DIR/.claude/commands/new-decision.md" ]
     [ -f "$EXTRACT_DIR/.claude/commands/capture-decisions.md" ]
+    [ -f "$EXTRACT_DIR/.claude/commands/validate-docs.md" ]
 
     # User-facing migration workflows should be included
     [ -f "$EXTRACT_DIR/.claude/migrations/README.md" ]

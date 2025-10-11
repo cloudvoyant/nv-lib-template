@@ -131,6 +131,11 @@ just platform-test
   4. Validate migration succeeded
 - See `.claude/plan.md` for detailed approach
 
+**TODO: Platform Generalization**
+- Make platform registry-agnostic by removing GCP-specific defaults
+- Move GCP config from `.envrc` to optional `.env` file
+- Update CI/CD workflows to support multiple registries without hardcoded defaults
+
 ## License
 
 [Add your license here]

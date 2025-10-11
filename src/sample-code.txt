@@ -2,27 +2,27 @@
 
 # Platform name in different formats:
 # snake_case
-platform_name = yin
+platform_name = platform_lib
 
 # kebab-case
-platform-name: yin
+platform-name: platform-lib
 
 # PascalCase
-class Yin:
+class PlatformLib:
     pass
 
-class YinService:
+class PlatformLibService:
     pass
 
 # camelCase
-const yin = "platform";
-const yinConfig = {};
+const platformLib = "platform";
+const platformLibConfig = {};
 
 # flatcase
-yinproject
+platformlibproject
 
 # Mixed examples
-def create_yin_instance():
-    return Yin()
+def create_platform_lib_instance():
+    return PlatformLib()
 
-export const yinHelper = new YinService();
+export const platformLibHelper = new PlatformLibService();
