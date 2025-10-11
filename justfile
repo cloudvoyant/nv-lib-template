@@ -141,14 +141,3 @@ new-migration: _load
         echo "Install Claude Code or run: /new-migration"; \
         exit 1; \
     fi
-
-# Create a new platform repository (requires Claude Code)
-[group('platform')]
-new-platform: _load
-    @if command -v claude >/dev/null 2>&1; then \
-        claude /new-platform; \
-    else \
-        echo -e "{{ERROR}}Claude Code CLI not found{{NORMAL}}"; \
-        echo "Install Claude Code or run: /new-platform"; \
-        exit 1; \
-    fi

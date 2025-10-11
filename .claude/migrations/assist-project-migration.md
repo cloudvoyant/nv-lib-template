@@ -27,16 +27,19 @@ ls docs/migrations/<current>-to-*.md
 **Example scenarios:**
 
 **Direct migration exists:**
+
 - Current: 1.0.4, Target: 1.1.0
 - Found: `1.0.4-to-1.1.0.md`
 - Path: Single migration
 
 **Sequential migrations needed:**
+
 - Current: 1.0.4, Target: 1.3.0
 - Found: `1.0.4-to-1.1.0.md`, `1.1.0-to-1.2.0.md`, `1.2.0-to-1.3.0.md`
 - Path: Three sequential migrations
 
 **Gap in migration guides:**
+
 - Current: 1.0.4, Target: 1.3.0
 - Found: `1.0.4-to-1.1.0.md`, `1.2.0-to-1.3.0.md`
 - Missing: `1.1.0-to-1.2.0.md`
@@ -233,7 +236,6 @@ Current state: 1.1.0 (partially migrated)
 Rollback options:
 1. Restore from backup: git reset --hard pre-migration-backup
 2. Stay at 1.1.0 and investigate issue
-3. Manual rollback to 1.0.4
 
 What would you like to do?
 ```

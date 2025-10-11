@@ -121,6 +121,7 @@ CHANGELOG.md export-ignore
 RELEASE_NOTES.md export-ignore
 scripts/platform-install.sh export-ignore
 .claude/plan.md export-ignore
+.claude/tasks.md export-ignore
 .claude/migrations/generate-migration-guide.md export-ignore
 .claude/commands/new-migration.md export-ignore
-.claude/commands/new-platform.md export-ignore
+.claude/commands/validate-platform.md export-ignore

@@ -351,17 +351,19 @@ log_success "Updated .envrc"
 if [ "$KEEP_CLAUDE" = false ]; then
     log_info "Cleaning .claude/ directory..."
 
-    # Remove implementation plan
+    # Remove platform development files
     rm -f "$DEST_DIR/.claude/plan.md"
+    rm -f "$DEST_DIR/.claude/tasks.md"
 
     # Remove platform-specific migration workflows and commands
     rm -f "$DEST_DIR/.claude/migrations/generate-migration-guide.md"
     rm -f "$DEST_DIR/.claude/commands/new-migration.md"
+    rm -f "$DEST_DIR/.claude/commands/validate-platform.md"
 
-    # Keep user-facing migration workflows:
-    # - detect-scaffolded-version.md
-    # - assist-project-migration.md
-    # - validate-project-migration.md
+    # Keep user-facing files:
+    # - instructions.md, style.md, workflows.md
+    # - commands: upgrade.md, new-decision.md, capture-decisions.md
+    # - migrations: detect-scaffolded-version.md, assist-project-migration.md, validate-project-migration.md
 
     log_success "Removed platform development files from .claude/"
 else
@@ -412,7 +414,7 @@ log_info "Next steps:"
 echo "  1. Review .envrc for project configuration"
 echo "  2. Edit justfile to implement build/test/publish recipes"
 echo "  3. Add your source code to src/"
-echo "  4. Configure GitHub organization secrets (see docs/setup.md)"
+echo "  4. Configure GitHub organization secrets (see docs/user-guide.md)"
 echo "  5. Initialize git and commit: git init && git add . && git commit -m 'Initial commit'"
 echo ""
 

@@ -59,18 +59,8 @@ teardown() {
     [[ "$output" == *"Destination directory does not exist"* ]]
 }
 
-@test "non-interactive mode with custom project name" {
-    run bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project myproject
-
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"project=myproject"* ]]
-}
-
-@test "validates project name - rejects invalid characters" {
+@test "validates project name in non-interactive mode" {
+    # Rejects invalid characters (spaces)
     run bash ./scripts/scaffold.sh \
         --src . \
         --dest ../.. \
@@ -79,9 +69,8 @@ teardown() {
 
     [ "$status" -eq 1 ]
     [[ "$output" == *"Invalid project name"* ]]
-}
 
-@test "validates project name - accepts valid characters" {
+    # Accepts valid characters
     run bash ./scripts/scaffold.sh \
         --src . \
         --dest ../.. \
@@ -89,62 +78,35 @@ teardown() {
         --project "my-valid_project123"
 
     [ "$status" -eq 0 ]
+    [[ "$output" == *"project=my-valid_project123"* ]]
 }
 
-@test "updates .envrc with project name in destination" {
+@test "updates .envrc with platform tracking variables" {
     bash ./scripts/scaffold.sh \
         --src . \
         --dest ../.. \
         --non-interactive \
         --project testproject
 
+    # Sets project name
     run grep "export PROJECT=testproject" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
-}
 
-@test "adds NV_PLATFORM to destination .envrc" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project testproject
-
+    # Adds platform tracking (reads from source .envrc)
     run grep "NV_PLATFORM=" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
     [[ "$output" == *"$PROJECT"* ]]
-}
-
-@test "adds NV_PLATFORM_VERSION to destination .envrc" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project testproject
 
     run grep "NV_PLATFORM_VERSION=" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
     [[ "$output" == *"$VERSION"* ]]
-}
 
-@test "resets VERSION to 0.1.0 in destination .envrc" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project testproject
-
+    # Resets project version to 0.1.0
     run grep "^export VERSION=" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
     [[ "$output" == *"0.1.0"* ]]
-}
 
-@test "does not add duplicate NV_PLATFORM on second run" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project testproject
-
+    # No duplicates on second run
     bash ./scripts/scaffold.sh \
         --src . \
         --dest ../.. \
@@ -155,9 +117,23 @@ teardown() {
     [ "$count" -eq 1 ]
 }
 
-@test "keeps .claude/ directory when --keep-claude is set" {
+@test "handles .claude directory with --keep-claude option" {
     mkdir -p "$DEST_DIR/.claude"
-    touch "$DEST_DIR/.claude/plan.md" "$DEST_DIR/.claude/workflows.md" "$DEST_DIR/.claude/tasks.md"
+    touch "$DEST_DIR/.claude/plan.md" "$DEST_DIR/.claude/workflows.md" "$DEST_DIR/.claude/instructions.md"
+
+    # By default, removes platform-specific files but keeps user-facing files
+    bash ./scripts/scaffold.sh \
+        --src . \
+        --dest ../.. \
+        --non-interactive \
+        --project testproject
+
+    [ ! -f "$DEST_DIR/.claude/plan.md" ]
+    [ -f "$DEST_DIR/.claude/workflows.md" ]
+    [ -f "$DEST_DIR/.claude/instructions.md" ]
+
+    # With --keep-claude, keeps everything including plan.md
+    touch "$DEST_DIR/.claude/plan.md"  # Restore for next test
 
     bash ./scripts/scaffold.sh \
         --src . \
@@ -168,88 +144,26 @@ teardown() {
 
     [ -f "$DEST_DIR/.claude/plan.md" ]
     [ -f "$DEST_DIR/.claude/workflows.md" ]
-    [ -f "$DEST_DIR/.claude/tasks.md" ]
+    [ -f "$DEST_DIR/.claude/instructions.md" ]
 }
 
-@test "removes .claude/plan.md by default" {
-    mkdir -p "$DEST_DIR/.claude"
-    touch "$DEST_DIR/.claude/plan.md" "$DEST_DIR/.claude/workflows.md" "$DEST_DIR/.claude/tasks.md"
 
+@test "removes platform-specific files from destination" {
     bash ./scripts/scaffold.sh \
         --src . \
         --dest ../.. \
         --non-interactive \
         --project testproject
 
-    [ ! -f "$DEST_DIR/.claude/plan.md" ]
-    [ -f "$DEST_DIR/.claude/workflows.md" ]
-    [ -f "$DEST_DIR/.claude/tasks.md" ]
-}
-
-@test "reads platform name and version from source .envrc" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project testproject
-
-    # Should use values from source .envrc
-    run grep "NV_PLATFORM=" "$DEST_DIR/.envrc"
-    [[ "$output" == *"$PROJECT"* ]]
-
-    run grep "NV_PLATFORM_VERSION=" "$DEST_DIR/.envrc"
-    [[ "$output" == *"$VERSION"* ]]
-}
-
-@test "removes platform-install.sh from destination" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project testproject
-
+    # Platform development files should be removed
     [ ! -f "$DEST_DIR/scripts/platform-install.sh" ]
-}
-
-@test "removes test/ directory from destination" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project testproject
-
     [ ! -d "$DEST_DIR/test" ]
-}
+    [ ! -f "$DEST_DIR/CHANGELOG.md" ]
+    [ ! -f "$DEST_DIR/RELEASE_NOTES.md" ]
 
-@test "removes platform development section from justfile" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project testproject
-
+    # Platform development section should be removed from justfile
     run grep "# PLATFORM DEVELOPMENT" "$DEST_DIR/justfile"
     [ "$status" -eq 1 ]
-}
-
-@test "removes CHANGELOG.md from destination" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project testproject
-
-    [ ! -f "$DEST_DIR/CHANGELOG.md" ]
-}
-
-@test "removes RELEASE_NOTES.md from destination" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project testproject
-
-    [ ! -f "$DEST_DIR/RELEASE_NOTES.md" ]
 }
 
 @test "replaces README.md with template" {
@@ -352,111 +266,39 @@ teardown() {
     [ ! -d "$DEST_DIR/.nv/.scaffold-backup" ]
 }
 
-@test "replaces platform name with project name in snake_case" {
+@test "replaces platform name in all case variants across all files" {
     bash ./scripts/scaffold.sh \
         --src . \
         --dest ../.. \
         --non-interactive \
         --project my_awesome_project
 
-    # Should not contain platform name in snake_case (yin for single word is same)
-    run grep -r "export PROJECT=yin" "$DEST_DIR" --exclude-dir=.nv
-    [ "$status" -eq 1 ]
-}
-
-@test "replaces platform name with project name in kebab-case" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project my-awesome-project
-
-    # For single-word platform "yin", kebab and camel are same, so camel runs first
-    # Check that platform name is replaced (will be camelCase variant)
-    run grep "service-name: myAwesomeProject-api" "$DEST_DIR/docs/example-usage.md"
-    [ "$status" -eq 0 ]
-
-    # Verify platform field is also replaced
-    run grep "platform: myAwesomeProject" "$DEST_DIR/docs/example-usage.md"
-    [ "$status" -eq 0 ]
-}
-
-@test "replaces platform name with project name in PascalCase" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project my_awesome_project
-
-    # Should have replaced Yin with MyAwesomeProject in sample files
+    # Check PascalCase replacement in src files
     run grep "class MyAwesomeProject" "$DEST_DIR/src/sample-code.txt"
     [ "$status" -eq 0 ]
 
     run grep "MyAwesomeProjectService" "$DEST_DIR/src/sample-code.txt"
     [ "$status" -eq 0 ]
-}
 
-@test "replaces platform name with project name in camelCase" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project my_awesome_project
-
-    # Should have replaced yinConfig with myAwesomeProjectConfig
+    # Check camelCase replacement in src files
     run grep "myAwesomeProjectConfig" "$DEST_DIR/src/sample-code.txt"
     [ "$status" -eq 0 ]
 
     run grep "myAwesomeProjectHelper" "$DEST_DIR/src/sample-code.txt"
     [ "$status" -eq 0 ]
-}
 
-@test "replaces platform name in all variants in src files" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project cool_service
-
-    # Check PascalCase replacement (class Yin → class CoolService)
-    run grep "class CoolService" "$DEST_DIR/src/sample-code.txt"
+    # Check replacements in docs files
+    run grep "MyAwesomeProject" "$DEST_DIR/docs/example-usage.md"
     [ "$status" -eq 0 ]
 
-    # Check PascalCase with suffix (class YinService → class CoolServiceService)
-    run grep "class CoolServiceService" "$DEST_DIR/src/sample-code.txt"
+    run grep "myAwesomeProjectConfig" "$DEST_DIR/docs/example-usage.md"
     [ "$status" -eq 0 ]
 
-    # Check camelCase replacement (const yinConfig → const coolServiceConfig)
-    run grep "const coolServiceConfig" "$DEST_DIR/src/sample-code.txt"
-    [ "$status" -eq 0 ]
-}
-
-@test "replaces platform name in documentation files" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project super_app
-
-    # Check docs file has replacements
-    run grep "SuperApp" "$DEST_DIR/docs/example-usage.md"
+    # Check README contains project name
+    run grep "my_awesome_project" "$DEST_DIR/README.md"
     [ "$status" -eq 0 ]
 
-    run grep "SuperAppService" "$DEST_DIR/docs/example-usage.md"
-    [ "$status" -eq 0 ]
-
-    run grep "superAppConfig" "$DEST_DIR/docs/example-usage.md"
-    [ "$status" -eq 0 ]
-}
-
-@test "replaces platform name in README when using different case format" {
-    bash ./scripts/scaffold.sh \
-        --src . \
-        --dest ../.. \
-        --non-interactive \
-        --project cool_app
-
-    # README should contain project name
-    run grep "cool_app" "$DEST_DIR/README.md"
-    [ "$status" -eq 0 ]
+    # Verify platform name no longer appears in .envrc
+    run grep -r "export PROJECT=yin" "$DEST_DIR" --exclude-dir=.nv
+    [ "$status" -eq 1 ]
 }

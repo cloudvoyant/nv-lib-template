@@ -2,6 +2,8 @@
 
 # Test that user-facing just commands are preserved in scaffolded projects
 
+bats_require_minimum_version 1.5.0
+
 setup() {
     # Create temp directories
     export TEST_PLATFORM_DIR="$(mktemp -d)"
@@ -29,29 +31,20 @@ teardown() {
     rm -rf "$TEST_PROJECT_DIR"
 }
 
-@test "scaffolded project has 'just upgrade' command" {
+@test "scaffolded project has correct justfile commands" {
     cd "$TEST_PROJECT_DIR"
+
+    # Should have upgrade command
     grep -q "^upgrade: _load" justfile
-}
 
-@test "scaffolded project does NOT have 'just new-migration' command" {
-    cd "$TEST_PROJECT_DIR"
-    ! grep -q "^new-migration: _load" justfile
-}
-
-@test "scaffolded project does NOT have 'just new-platform' command" {
-    cd "$TEST_PROJECT_DIR"
-    ! grep -q "^new-platform: _load" justfile
-}
-
-@test "scaffolded project does NOT have PLATFORM DEVELOPMENT section" {
-    cd "$TEST_PROJECT_DIR"
-    ! grep -q "# PLATFORM DEVELOPMENT" justfile
-}
-
-@test "just upgrade command calls claude /upgrade" {
-    cd "$TEST_PROJECT_DIR"
+    # Upgrade command should call claude /upgrade
     grep -A 10 "^upgrade: _load" justfile | grep -q "claude /upgrade"
+
+    # Should NOT have platform development commands
+    run ! grep -q "^new-migration: _load" justfile
+
+    # Should NOT have PLATFORM DEVELOPMENT section
+    run ! grep -q "# PLATFORM DEVELOPMENT" justfile
 }
 
 @test "platform repository has all commands" {
@@ -62,10 +55,7 @@ teardown() {
 
     # Platform development commands
     grep -q "^new-migration: _load" justfile
-    grep -q "^new-platform: _load" justfile
-}
 
-@test "platform repository has PLATFORM DEVELOPMENT section" {
-    cd "$TEST_PLATFORM_DIR"
+    # PLATFORM DEVELOPMENT section
     grep -q "# PLATFORM DEVELOPMENT" justfile
 }

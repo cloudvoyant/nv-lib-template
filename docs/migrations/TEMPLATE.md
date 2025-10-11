@@ -1,23 +1,24 @@
 # Migration Guide: vX.Y.Z to vA.B.C
 
-> **Platform:** yin
-> **From Version:** X.Y.Z
-> **To Version:** A.B.C
-> **Date:** YYYY-MM-DD
-
 ## Overview
 
-Brief description of what changed in this version and why users need to migrate.
+- **Summary**: Brief description of what changed in this version and why users need to migrate.
+- **Platform**: yin
+- **From Version**: X.Y.Z
+- **To Version**: A.B.C
+- **Date**: YYYY-MM-DD
 
 ## Breaking Changes
 
 List all breaking changes that require manual intervention:
 
 1. **Change 1**: Description
+
    - **Impact**: Who/what is affected
    - **Action Required**: What users need to do
 
 2. **Change 2**: Description
+
    - **Impact**: Who/what is affected
    - **Action Required**: What users need to do
 
@@ -81,14 +82,17 @@ sed -i 's/NV_PLATFORM_VERSION=A.B.C/NV_PLATFORM_VERSION=X.Y.Z/' .envrc
 ### Common Issues
 
 **Issue 1**: Description
+
 - **Solution**: How to fix
 
 **Issue 2**: Description
+
 - **Solution**: How to fix
 
 ## Support
 
 For questions or issues:
+
 - Check the [platform documentation](../README.md)
 - Review [architecture docs](../architecture.md)
 - Open an issue on GitHub

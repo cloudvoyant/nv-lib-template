@@ -9,7 +9,11 @@
         "mkhl.direnv",
         "skellock.just",
         "ms-azuretools.vscode-docker",
-        "nefrob.vscode-just-syntax"
+        "nefrob.vscode-just-syntax",
+        "yzhang.markdown-all-in-one",
+        "shd101wyy.markdown-preview-enhanced",
+        "zaaack.markdown-editor",
+        "timonwong.shellcheck"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash"

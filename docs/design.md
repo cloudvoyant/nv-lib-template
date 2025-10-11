@@ -2,7 +2,7 @@
 
 ## Introduction
 
-A language-agnostic build system that can be forked and customized for any programming language or SDK project. The system provides a common set of development workflows (build, test, run, publish) that work consistently across different languages.
+`platform-lib` is a language-agnostic platform for building SDKs that can be forked and customized for any programming language. The system provides a common set of development workflows (build, test, run, publish) that work consistently across different languages.
 
 ## Features
 
@@ -14,14 +14,24 @@ A language-agnostic build system that can be forked and customized for any progr
 - IDE configuration (VS Code, EditorConfig)
 - Direct customization by editing `justfile`
 
-## Technology Stack
+## Requirements
 
 - `bash` - Core scripting language
 - `just` - Command runner
 - `direnv` - Environment management
 - `docker` - Containerization
 - `semantic-release` - Automated versioning
+- `claude` - LLM assistant
 - GitHub Actions - CI/CD
+
+## Design Principles
+
+1. **Run from anywhere** - Scripts work when called from any directory in the repo
+2. **Centralized config** - All configuration lives in `.envrc`, sourced by `utils.sh`
+3. **Fail fast** - Use `set -euo pipefail` everywhere for immediate error detection
+4. **Self-documenting** - Every script includes usage documentation
+5. **Language agnostic** - Detect and adapt to different languages and tools
+6. **No external dependencies** - Pure bash with minimal tooling requirements
 
 ## Key Components
 
@@ -55,9 +65,9 @@ Key commands available:
 - `just version-next` - Get next version from semantic-release
 - `just release-notes` - Generate release notes with Claude
 - `just scaffold` - Initialize a forked project
-- `just --list` - Show all available commands
+- `just` - Show all available commands
 
-Commands support dependencies. For example, `test` depends on `build`, ensuring builds run before tests:
+Commands support task dependencies. For example, `test` depends on `build`, ensuring builds run before tests:
 
 ```bash
 just test                    # Runs build, then test
@@ -66,53 +76,9 @@ just format src/             # Accepts path arguments
 
 The `publish` command depends on `test` (which tests the dev build) and `build-prod` (which creates production artifacts):
 
-```just
-build-prod: _load
-    NODE_ENV=production npm run build
-
-publish: test build-prod
-    gcloud artifacts generic upload \
-        --project={{REGISTRY_PROJECT_ID}} \
-        --location={{REGISTRY_REGION}} \
-        --repository={{REGISTRY_NAME}} \
-        --package={{PROJECT}} \
-        --version={{VERSION}} \
-        --source=dist/artifact.tar.gz
-```
-
 Tests always run on the development build. Production builds are created for publishing but not separately tested.
 
 Default implementation publishes to GCP Artifact Registry. Customize the `publish` recipe for your needs (npm, PyPI, Docker, etc.).
-
-### Reusable Utilities
-
-The `scripts/utils.sh` file provides shared functions:
-
-- Logging with colors (`log_info`, `log_error`, `log_warn`)
-- Version management (`get_version`, `get_next_version`)
-- Progress indicators (`spinner`, `progress_step`)
-- Cross-platform helpers (`sed_inplace`, `command_exists`)
-
-Scripts source `utils.sh` to use these functions:
-
-```bash
-#!/usr/bin/env bash
-source "$(dirname "$0")/utils.sh"
-setup_script_lifecycle
-
-log_info "Starting build..."
-```
-
-### Environment Management
-
-The `.envrc` file defines environment variables:
-
-```bash
-export PROJECT=yin
-export VERSION=$(get_version)
-```
-
-When using `direnv`, variables load automatically on directory entry. Otherwise, the `_load` recipe sources `.envrc` manually.
 
 ### Setup and Scaffolding
 
@@ -129,9 +95,9 @@ Two GitHub Actions workflows handle automation:
 
 The release workflow is combined for simplicity - it runs semantic-release, then immediately publishes if a new version was created. No separate workflows or Personal Access Tokens required.
 
-### Versioning
+### Trunk Based Development With Automated Versioning
 
-Uses conventional commits (feat:, fix:, docs:, etc.) with semantic-release to automatically:
+Use conventional commits (feat:, fix:, docs:, etc.) with semantic-release to automatically:
 
 - Analyze commits since last release
 - Determine next version number
@@ -139,7 +105,7 @@ Uses conventional commits (feat:, fix:, docs:, etc.) with semantic-release to au
 - Update CHANGELOG.md
 - Create GitHub releases
 
-The `get_version` function reads the current version from git tags.
+The `VERSION` variable in `.envrc` lists the current version and is managed by `semantic-release` in CI/CD.
 
 ### Release Notes
 
@@ -162,168 +128,21 @@ Claude CLI generates user-focused descriptions explaining impact and improvement
 
 ### Publishing
 
-The `publish` recipe handles publishing artifacts. Default implementation uploads to GCP Artifact Registry:
-
-```just
-publish: test build-prod
-    gcloud artifacts generic upload \
-        --project={{GCP_PROJECT_ID}} \
-        --location={{GCP_REGION}} \
-        --repository={{GCP_REPOSITORY}} \
-        --package={{PROJECT}} \
-        --version={{VERSION}} \
-        --source=dist/artifact.txt
-```
+The `publish` recipe handles publishing artifacts. Default implementation uploads to GCP Artifact Registry.
 
 Customize for your language/registry by editing the `publish` recipe directly:
 
 **npm:**
+
 ```just
 publish: test build-prod
     npm publish
 ```
 
-**PyPI:**
-```just
-publish: test build-prod
-    python -m twine upload dist/*
-```
-
-**Docker Hub:**
-```just
-publish: test build-prod
-    docker tag myimage:latest username/myimage:{{VERSION}}
-    docker push username/myimage:{{VERSION}}
-```
-
 Configure registry variables in `.envrc`:
+
 ```bash
 export GCP_PROJECT_ID="your-project-id"
 export GCP_REGION="us-central1"
 export GCP_REPOSITORY="your-repository"
 ```
-
-See [Setup Guide](setup.md) for detailed configuration.
-
-## Usage Patterns
-
-### Daily Development
-
-```bash
-just setup    # First time setup
-just build    # Build the project
-just test     # Run tests
-just run      # Run locally
-```
-
-### Forking for Your Project
-
-1. Fork the repository
-2. Run `just scaffold` to initialize
-3. Edit `justfile` - replace TODOs with your commands
-4. Configure GitHub Secrets if publishing
-5. Commit using conventional commit format
-6. Push - CI/CD runs automatically
-
-### Customization Examples
-
-Node.js (with GCP Artifact Registry):
-```just
-install: _load
-    npm install
-
-build: _load
-    npm run build
-
-build-prod: _load
-    NODE_ENV=production npm run build
-    tar -czf dist/package.tar.gz dist/
-
-test: build
-    npm test
-
-publish: test build-prod
-    npm publish
-    gcloud artifacts generic upload \
-        --project={{GCP_PROJECT_ID}} \
-        --location={{GCP_REGION}} \
-        --repository={{GCP_REPOSITORY}} \
-        --package={{PROJECT}} \
-        --version={{VERSION}} \
-        --source=dist/package.tar.gz
-
-clean: _load
-    rm -rf dist/ node_modules/
-```
-
-Python (with PyPI):
-```just
-install: _load
-    pip install -r requirements.txt
-
-build: _load
-    python -m build
-
-build-prod: _load
-    python -m build
-
-test: build
-    pytest
-
-publish: test build-prod
-    python -m twine upload dist/*
-
-clean: _load
-    rm -rf dist/ build/ *.egg-info/
-```
-
-Go (with Docker):
-```just
-install: _load
-    go mod download
-
-build: _load
-    go build -o bin/app
-
-build-prod: _load
-    go build -ldflags="-s -w" -o bin/app
-
-test: build
-    go test ./...
-
-publish: test build-prod
-    docker build -t myapp:{{VERSION}} .
-    docker push myapp:{{VERSION}}
-
-clean: _load
-    rm -rf bin/
-```
-
-Rust (with crates.io):
-```just
-install: _load
-    cargo fetch
-
-build: _load
-    cargo build
-
-build-prod: _load
-    cargo build --release
-
-test: build
-    cargo test
-
-publish: test build-prod
-    cargo publish
-
-clean: _load
-    cargo clean
-```
-
-## Documentation Style Guide
-
-- Be concise and scannable
-- Use backticks for files, commands, and code
-- Avoid excessive bold formatting
-- Structure: introduction → features → design → details
-- Save implementation details for `architecture.md`

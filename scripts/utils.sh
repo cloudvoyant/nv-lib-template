@@ -313,15 +313,6 @@ get_next_version() {
     return 0
 }
 
-# TRAP HANDLERS ----------------------------------------------------------------
-
-# Default error handler - scripts can override with their own trap
-default_error_handler() {
-    local line_num=$1
-    log_error "Script failed at line $line_num"
-    exit 1
-}
-
 # SCRIPT LIFECYCLE SETUP -------------------------------------------------------
 
 # Initialize script lifecycle (error handling, traps, etc.)

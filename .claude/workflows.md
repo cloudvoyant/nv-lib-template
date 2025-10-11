@@ -29,11 +29,13 @@ Language-agnostic build system. Users fork, edit `justfile`, and it works with t
 ## When Implementing Features
 
 **Language-agnostic features** → `scripts/` (bash)
+
 - setup.sh, utils.sh, scaffold.sh, release-notes.sh
 - Generic automation, tooling
 - Cross-platform compatibility
 
 **Language-specific features** → `justfile` (user customizes)
+
 - build, test, run, publish commands
 - User replaces TODO placeholders
 - Keep examples in docs
@@ -41,18 +43,21 @@ Language-agnostic build system. Users fork, edit `justfile`, and it works with t
 ## File Patterns
 
 **Bash scripts**:
+
 - Include DOCUMENTATION heredoc at top
 - Source utils.sh for shared functions
 - Use `setup_script_lifecycle` for error handling
 - Make executable with `chmod +x`
 
 **Justfile recipes**:
+
 - Keep placeholder TODOs for language-agnostic template
 - Maintain dependencies (e.g., `test: build`)
 - Use `_load` to source environment
 - No arguments unless needed (test doesn't need args)
 
 **Documentation**:
+
 - Be concise and scannable
 - Use backticks for files, commands, code
 - Avoid excessive bold formatting
@@ -73,11 +78,13 @@ When completing a phase:
 When user runs `just release-notes`, help generate user-friendly release notes:
 
 1. Get commits since last release:
+
    ```bash
    git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%s%n%b" --no-merges
    ```
 
 2. Analyze commits and create `RELEASE_NOTES.md`:
+
    - Focus on user impact, not implementation
    - Group related changes logically
    - Highlight breaking changes
@@ -86,24 +93,30 @@ When user runs `just release-notes`, help generate user-friendly release notes:
    - Include version from semantic-release
 
 3. Format structure:
+
    ```markdown
    # Release v{version}
 
    Brief 1-2 sentence summary of this release.
 
    ## Highlights
+
    - Key changes users will notice
 
    ## Breaking Changes (if any)
+
    - What broke and how to migrate
 
    ## New Features
+
    - Features from user perspective
 
    ## Improvements
+
    - Enhancements and optimizations
 
    ## Bug Fixes
+
    - Issues resolved
    ```
 

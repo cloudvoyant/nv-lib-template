@@ -37,127 +37,42 @@ teardown() {
     [ -f "$ARCHIVE_FILE" ]
 }
 
-@test "export-ignore excludes test/ directory from archive" {
+@test "archive includes all required files and directories" {
     git archive --format=tar --output="$ARCHIVE_FILE" HEAD
     mkdir -p "$EXTRACT_DIR"
     tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
 
-    [ ! -d "$EXTRACT_DIR/test" ]
-}
-
-@test "export-ignore excludes docs/migrations/ from archive" {
-    git archive --format=tar --output="$ARCHIVE_FILE" HEAD
-    mkdir -p "$EXTRACT_DIR"
-    tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
-
-    [ ! -d "$EXTRACT_DIR/docs/migrations" ]
-}
-
-@test "export-ignore excludes CHANGELOG.md from archive" {
-    git archive --format=tar --output="$ARCHIVE_FILE" HEAD
-    mkdir -p "$EXTRACT_DIR"
-    tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
-
-    [ ! -f "$EXTRACT_DIR/CHANGELOG.md" ]
-}
-
-@test "export-ignore excludes RELEASE_NOTES.md from archive" {
-    git archive --format=tar --output="$ARCHIVE_FILE" HEAD
-    mkdir -p "$EXTRACT_DIR"
-    tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
-
-    [ ! -f "$EXTRACT_DIR/RELEASE_NOTES.md" ]
-}
-
-@test "export-ignore excludes scripts/platform-install.sh from archive" {
-    git archive --format=tar --output="$ARCHIVE_FILE" HEAD
-    mkdir -p "$EXTRACT_DIR"
-    tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
-
-    [ ! -f "$EXTRACT_DIR/scripts/platform-install.sh" ]
-}
-
-@test "export-ignore excludes .claude/plan.md from archive" {
-    git archive --format=tar --output="$ARCHIVE_FILE" HEAD
-    mkdir -p "$EXTRACT_DIR"
-    tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
-
-    [ ! -f "$EXTRACT_DIR/.claude/plan.md" ]
-}
-
-@test "export-ignore excludes .claude/migrations/generate-migration-guide.md from archive" {
-    git archive --format=tar --output="$ARCHIVE_FILE" HEAD
-    mkdir -p "$EXTRACT_DIR"
-    tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
-
-    [ ! -f "$EXTRACT_DIR/.claude/migrations/generate-migration-guide.md" ]
-}
-
-@test "export-ignore excludes .claude/commands/new-migration.md from archive" {
-    git archive --format=tar --output="$ARCHIVE_FILE" HEAD
-    mkdir -p "$EXTRACT_DIR"
-    tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
-
-    [ ! -f "$EXTRACT_DIR/.claude/commands/new-migration.md" ]
-}
-
-@test "export-ignore excludes .claude/commands/new-platform.md from archive" {
-    git archive --format=tar --output="$ARCHIVE_FILE" HEAD
-    mkdir -p "$EXTRACT_DIR"
-    tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
-
-    [ ! -f "$EXTRACT_DIR/.claude/commands/new-platform.md" ]
-}
-
-@test "archive includes important platform files" {
-    git archive --format=tar --output="$ARCHIVE_FILE" HEAD
-    mkdir -p "$EXTRACT_DIR"
-    tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
-
-    # Verify essential files are present
+    # Verify essential platform files are present
     [ -f "$EXTRACT_DIR/README.md" ]
     [ -f "$EXTRACT_DIR/.envrc" ]
     [ -f "$EXTRACT_DIR/justfile" ]
     [ -f "$EXTRACT_DIR/scripts/scaffold.sh" ]
     [ -d "$EXTRACT_DIR/.claude" ]
-}
 
-@test "archive includes user-facing .claude files" {
-    git archive --format=tar --output="$ARCHIVE_FILE" HEAD
-    mkdir -p "$EXTRACT_DIR"
-    tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
+    # User-facing Claude commands should be included
+    [ -f "$EXTRACT_DIR/.claude/commands/README.md" ]
+    [ -f "$EXTRACT_DIR/.claude/commands/upgrade.md" ]
+    [ -f "$EXTRACT_DIR/.claude/commands/new-decision.md" ]
+    [ -f "$EXTRACT_DIR/.claude/commands/capture-decisions.md" ]
 
     # User-facing migration workflows should be included
+    [ -f "$EXTRACT_DIR/.claude/migrations/README.md" ]
     [ -f "$EXTRACT_DIR/.claude/migrations/detect-scaffolded-version.md" ]
     [ -f "$EXTRACT_DIR/.claude/migrations/assist-project-migration.md" ]
     [ -f "$EXTRACT_DIR/.claude/migrations/validate-project-migration.md" ]
-    [ -f "$EXTRACT_DIR/.claude/commands/upgrade.md" ]
-}
 
-@test "archive includes docs/ but not docs/migrations/" {
-    git archive --format=tar --output="$ARCHIVE_FILE" HEAD
-    mkdir -p "$EXTRACT_DIR"
-    tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
+    # User-facing Claude config files should be included
+    [ -f "$EXTRACT_DIR/.claude/instructions.md" ]
+    [ -f "$EXTRACT_DIR/.claude/style.md" ]
+    [ -f "$EXTRACT_DIR/.claude/workflows.md" ]
 
-    # docs/ should exist
+    # docs/ should exist but not docs/migrations/
     [ -d "$EXTRACT_DIR/docs" ]
-
-    # but docs/migrations/ should NOT
     [ ! -d "$EXTRACT_DIR/docs/migrations" ]
-}
 
-@test "archive includes scripts/ but not scripts/platform-install.sh" {
-    git archive --format=tar --output="$ARCHIVE_FILE" HEAD
-    mkdir -p "$EXTRACT_DIR"
-    tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
-
-    # scripts/ should exist
+    # scripts/ should exist with scaffold.sh but not platform-install.sh
     [ -d "$EXTRACT_DIR/scripts" ]
-
-    # scripts/scaffold.sh should be included
     [ -f "$EXTRACT_DIR/scripts/scaffold.sh" ]
-
-    # but scripts/platform-install.sh should NOT
     [ ! -f "$EXTRACT_DIR/scripts/platform-install.sh" ]
 }
 
@@ -172,8 +87,11 @@ teardown() {
     [ ! -f "$EXTRACT_DIR/CHANGELOG.md" ]
     [ ! -f "$EXTRACT_DIR/RELEASE_NOTES.md" ]
     [ ! -f "$EXTRACT_DIR/scripts/platform-install.sh" ]
+
+    # Platform-specific Claude files should be excluded
     [ ! -f "$EXTRACT_DIR/.claude/plan.md" ]
+    [ ! -f "$EXTRACT_DIR/.claude/tasks.md" ]
     [ ! -f "$EXTRACT_DIR/.claude/migrations/generate-migration-guide.md" ]
     [ ! -f "$EXTRACT_DIR/.claude/commands/new-migration.md" ]
-    [ ! -f "$EXTRACT_DIR/.claude/commands/new-platform.md" ]
+    [ ! -f "$EXTRACT_DIR/.claude/commands/validate-platform.md" ]
 }

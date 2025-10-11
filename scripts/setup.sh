@@ -6,6 +6,8 @@ Installs deps for local development if not present.
 - docker
 - direnv (for environment management)
 - node/npx (for semantic-release)
+- shellcheck (shell script linter)
+- shfmt (shell script formatter)
 DOCUMENTATION
 
 # IMPORTS ----------------------------------------------------------------------
@@ -218,10 +220,78 @@ install_node() {
     log_success "Node.js installation completed"
 }
 
+# Install shellcheck based on platform
+install_shellcheck() {
+    log_info "Installing shellcheck..."
+
+    case $PLATFORM in
+    Mac)
+        if command_exists brew; then
+            brew install shellcheck
+        else
+            log_warn "Homebrew not found. Please install shellcheck manually from https://www.shellcheck.net"
+            return 1
+        fi
+        ;;
+    Linux)
+        if command_exists apt-get; then
+            sudo apt-get update
+            sudo apt-get install -y shellcheck
+        elif command_exists yum; then
+            sudo yum install -y ShellCheck
+        elif command_exists pacman; then
+            sudo pacman -S shellcheck
+        else
+            log_warn "No suitable package manager found. Please install shellcheck manually from https://www.shellcheck.net"
+            return 1
+        fi
+        ;;
+    *)
+        log_warn "Unsupported platform for automatic shellcheck installation. Please install shellcheck manually from https://www.shellcheck.net"
+        return 1
+        ;;
+    esac
+
+    log_success "shellcheck installation completed"
+}
+
+# Install shfmt based on platform
+install_shfmt() {
+    log_info "Installing shfmt..."
+
+    case $PLATFORM in
+    Mac)
+        if command_exists brew; then
+            brew install shfmt
+        else
+            log_warn "Homebrew not found. Please install shfmt manually from https://github.com/mvdan/sh"
+            return 1
+        fi
+        ;;
+    Linux)
+        if command_exists go; then
+            go install mvdan.cc/sh/v3/cmd/shfmt@latest
+        else
+            log_warn "Go not found. Installing shfmt from binary..."
+            ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+            curl -L "https://github.com/mvdan/sh/releases/latest/download/shfmt_v3_linux_${ARCH}" -o /tmp/shfmt
+            chmod +x /tmp/shfmt
+            sudo mv /tmp/shfmt /usr/local/bin/shfmt
+        fi
+        ;;
+    *)
+        log_warn "Unsupported platform for automatic shfmt installation. Please install shfmt manually from https://github.com/mvdan/sh"
+        return 1
+        ;;
+    esac
+
+    log_success "shfmt installation completed"
+}
+
 # Check and install dependencies
 check_dependencies() {
     log_info "Checking dependencies..."
-    local total=5
+    local total=7
     local current=0
 
     # Check Bash
@@ -296,6 +366,34 @@ check_dependencies() {
         else
             log_error "Failed to install Node.js - visit https://nodejs.org to install manually and re-run setup"
             exit 1
+        fi
+    fi
+
+    # Check shellcheck
+    current=$((current + 1))
+    progress_step $current $total "Checking shellcheck..."
+    if command_exists shellcheck; then
+        log_success "shellcheck is already installed: $(shellcheck --version | head -n2 | tail -n1)"
+    else
+        log_warn "shellcheck not found (recommended for shell script linting)"
+        if install_shellcheck; then
+            log_success "shellcheck installed successfully"
+        else
+            log_warn "Failed to install shellcheck - continuing without it"
+        fi
+    fi
+
+    # Check shfmt
+    current=$((current + 1))
+    progress_step $current $total "Checking shfmt..."
+    if command_exists shfmt; then
+        log_success "shfmt is already installed: $(shfmt --version)"
+    else
+        log_warn "shfmt not found (recommended for shell script formatting)"
+        if install_shfmt; then
+            log_success "shfmt installed successfully"
+        else
+            log_warn "Failed to install shfmt - continuing without it"
         fi
     fi
 

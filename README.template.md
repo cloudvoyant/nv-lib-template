@@ -80,7 +80,7 @@ Publishing to artifact registries is optional. Configure in `.envrc`:
 - **GCP Artifact Registry**: Uncomment and set `GCP_PROJECT_ID`, `GCP_REGION`, `GCP_REPOSITORY`
 - **Other registries**: Update the `publish` recipe in `justfile`
 
-See [docs/setup.md](docs/setup.md) for detailed setup instructions.
+See [docs/user-guide.md](docs/user-guide.md) for detailed setup and usage instructions.
 
 ## License
 

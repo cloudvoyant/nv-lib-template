@@ -3,6 +3,7 @@
 ## Plan Maintenance
 
 **IMPORTANT**: Please update `.claude/plan.md` whenever:
+
 - A major task or phase is completed
 - Significant architectural changes are made
 - New features or scripts are added
@@ -14,22 +15,27 @@
 
 ## Project Context
 
-This is a generic, language-agnostic SDK scripting system designed to work with any programming language or framework. The goal is to provide a consistent set of bash scripts for common development tasks (build, test, publish, etc.) that can be easily adapted to different languages and workflows.
+The following files MUST be respected:
 
-## Key Principles
-
-1. **Run from anywhere** - Scripts should work when called from any directory in the repo
-2. **Centralized config** - All configuration in `.envrc`, sourced by `utils.sh`
-3. **Fail fast** - Use `set -euo pipefail` everywhere
-4. **Self-documenting** - Every script includes usage documentation
-5. **Language agnostic** - Detect and adapt to different languages/tools
-6. **No external dependencies** - Pure bash with minimal tooling requirements
+**User-facing documentation** (in `docs/`):
+- `docs/design.md` captures the project's design principles and philosophy - this is effectively the prime directive that must be respected at all times
+- `docs/architecture.md` captures architecture and important implementation details. The architecture outlined in this doc must be respected, and implementation details must be kept up to date as development proceeds.
+- `docs/user-guide.md` is a user guide for the project, and must similarly be kept up to date.
+- `docs/decisions/` contains Architectural Decision Records (ADRs) documenting important design choices. When making significant architectural changes:
+  - Create a new ADR file: `docs/decisions/NNN-short-title.md`
+  - Follow the ADR template in `.claude/style.md`
+  - Update the index in `docs/decisions/README.md`
+  - Update relevant documentation (design.md, architecture.md)
+  - Reference ADRs when explaining architectural choices
 
 ## Development Workflow
 
 When working on this project:
+
 1. Always source the plan before starting work
 2. Update todo list as tasks progress
 3. Test scripts work from different directories
 4. Ensure all scripts use logging shortcut functions
 5. Update plan.md when completing milestones
+6. When plan.md is completed, review project docs and ensure they are up-to-date
+7. Delete plan.md
