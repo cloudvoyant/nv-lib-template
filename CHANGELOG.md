@@ -1,3 +1,12 @@
+# [1.2.0](https://github.com/cloudvoyant/lib/compare/v1.1.0...v1.2.0) (2025-10-11)
+
+
+### Features
+
+* consolidate tests and add ADR management commands ([c60041e](https://github.com/cloudvoyant/lib/commit/c60041ed5077d3da573dc7a9b33ededaebc863e7))
+* enhance validate-docs and add development guidelines ([0d04656](https://github.com/cloudvoyant/lib/commit/0d046560c7c025339df669326c1fea668e310e87))
+* make validate-docs command general-purpose ([e7056fa](https://github.com/cloudvoyant/lib/commit/e7056fa8aa3edcacad99c8a53d56c1f6f8532495))
+
 # [1.1.0](https://github.com/cloudvoyant/lib/compare/v1.0.4...v1.1.0) (2025-10-09)
 
 
