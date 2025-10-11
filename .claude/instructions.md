@@ -28,6 +28,36 @@ The following files MUST be respected:
   - Update relevant documentation (design.md, architecture.md)
   - Reference ADRs when explaining architectural choices
 
+## Git Commit Guidelines
+
+**FORBIDDEN**: Do NOT add Claude Code attributions to git commit messages.
+
+- ❌ NO "🤖 Generated with [Claude Code]" lines
+- ❌ NO "Co-Authored-By: Claude <noreply@anthropic.com>" lines
+- ❌ NO self-attributions of any kind
+
+Git commits should be clean, professional, and contain only the commit message itself.
+
+## Testing Guidelines
+
+**CRITICAL**: Always run tests using `just platform-test` (not direct bats commands).
+
+When encountering unexpected test failures:
+
+1. **First**, run `direnv allow` to ensure .envrc is loaded
+2. **Then**, run tests via `just platform-test` (which ensures proper environment setup)
+3. If tests still fail, investigate the specific failure
+
+**Why this matters:**
+- Tests depend on environment variables (VERSION, PROJECT, etc.) from .envrc
+- Running tests without direnv loaded causes cryptic failures
+- `just platform-test` ensures the environment is properly configured
+
+**Never:**
+- Run bats tests directly without checking environment is loaded
+- Debug test failures without first verifying `direnv allow` was run
+- Assume environment variables are set without checking
+
 ## Development Workflow
 
 When working on this project:

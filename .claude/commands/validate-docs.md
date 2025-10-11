@@ -41,11 +41,22 @@ Verify documentation cross-references are consistent:
 
 ### 4. Validate Code Examples
 
-Check code examples in documentation:
+Check code examples in documentation match the actual project:
 
+```bash
+# Extract just commands from docs
+grep -r "just [a-z-]*" docs/ README.md
+
+# Compare with actual justfile
+just --list
+```
+
+For each command or code example:
 - Verify syntax is correct for the language
-- Check that file paths referenced exist
-- Ensure commands are accurate (e.g., `just` commands match justfile)
+- Check that file paths referenced actually exist in the project
+- Ensure bash/just commands are accurate and exist
+- Verify configuration examples match actual config files
+- Check that code snippets reflect current implementation
 
 ### 5. Check Version References
 
@@ -88,13 +99,30 @@ Verify markdown syntax is valid:
 
 ### 8. Validate Project-Specific Content
 
-Check for project-specific documentation needs:
+Verify documentation matches the actual project state:
 
-- Installation or setup instructions are complete
-- Configuration options are documented
-- Example code is accurate and tested
+```bash
+# Check that documented files exist
+ls -la .envrc justfile package.json setup.py Cargo.toml 2>/dev/null
+
+# Verify documented directories exist
+ls -la src/ docs/ test/ .github/ 2>/dev/null
+
+# Check documented commands work
+command -v just git docker node python go 2>/dev/null
+```
+
+For the project:
+- Installation instructions match actual setup requirements
+- Configuration file examples match actual file structure
+- Documented commands actually exist and work
+- File paths in examples point to real files
+- Directory structure matches what's documented
+- Dependencies listed match actual requirements files
+- Environment variables match .envrc or similar config
+- Example code is accurate and reflects current implementation
 - Contributing guidelines are present (if accepting contributions)
-- License information is included
+- License information is included and matches LICENSE file
 
 ## Report Findings
 
@@ -107,12 +135,20 @@ Documentation Validation Report
 ✓ Structure: All required files present
 ✓ Internal Links: X/Y links validated
 ✗ Code Examples: 2 commands need updating
+✗ Project Consistency: 3 documented commands don't exist
 ⚠ Version References: Found 1 outdated reference
 ✓ TODOs: 3 TODOs found (all tracked)
 ✓ Markdown: No formatting issues
 ```
 
 For each issue found:
-- Describe the problem
-- Suggest a fix
+- Describe the problem (e.g., "docs reference `just deploy` but command doesn't exist in justfile")
+- Suggest a fix (e.g., "Add `just deploy` command or update docs to reference correct command")
 - Indicate priority (high/medium/low)
+
+**Key consistency checks:**
+- All documented commands exist and work
+- File paths in examples point to real files
+- Configuration examples match actual config structure
+- Version numbers are consistent across all files
+- Dependencies match actual requirement files
