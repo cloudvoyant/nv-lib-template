@@ -1,10 +1,19 @@
 #!/usr/bin/env bash
 : <<DOCUMENTATION
-Installs deps for local development if not present.
-- bash
+Installs development dependencies for this platform.
+
+Usage: setup.sh [OPTIONS]
+
+Options:
+  --include-optional    Also install optional dependencies
+
+Required dependencies (setup will fail if these can't be installed):
+- bash (shell)
 - just (command runner)
-- docker
-- direnv (for environment management)
+- direnv (environment management)
+
+Optional dependencies (only installed with --include-optional):
+- docker (containerization)
 - node/npx (for semantic-release)
 - shellcheck (shell script linter)
 - shfmt (shell script formatter)
@@ -13,6 +22,35 @@ DOCUMENTATION
 # IMPORTS ----------------------------------------------------------------------
 source "$(dirname "$0")/utils.sh"
 setup_script_lifecycle
+
+# ARGUMENT PARSING -------------------------------------------------------------
+
+INCLUDE_OPTIONAL=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --include-optional)
+            INCLUDE_OPTIONAL=true
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: setup.sh [OPTIONS]"
+            echo ""
+            echo "Options:"
+            echo "  --include-optional    Also install optional dependencies"
+            echo "  -h, --help           Show this help message"
+            echo ""
+            echo "Required: bash, just, direnv"
+            echo "Optional: docker, node/npx, shellcheck, shfmt"
+            exit 0
+            ;;
+        *)
+            log_error "Unknown option: $1"
+            echo "Run 'setup.sh --help' for usage"
+            exit 1
+            ;;
+    esac
+done
 
 # DEPENDENCY CHECKING ----------------------------------------------------------
 
@@ -291,12 +329,23 @@ install_shfmt() {
 # Check and install dependencies
 check_dependencies() {
     log_info "Checking dependencies..."
+    log_info "Required: bash, just, direnv"
+    if [ "$INCLUDE_OPTIONAL" = true ]; then
+        log_info "Optional: docker, node/npx, shellcheck, shfmt (will be installed)"
+    else
+        log_info "Optional: docker, node/npx, shellcheck, shfmt (skipped, use --include-optional to install)"
+    fi
+    echo ""
+
     local total=7
     local current=0
+    local failed_required=0
 
-    # Check Bash
+    # REQUIRED DEPENDENCIES --------------------------------------------------------
+
+    # Check Bash (REQUIRED)
     current=$((current + 1))
-    progress_step $current $total "Checking Bash..."
+    progress_step $current $total "Checking Bash (required)..."
     if command_exists bash; then
         log_success "Bash is already installed: $(bash --version | head -n1)"
     else
@@ -305,13 +354,13 @@ check_dependencies() {
             log_success "Bash installed successfully"
         else
             log_error "Failed to install Bash - please install manually and re-run setup"
-            exit 1
+            failed_required=1
         fi
     fi
 
-    # Check just
+    # Check just (REQUIRED)
     current=$((current + 1))
-    progress_step $current $total "Checking just..."
+    progress_step $current $total "Checking just (required)..."
     if command_exists just; then
         log_success "just is already installed: $(just --version)"
     else
@@ -320,28 +369,13 @@ check_dependencies() {
             log_success "just installed successfully"
         else
             log_error "Failed to install just - visit https://just.systems to install manually and re-run setup"
-            exit 1
+            failed_required=1
         fi
     fi
 
-    # Check Docker
+    # Check direnv (REQUIRED)
     current=$((current + 1))
-    progress_step $current $total "Checking Docker..."
-    if command_exists docker; then
-        log_success "Docker is already installed: $(docker --version)"
-    else
-        log_warn "Docker not found"
-        if install_docker; then
-            log_success "Docker installed successfully"
-        else
-            log_error "Failed to install Docker - visit https://docker.com to install manually and re-run setup"
-            exit 1
-        fi
-    fi
-
-    # Check direnv
-    current=$((current + 1))
-    progress_step $current $total "Checking direnv..."
+    progress_step $current $total "Checking direnv (required)..."
     if command_exists direnv; then
         log_success "direnv is already installed: $(direnv --version)"
     else
@@ -350,51 +384,76 @@ check_dependencies() {
             log_success "direnv installed successfully"
         else
             log_error "Failed to install direnv - visit https://direnv.net to install manually and re-run setup"
-            exit 1
+            failed_required=1
         fi
     fi
 
-    # Check Node.js and npx
-    current=$((current + 1))
-    progress_step $current $total "Checking Node.js and npx..."
-    if command_exists npx; then
-        log_success "Node.js and npx are already installed: $(node --version)"
-    else
-        log_warn "Node.js/npx not found (required for semantic-release)"
-        if install_node; then
-            log_success "Node.js installed successfully"
-        else
-            log_error "Failed to install Node.js - visit https://nodejs.org to install manually and re-run setup"
-            exit 1
-        fi
+    # Exit if any required dependencies failed
+    if [ $failed_required -eq 1 ]; then
+        log_error "Required dependencies are missing. Please install them and re-run setup."
+        exit 1
     fi
 
-    # Check shellcheck
-    current=$((current + 1))
-    progress_step $current $total "Checking shellcheck..."
-    if command_exists shellcheck; then
-        log_success "shellcheck is already installed: $(shellcheck --version | head -n2 | tail -n1)"
-    else
-        log_warn "shellcheck not found (recommended for shell script linting)"
-        if install_shellcheck; then
-            log_success "shellcheck installed successfully"
-        else
-            log_warn "Failed to install shellcheck - continuing without it"
-        fi
-    fi
+    # OPTIONAL DEPENDENCIES --------------------------------------------------------
 
-    # Check shfmt
-    current=$((current + 1))
-    progress_step $current $total "Checking shfmt..."
-    if command_exists shfmt; then
-        log_success "shfmt is already installed: $(shfmt --version)"
-    else
-        log_warn "shfmt not found (recommended for shell script formatting)"
-        if install_shfmt; then
-            log_success "shfmt installed successfully"
+    if [ "$INCLUDE_OPTIONAL" = true ]; then
+        # Check Docker (OPTIONAL)
+        current=$((current + 1))
+        progress_step $current $total "Checking Docker (optional)..."
+        if command_exists docker; then
+            log_success "Docker is already installed: $(docker --version)"
         else
-            log_warn "Failed to install shfmt - continuing without it"
+            log_warn "Docker not found (optional - needed for containerization)"
+            if install_docker; then
+                log_success "Docker installed successfully"
+            else
+                log_warn "Skipping Docker - install manually from https://docker.com if needed"
+            fi
         fi
+
+        # Check Node.js and npx (OPTIONAL)
+        current=$((current + 1))
+        progress_step $current $total "Checking Node.js and npx (optional)..."
+        if command_exists npx; then
+            log_success "Node.js and npx are already installed: $(node --version)"
+        else
+            log_warn "Node.js/npx not found (optional - needed for semantic-release)"
+            if install_node; then
+                log_success "Node.js installed successfully"
+            else
+                log_warn "Skipping Node.js - install manually from https://nodejs.org if needed"
+            fi
+        fi
+
+        # Check shellcheck (OPTIONAL)
+        current=$((current + 1))
+        progress_step $current $total "Checking shellcheck (optional)..."
+        if command_exists shellcheck; then
+            log_success "shellcheck is already installed: $(shellcheck --version | head -n2 | tail -n1)"
+        else
+            log_warn "shellcheck not found (optional - recommended for shell script linting)"
+            if install_shellcheck; then
+                log_success "shellcheck installed successfully"
+            else
+                log_warn "Skipping shellcheck - install manually from https://www.shellcheck.net if needed"
+            fi
+        fi
+
+        # Check shfmt (OPTIONAL)
+        current=$((current + 1))
+        progress_step $current $total "Checking shfmt (optional)..."
+        if command_exists shfmt; then
+            log_success "shfmt is already installed: $(shfmt --version)"
+        else
+            log_warn "shfmt not found (optional - recommended for shell script formatting)"
+            if install_shfmt; then
+                log_success "shfmt installed successfully"
+            else
+                log_warn "Skipping shfmt - install manually from https://github.com/mvdan/sh if needed"
+            fi
+        fi
+    else
+        log_info "Skipping optional dependencies (use --include-optional to install them)"
     fi
 
     # Allow direnv if .envrc exists and is not already allowed
@@ -408,7 +467,8 @@ check_dependencies() {
         fi
     fi
 
-    log_success "All dependencies checked"
+    echo ""
+    log_success "All required dependencies are installed!"
 }
 
 # MAIN -------------------------------------------------------------------------

@@ -37,6 +37,21 @@ Validate documentation for completeness and consistency.
 /validate-docs
 ```
 
+#### `/generate-release-notes`
+
+Generate user-friendly release notes from CHANGELOG.md.
+
+- Transforms technical changelog into user-focused release notes
+- Adds new versions to existing RELEASE_NOTES.md (preserves history)
+- Uses clear, concise language for end users
+- Highlights key features and breaking changes
+
+**Usage:**
+
+```
+/generate-release-notes
+```
+
 ### For Platform Development
 
 #### `/new-migration`

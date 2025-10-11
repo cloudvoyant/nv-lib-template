@@ -21,9 +21,9 @@ _load:
         source .envrc
     fi
 
-# Setup development environment
-setup: _load
-    @bash scripts/setup.sh
+# Setup development environment (use --include-optional for optional deps)
+setup *ARGS: _load
+    @bash scripts/setup.sh {{ARGS}}
 
 # Install dependencies
 install: _load
@@ -88,10 +88,6 @@ version: _load
 # Get next version (from semantic-release)
 version-next: _load
     @bash -c 'source scripts/utils.sh && get_next_version'
-
-# Generate release notes with Claude
-release-notes: _load
-    @bash scripts/release-notes.sh
 
 # Upgrade to newer platform version (requires Claude Code)
 upgrade: _load

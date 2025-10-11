@@ -63,9 +63,13 @@ Key commands available:
 - `just lint` - Lint code with your linter
 - `just version` - Get current version from git tags
 - `just version-next` - Get next version from semantic-release
-- `just release-notes` - Generate release notes with Claude
 - `just scaffold` - Initialize a forked project
 - `just` - Show all available commands
+
+Claude commands:
+- `/generate-release-notes` - Generate user-friendly release notes
+- `/validate-docs` - Validate documentation consistency
+- `/upgrade` - Upgrade to newer platform version
 
 Commands support task dependencies. For example, `test` depends on `build`, ensuring builds run before tests:
 
@@ -117,7 +121,7 @@ Hybrid approach for release documentation:
 Workflow:
 
 ```bash
-just release-notes          # Claude analyzes commits and generates RELEASE_NOTES.md
+/generate-release-notes     # Claude analyzes CHANGELOG and generates RELEASE_NOTES.md
 # Review and edit RELEASE_NOTES.md
 git add RELEASE_NOTES.md
 git commit -m "docs: release notes for v1.2.0"

@@ -73,15 +73,30 @@ Run the setup script to install required tools:
 just setup
 ```
 
-This installs:
+This installs **required dependencies**:
 
 - **bash** - Shell scripting
 - **just** - Command runner
-- **docker** - Containerization
 - **direnv** - Environment management
+
+**Optional dependencies** (install with `--include-optional`):
+
+- **docker** - Containerization
 - **node/npx** - For semantic-release
 - **shellcheck** - Shell script linting
 - **shfmt** - Shell script formatting
+
+To install all dependencies including optional ones:
+
+```bash
+bash scripts/setup.sh --include-optional
+```
+
+Or via just:
+
+```bash
+just setup --include-optional
+```
 
 ### 2. Configure Environment
 
@@ -205,11 +220,18 @@ On merge to `main`, the CI/CD workflow will:
 
 ### Utility Commands
 
-| Command              | Description                        |
-| -------------------- | ---------------------------------- |
-| `just setup`         | Install development tools          |
-| `just release-notes` | Generate release notes with Claude |
-| `just --list`        | Show all available commands        |
+| Command      | Description                   |
+| ------------ | ----------------------------- |
+| `just setup` | Install development tools     |
+| `just --list`| Show all available commands   |
+
+### Claude Commands
+
+| Command                     | Description                             |
+| --------------------------- | --------------------------------------- |
+| `/generate-release-notes`   | Generate user-friendly release notes    |
+| `/validate-docs`            | Validate documentation consistency      |
+| `/upgrade`                  | Upgrade to newer platform version       |
 
 ### Project Migration
 

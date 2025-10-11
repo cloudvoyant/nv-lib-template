@@ -1,4 +1,4 @@
-# Language-Agnostic Build System
+# platform-lib
 
 A fork-friendly build system that works with any programming language. Provides common development workflows (build, test, run, publish) with automated versioning and CI/CD.
 
@@ -99,7 +99,13 @@ publish: test build-prod
 - bash 3.2+
 - git
 
-Run `just setup` to install remaining dependencies (just, docker, direnv, node).
+Run `just setup` to install required dependencies (just, direnv).
+
+For optional dependencies (docker, node, shellcheck, shfmt), run:
+
+```bash
+bash scripts/setup.sh --include-optional
+```
 
 ## CI/CD Workflow
 
@@ -123,6 +129,7 @@ just platform-test
 ```
 
 **TODO: Migration Tests**
+
 - Current tests don't actually test real migrations
 - Need to implement proper integration tests:
   1. Clone platform to `.nv/platform-old` and checkout old git tag
@@ -132,6 +139,7 @@ just platform-test
 - See `.claude/plan.md` for detailed approach
 
 **TODO: Platform Generalization**
+
 - Make platform registry-agnostic by removing GCP-specific defaults
 - Move GCP config from `.envrc` to optional `.env` file
 - Update CI/CD workflows to support multiple registries without hardcoded defaults

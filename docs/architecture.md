@@ -457,10 +457,10 @@ Production builds are used by the `publish` command but are not separately teste
 
 ## Release Notes with Claude
 
-The `just release-notes` command uses Claude CLI to generate user-friendly release notes:
+The `/generate-release-notes` command transforms technical CHANGELOG.md into user-friendly RELEASE_NOTES.md:
 
 ```bash
-just release-notes
+/generate-release-notes
 ```
 
 Requirements:
@@ -475,7 +475,7 @@ The script:
 
 Workflow:
 ```bash
-just release-notes          # Generate with Claude
+/generate-release-notes     # Generate with Claude Code
 # Review RELEASE_NOTES.md
 git add RELEASE_NOTES.md
 git commit -m "docs: release notes for v1.2.0"
