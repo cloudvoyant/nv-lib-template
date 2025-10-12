@@ -146,7 +146,7 @@ publish: test build-prod
 Configure registry variables in `.envrc`:
 
 ```bash
-export GCP_PROJECT_ID="your-project-id"
-export GCP_REGION="us-central1"
-export GCP_REPOSITORY="your-repository"
+export GCP_REGISTRY_PROJECT_ID="your-project-id"
+export GCP_REGISTRY_REGION="us-central1"
+export GCP_REGISTRY_NAME="your-repository"
 ```

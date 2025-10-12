@@ -176,9 +176,9 @@ Registry-specific variables are mixed with project variables in `.envrc`:
 ```bash
 export PROJECT=platform-lib
 export VERSION=0.0.1
-export GCP_PROJECT_ID=your-project-id
-export GCP_REGION=us-central1
-export GCP_REPOSITORY=your-repository
+export GCP_REGISTRY_PROJECT_ID=your-project-id
+export GCP_REGISTRY_REGION=us-central1
+export GCP_REGISTRY_NAME=your-repository
 ```
 
 ### Problems
@@ -196,9 +196,9 @@ export GCP_REPOSITORY=your-repository
 # Copy this file to .env.registry and configure for your target registry
 
 # GCP Artifact Registry (default example)
-export GCP_PROJECT_ID=your-project-id
-export GCP_REGION=us-central1
-export GCP_REPOSITORY=your-repository
+export GCP_REGISTRY_PROJECT_ID=your-project-id
+export GCP_REGISTRY_REGION=us-central1
+export GCP_REGISTRY_NAME=your-repository
 
 # To use a different registry, replace the above with your registry configuration:
 # npm: export NPM_REGISTRY=https://registry.npmjs.org

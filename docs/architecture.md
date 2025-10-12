@@ -493,9 +493,9 @@ The `publish` recipe handles all publishing logic. Default implementation upload
 ```just
 publish: test build-prod
     @gcloud artifacts generic upload \
-        --project={{GCP_PROJECT_ID}} \
-        --location={{GCP_REGION}} \
-        --repository={{GCP_REPOSITORY}} \
+        --project={{GCP_REGISTRY_PROJECT_ID}} \
+        --location={{GCP_REGISTRY_REGION}} \
+        --repository={{GCP_REGISTRY_NAME}} \
         --package={{PROJECT}} \
         --version={{VERSION}} \
         --source=dist/artifact.txt
@@ -534,9 +534,9 @@ publish: test build-prod
     @npm publish
     @tar -czf dist/package.tar.gz dist/
     @gcloud artifacts generic upload \
-        --project={{GCP_PROJECT_ID}} \
-        --location={{GCP_REGION}} \
-        --repository={{GCP_REPOSITORY}} \
+        --project={{GCP_REGISTRY_PROJECT_ID}} \
+        --location={{GCP_REGISTRY_REGION}} \
+        --repository={{GCP_REGISTRY_NAME}} \
         --package={{PROJECT}} \
         --version={{VERSION}} \
         --source=dist/package.tar.gz
@@ -561,9 +561,9 @@ The `release.yml` workflow authenticates with GCP and runs `just publish`:
 - name: Publish package
   if: steps.semantic_release.outputs.new_release_published == 'true'
   env:
-    GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-    GCP_REGION: ${{ secrets.GCP_REGION }}
-    GCP_REPOSITORY: ${{ secrets.GCP_REPOSITORY }}
+    GCP_REGISTRY_PROJECT_ID: ${{ secrets.GCP_REGISTRY_PROJECT_ID }}
+    GCP_REGISTRY_REGION: ${{ secrets.GCP_REGISTRY_REGION }}
+    GCP_REGISTRY_NAME: ${{ secrets.GCP_REGISTRY_NAME }}
   run: |
     source .envrc
     just publish
@@ -571,7 +571,7 @@ The `release.yml` workflow authenticates with GCP and runs `just publish`:
 
 **Required Organization Secrets:**
 - `GCP_SA_KEY` - Service account JSON key for authentication
-- `GCP_PROJECT_ID`, `GCP_REGION`, `GCP_REPOSITORY` - Registry configuration
+- `GCP_REGISTRY_PROJECT_ID`, `GCP_REGISTRY_REGION`, `GCP_REGISTRY_NAME` - Registry configuration
 
 Configure these once at the organization level (Organization → Settings → Secrets). All repositories scaffolded from this platform automatically inherit them.
 
@@ -587,9 +587,9 @@ Configure these once at the organization level (Organization → Settings → Se
 GCP registry configuration in `.envrc`:
 
 ```bash
-export GCP_PROJECT_ID="your-gcp-project-id"
-export GCP_REGION="us-central1"
-export GCP_REPOSITORY="your-artifact-repository"
+export GCP_REGISTRY_PROJECT_ID="your-gcp-project-id"
+export GCP_REGISTRY_REGION="us-central1"
+export GCP_REGISTRY_NAME="your-artifact-repository"
 ```
 
 GCP-specific variable names (GCP_*) make it clear what registry is being used. For other registries, update the `publish` recipe and use appropriate env vars.

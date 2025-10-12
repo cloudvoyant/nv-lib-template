@@ -107,9 +107,9 @@ export PROJECT=your-project-name
 export VERSION=0.1.0
 
 # Optional: GCP Artifact Registry
-# export GCP_PROJECT_ID="your-gcp-project"
-# export GCP_REGION="us-east1"
-# export GCP_REPOSITORY="your-repo"
+# export GCP_REGISTRY_PROJECT_ID="your-gcp-project"
+# export GCP_REGISTRY_REGION="us-east1"
+# export GCP_REGISTRY_NAME="your-repo"
 ```
 
 Allow direnv to load the environment:
@@ -268,9 +268,9 @@ Configure secrets **once** at the organization level. All scaffolded projects au
 **For GCP Artifact Registry:**
 
 - `GCP_SA_KEY` - Service account JSON key
-- `GCP_PROJECT_ID` - GCP project ID
-- `GCP_REGION` - Registry region (e.g., us-east1)
-- `GCP_REPOSITORY` - Repository name
+- `GCP_REGISTRY_PROJECT_ID` - GCP project ID
+- `GCP_REGISTRY_REGION` - Registry region (e.g., us-east1)
+- `GCP_REGISTRY_NAME` - Repository name
 
 3. Set repository access to "All repositories" or selected repositories
 
