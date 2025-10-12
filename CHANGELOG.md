@@ -1,3 +1,11 @@
+## [1.6.3](https://github.com/cloudvoyant/lib/compare/v1.6.2...v1.6.3) (2025-10-12)
+
+
+### Bug Fixes
+
+* attempting to fix issues with publish ([8732a18](https://github.com/cloudvoyant/lib/commit/8732a189610182c00f6c66c423c30bf402e4b2ec))
+* attempting to fix issues with publish ([3642966](https://github.com/cloudvoyant/lib/commit/3642966677a9c607e9cc56dea538bae3416e700f))
+
 ## [1.6.2](https://github.com/cloudvoyant/lib/compare/v1.6.1...v1.6.2) (2025-10-12)
 
 
