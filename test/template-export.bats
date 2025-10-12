@@ -44,7 +44,7 @@ teardown() {
 
     # Verify essential platform files are present
     [ -f "$EXTRACT_DIR/README.md" ]
-    [ -f "$EXTRACT_DIR/.envrc" ]
+    [ -f "$EXTRACT_DIR/.envrc.template" ]
     [ -f "$EXTRACT_DIR/justfile" ]
     [ -f "$EXTRACT_DIR/scripts/scaffold.sh" ]
     [ -d "$EXTRACT_DIR/.claude" ]

@@ -21,19 +21,16 @@ Options:
 DOCUMENTATION
 
 # IMPORTS ----------------------------------------------------------------------
+source "$(dirname "$0")/utils.sh"
+setup_script_lifecycle
+
 # Unset PROJECT and VERSION to force fresh read from .envrc
 unset PROJECT VERSION
 
-# Source .envrc first to get PROJECT and VERSION
+# Source .envrc to get PROJECT and VERSION
 if [ -f ".envrc" ]; then
-    # Note: .envrc also sources utils.sh, so we don't need to source it again
     source ".envrc"
-else
-    # Fallback: source utils.sh directly if .envrc doesn't exist
-    source "$(dirname "$0")/utils.sh"
 fi
-
-setup_script_lifecycle
 
 # CONFIGURATION ----------------------------------------------------------------
 # Platform name will be read from source .envrc PROJECT variable
@@ -336,11 +333,28 @@ log_success "Replaced platform name with project name"
 # UPDATE .ENVRC ----------------------------------------------------------------
 log_info "Configuring .envrc..."
 
+ENVRC_TEMPLATE="$SRC_DIR/.envrc.template"
 ENVRC_FILE="$DEST_DIR/.envrc"
 
+if [ ! -f "$ENVRC_TEMPLATE" ]; then
+    log_error ".envrc.template not found in source directory"
+    exit 1
+fi
+
+# Copy template to destination
+cp "$ENVRC_TEMPLATE" "$ENVRC_FILE"
+
 # Update PROJECT name and reset VERSION for new project
-sed_inplace "s/export PROJECT=.*/export PROJECT=$PROJECT_NAME/" "$ENVRC_FILE"
-sed_inplace "s/export VERSION=.*/export VERSION=0.1.0/" "$ENVRC_FILE"
+sed_inplace "s/__PROJECT_NAME__/$PROJECT_NAME/" "$ENVRC_FILE"
+sed_inplace "s/__VERSION__/0.1.0/" "$ENVRC_FILE"
+
+# Configure GCP if requested
+if [ "$CONFIGURE_GCP" = true ]; then
+    sed_inplace "s/export GCP_REGISTRY_PROJECT_ID=.*/export GCP_REGISTRY_PROJECT_ID=$gcp_project_id/" "$ENVRC_FILE"
+    sed_inplace "s/export GCP_REGISTRY_REGION=.*/export GCP_REGISTRY_REGION=$gcp_region/" "$ENVRC_FILE"
+    sed_inplace "s/export GCP_REGISTRY_NAME=.*/export GCP_REGISTRY_NAME=$gcp_repository/" "$ENVRC_FILE"
+    log_success "GCP registry configured in .envrc"
+fi
 
 # Add platform tracking variables after VERSION line
 if ! grep -q "NV_PLATFORM" "$ENVRC_FILE"; then
@@ -358,31 +372,7 @@ if ! grep -q "NV_PLATFORM" "$ENVRC_FILE"; then
     ' "$ENVRC_FILE" > "$ENVRC_FILE.tmp" && mv "$ENVRC_FILE.tmp" "$ENVRC_FILE"
 fi
 
-log_success "Updated .envrc"
-
-# CONFIGURE REGISTRY -----------------------------------------------------------
-log_info "Configuring registry..."
-
-REGISTRY_FILE="$DEST_DIR/.env.registry"
-REGISTRY_EXAMPLE="$DEST_DIR/.env.registry.example"
-
-# Copy example file to create .env.registry
-if [ -f "$REGISTRY_EXAMPLE" ]; then
-    cp "$REGISTRY_EXAMPLE" "$REGISTRY_FILE"
-    log_success "Created .env.registry from example"
-else
-    log_warn ".env.registry.example not found, skipping registry configuration"
-fi
-
-# Configure GCP if requested and registry file exists
-if [ "$CONFIGURE_GCP" = true ] && [ -f "$REGISTRY_FILE" ]; then
-    sed_inplace "s/export GCP_REGISTRY_PROJECT_ID=.*/export GCP_REGISTRY_PROJECT_ID=$gcp_project_id/" "$REGISTRY_FILE"
-    sed_inplace "s/export GCP_REGISTRY_REGION=.*/export GCP_REGISTRY_REGION=$gcp_region/" "$REGISTRY_FILE"
-    sed_inplace "s/export GCP_REGISTRY_NAME=.*/export GCP_REGISTRY_NAME=$gcp_repository/" "$REGISTRY_FILE"
-    log_success "GCP registry configured in .env.registry"
-fi
-
-log_success "Registry configuration complete"
+log_success "Created and configured .envrc from template"
 
 # CLEAN UP .CLAUDE/ DIRECTORY --------------------------------------------------
 if [ "$KEEP_CLAUDE" = false ]; then
