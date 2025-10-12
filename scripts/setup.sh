@@ -14,9 +14,9 @@ Flags can be combined: setup.sh --dev --platform
 Required dependencies (always installed):
 - bash (shell)
 - just (command runner)
+- direnv (environment management)
 
 Development tools (--dev):
-- direnv (environment management)
 - docker (containerization)
 - node/npx (for semantic-release)
 - gcloud (Google Cloud SDK)
@@ -65,8 +65,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --platform    Install platform development tools"
             echo "  -h, --help    Show this help message"
             echo ""
-            echo "Required: bash, just"
-            echo "Development (--dev): direnv, docker, node/npx, gcloud, shellcheck, shfmt"
+            echo "Required: bash, just, direnv"
+            echo "Development (--dev): docker, node/npx, gcloud, shellcheck, shfmt"
             echo "CI (--ci): docker, node/npx, gcloud"
             echo "Platform (--platform): bats-core"
             exit 0
@@ -448,10 +448,10 @@ install_bats() {
 # Check and install dependencies
 check_dependencies() {
     log_info "Checking dependencies..."
-    log_info "Required: bash, just"
+    log_info "Required: bash, just, direnv"
 
     if [ "$INSTALL_DEV" = true ]; then
-        log_info "Development tools: direnv, docker, node/npx, gcloud, shellcheck, shfmt (will be installed)"
+        log_info "Development tools: docker, node/npx, gcloud, shellcheck, shfmt (will be installed)"
     fi
     if [ "$INSTALL_CI" = true ]; then
         log_info "CI essentials: docker, node/npx, gcloud (will be installed)"
@@ -500,6 +500,21 @@ check_dependencies() {
         fi
     fi
 
+    # Check direnv (REQUIRED)
+    current=$((current + 1))
+    progress_step $current $total "Checking direnv (required)..."
+    if command_exists direnv; then
+        log_success "direnv is already installed: $(direnv --version)"
+    else
+        log_warn "direnv not found"
+        if install_direnv; then
+            log_success "direnv installed successfully"
+        else
+            log_error "Failed to install direnv - visit https://direnv.net to install manually and re-run setup"
+            failed_required=1
+        fi
+    fi
+
     # Exit if any required dependencies failed
     if [ $failed_required -eq 1 ]; then
         log_error "Required dependencies are missing. Please install them and re-run setup."
@@ -507,22 +522,6 @@ check_dependencies() {
     fi
 
     # OPTIONAL DEPENDENCIES --------------------------------------------------------
-
-    # Check direnv (for --dev only)
-    if [ "$INSTALL_DEV" = true ]; then
-        current=$((current + 1))
-        progress_step $current $total "Checking direnv..."
-        if command_exists direnv; then
-            log_success "direnv is already installed: $(direnv --version)"
-        else
-            log_warn "direnv not found (recommended for environment management)"
-            if install_direnv; then
-                log_success "direnv installed successfully"
-            else
-                log_warn "Skipping direnv - install manually from https://direnv.net if needed"
-            fi
-        fi
-    fi
 
     # Check Docker (for --dev or --ci)
     if [ "$INSTALL_DEV" = true ] || [ "$INSTALL_CI" = true ]; then
