@@ -96,17 +96,19 @@ upversion: _load
 
 # Authenticate with GCP (local: gcloud login, CI: service account)
 registry-login *ARGS: _load
-    @if [[ " {{ARGS}} " =~ " --ci " ]]; then \
-        echo -e "{{INFO}}CI mode - authenticating with service account{{NORMAL}}"; \
-        KEY_FILE=$$(mktemp); \
-        echo "$$GCP_SA_KEY" > "$$KEY_FILE"; \
-        gcloud auth activate-service-account --key-file="$$KEY_FILE"; \
-        rm -f "$$KEY_FILE"; \
-        gcloud config set project "$$GCP_PROJECT_ID"; \
-    else \
-        echo -e "{{INFO}}Local mode - interactive GCP login{{NORMAL}}"; \
-        gcloud auth login; \
-        gcloud config set project "$$GCP_PROJECT_ID"; \
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [[ " {{ARGS}} " =~ " --ci " ]]; then
+        echo -e "{{INFO}}CI mode - authenticating with service account{{NORMAL}}"
+        KEY_FILE=$(mktemp)
+        echo "$GCP_SA_KEY" > "$KEY_FILE"
+        gcloud auth activate-service-account --key-file="$KEY_FILE"
+        rm -f "$KEY_FILE"
+        gcloud config set project "$GCP_PROJECT_ID"
+    else
+        echo -e "{{INFO}}Local mode - interactive GCP login{{NORMAL}}"
+        gcloud auth login
+        gcloud config set project "$GCP_PROJECT_ID"
     fi
 
 # Upgrade to newer platform version (requires Claude Code)
