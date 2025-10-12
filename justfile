@@ -38,7 +38,7 @@ build: _load
 build-prod: _load
     @mkdir -p dist
     @echo "$PROJECT $VERSION - Replace with your build artifact" > dist/artifact.txt
-    @echo -e "{{SUCCESS}}✓ Production artifact created: dist/artifact.txt{{NORMAL}}"
+    @echo -e "{{SUCCESS}}Production artifact created: dist/artifact.txt{{NORMAL}}"
 
 # Clean build artifacts
 clean: _load
@@ -54,6 +54,7 @@ test: build
 
 # Publish the project
 publish: test build-prod
+    @echo "{{INFO}}Publishing package $PROJECT@$VERSION...{{NORMAL}}"
     @gcloud artifacts generic upload \
         --project=$GCP_REGISTRY_PROJECT_ID \
         --location=$GCP_REGISTRY_REGION \
@@ -61,6 +62,7 @@ publish: test build-prod
         --package=$PROJECT \
         --version=$VERSION \
         --source=dist/artifact.txt
+    @echo "{{SUCCESS}}Published.{{NORMAL}}"
 
 # Scaffold a new project
 scaffold: _load
