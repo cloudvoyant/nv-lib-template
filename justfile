@@ -54,16 +54,15 @@ test: build
 
 # Publish the project
 publish: _load test build-prod
-    #!/usr/bin/env bash
-    echo -e "{{INFO}}Publishing package $PROJECT@$VERSION...{{NORMAL}}"
-    gcloud artifacts generic upload \
+    @echo -e "{{INFO}}Publishing package $PROJECT@$VERSION...{{NORMAL}}"
+    @gcloud artifacts generic upload \
         --project=$GCP_REGISTRY_PROJECT_ID \
         --location=$GCP_REGISTRY_REGION \
         --repository=$GCP_REGISTRY_NAME \
         --package=$PROJECT \
         --version=$VERSION \
         --source=dist/artifact.txt
-    echo "{{SUCCESS}}Published.{{NORMAL}}"
+    @echo -e "{{SUCCESS}}Published.{{NORMAL}}"
 
 # Scaffold a new project
 scaffold: _load
@@ -71,23 +70,23 @@ scaffold: _load
 
 # Format code
 format *PATHS: _load
-    @echo "{{WARN}}TODO: Implement formatting{{NORMAL}}"
+    @echo -e "{{WARN}}TODO: Implement formatting{{NORMAL}}"
 
 # Check code formatting (CI mode)
 format-check *PATHS: _load
-    @echo "{{WARN}}TODO: Implement format checking{{NORMAL}}"
+    @echo -e "{{WARN}}TODO: Implement format checking{{NORMAL}}"
 
 # Lint code
 lint *PATHS: _load
-    @echo "{{WARN}}TODO: Implement linting{{NORMAL}}"
+    @echo -e "{{WARN}}TODO: Implement linting{{NORMAL}}"
 
 # Lint and auto-fix issues
 lint-fix *PATHS: _load
-    @echo "{{WARN}}TODO: Implement lint auto-fixing{{NORMAL}}"
+    @echo -e "{{WARN}}TODO: Implement lint auto-fixing{{NORMAL}}"
 
 # Get current version
 version: _load
-    @bash -c 'source scripts/utils.sh && get_version'
+    @echo "$VERSION"
 
 # Get next version (from semantic-release)
 version-next: _load
@@ -95,7 +94,7 @@ version-next: _load
 
 # Create new version based on commits (semantic-release)
 upversion *ARGS: _load
-    @bash scripts/upversion.sh {{ARGS}}
+    @bash -c scripts/upversion.sh {{ARGS}}
 
 # Authenticate with GCP (local: gcloud login, CI: service account)
 registry-login *ARGS: _load
@@ -116,20 +115,21 @@ registry-login *ARGS: _load
 
 # Upgrade to newer platform version (requires Claude Code)
 upgrade: _load
-    @if command -v claude >/dev/null 2>&1; then \
-        if grep -q "NV_PLATFORM=" .envrc 2>/dev/null; then \
-            claude /upgrade; \
-        else \
-            echo -e "{{ERROR}}This project is not based on a platform{{NORMAL}}"; \
-            echo ""; \
-            echo "To adopt a platform, use the nv CLI:"; \
-            echo "  nv scaffold <platform>"; \
-            exit 1; \
-        fi; \
-    else \
-        echo -e "{{ERROR}}Claude Code CLI not found{{NORMAL}}"; \
-        echo "Install Claude Code or run: /upgrade"; \
-        exit 1; \
+    #!/usr/bin/env bash
+    if command -v claude >/dev/null 2>&1; then
+        if grep -q "NV_PLATFORM=" .envrc 2>/dev/null; then
+            claude /upgrade;
+        else
+            echo -e "{{ERROR}}This project is not based on a platform{{NORMAL}}";
+            echo "";
+            echo "To adopt a platform, use the nv CLI:";
+            echo "  nv scaffold <platform>";
+            exit 1;
+        fi;
+    else
+        echo -e "{{ERROR}}Claude Code CLI not found{{NORMAL}}";
+        echo "Install Claude Code or run: /upgrade";
+        exit 1;
     fi
 
 # ==============================================================================
