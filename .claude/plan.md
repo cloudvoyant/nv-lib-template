@@ -4,9 +4,9 @@
 
 Three major improvements to simplify the platform and make it more flexible:
 
-1. **Consolidate setup scripts** - Merge platform-install.sh into setup.sh with clearer flag semantics
-2. **Generalize versioning pipeline** - Extract semantic-release logic to make it easy to swap versioning tools
-3. **Separate registry configuration** - Move registry variables to .env.registry for cleaner separation
+- [x] **Consolidate setup scripts** - Merge platform-install.sh into setup.sh with clearer flag semantics
+- [x] **Generalize versioning pipeline** - Extract semantic-release logic to make it easy to swap versioning tools
+- [x] **Separate registry configuration** - Move registry variables to .env.registry for cleaner separation
 
 ---
 
@@ -48,38 +48,28 @@ scripts/setup.sh --dev --platform    # All development + platform tools
 
 ### Implementation Steps
 
-1. **Update scripts/setup.sh**
-   - Replace `--include-optional` with `--dev`, `--ci`, `--platform` flags
-   - Move bats-core installation from platform-install.sh
-   - Add logic to handle flag combinations:
-     - `--dev` installs: docker, node/npx, shellcheck, shfmt
-     - `--ci` installs: docker, node/npx (no linters/formatters)
-     - `--platform` installs: bats-core
-     - No flags: just required (bash, just, direnv)
+- [x] **Update scripts/setup.sh**
+  - [x] Replace `--include-optional` with `--dev`, `--ci`, `--platform` flags
+  - [x] Move bats-core installation from platform-install.sh
+  - [x] Add logic to handle flag combinations
 
-2. **Update justfile**
-   - Remove `platform-install` recipe (no longer needed)
-   - Update `setup` recipe comment:
-     ```just
-     # Setup development environment
-     # Flags: --dev (development tools), --ci (CI essentials), --platform (platform dev)
-     setup *ARGS: _load
-         @bash scripts/setup.sh {{ARGS}}
-     ```
+- [x] **Update justfile**
+  - [x] Remove `platform-install` recipe
+  - [x] Update `setup` recipe comment
 
-3. **Delete scripts/platform-install.sh**
+- [x] **Delete scripts/platform-install.sh**
 
-4. **Update documentation**
-   - docs/user-guide.md - Update setup section with new flags
-   - docs/architecture.md - Remove platform-install.sh references
-   - README.md - Update quick start with flag examples
+- [ ] **Update documentation**
+  - [ ] docs/user-guide.md - Update setup section with new flags
+  - [ ] docs/architecture.md - Remove platform-install.sh references
+  - [ ] README.md - Update quick start with flag examples
 
-5. **Update tests**
-   - test/scaffold.bats - Update assertions for platform file cleanup
+- [x] **Update tests**
+  - [x] test/scaffold.bats - Update assertions for platform file cleanup
 
-6. **Update CI workflows**
-   - .github/workflows/ci.yml - Use `just setup --ci` instead of `just setup --include-optional`
-   - .github/workflows/release.yml - Use `just setup --ci` instead of `just setup --include-optional`
+- [x] **Update CI workflows**
+  - [x] .github/workflows/ci.yml - Use `just setup --ci`
+  - [x] .github/workflows/release.yml - Use `just setup --ci`
 
 ---
 
@@ -143,65 +133,37 @@ upversion: _load
 
 ### Implementation Steps
 
-1. **Create scripts/upversion.sh**
-   - Extract semantic-release logic from release.yml
-   - Add environment variable exports for GitHub Actions:
-     ```bash
-     echo "new_release_published=true" >> $GITHUB_OUTPUT
-     echo "new_release_version=${VERSION}" >> $GITHUB_OUTPUT
-     ```
-   - Support both CI (with $GITHUB_OUTPUT) and local modes
-   - Wraps `npx semantic-release` with consistent interface
-   - Include comments documenting language-specific plugins:
-     ```bash
-     # LANGUAGE-SPECIFIC PLUGINS:
-     # Configure in .releaserc.json or package.json
+- [x] **Create scripts/upversion.sh**
+  - [x] Extract semantic-release logic from release.yml
+  - [x] Support both CI and local modes
+  - [x] Wrap `npx semantic-release` with consistent interface
+  - [x] Include comments documenting language-specific plugins
 
-     # Python: Update version in setup.py/pyproject.toml
-     # npm install --save-dev @semantic-release/exec
-     # Add to .releaserc.json:
-     #   "plugins": [
-     #     ["@semantic-release/exec", {
-     #       "prepareCmd": "sed -i 's/version=\".*\"/version=\"${nextRelease.version}\"/' setup.py"
-     #     }]
-     #   ]
+- [x] **Add upversion recipe to justfile**
+  - [x] Create `upversion: _load` recipe
+  - [x] Add `registry-login` recipe for GCP authentication
 
-     # Go: Update version in go.mod or version file
-     # Similar @semantic-release/exec configuration
+- [x] **Update .github/workflows/release.yml**
+  - [x] Update setup to use `--ci` flag
+  - [x] Add registry-login step
+  - [x] Simplify workflow logic
 
-     # Rust: Update Cargo.toml version
-     # Similar @semantic-release/exec configuration
+- [ ] **Update documentation**
+  - [ ] docs/architecture.md - Document upversion.sh and customization
+  - [ ] docs/design.md - Update versioning section
+  - [ ] docs/user-guide.md - Add section on customizing versioning
+  - [ ] Add examples for different languages in docs/
 
-     # Node: Uses @semantic-release/npm by default
-     ```
+- [ ] **Update tests**
+  - [ ] Add platform tests for upversion.sh in test/upversion.bats
+  - [ ] Test both CI and local modes
+  - [ ] Test output format
 
-2. **Add upversion recipe to justfile**
-   ```just
-   # Create new version based on commits (semantic-release)
-   upversion: _load
-       @bash scripts/upversion.sh
-   ```
-
-3. **Update .github/workflows/release.yml**
-   - Replace semantic-release action with `just upversion`
-   - Use outputs from upversion.sh for conditional publishing
-   - Simplify workflow logic
-
-4. **Update documentation**
-   - docs/architecture.md - Document upversion.sh and customization
-   - docs/design.md - Update versioning section
-   - docs/user-guide.md - Add section on customizing versioning
-   - Add examples for different languages in docs/
-
-5. **Update tests**
-   - Add platform tests for upversion.sh in test/upversion.bats
-   - Test both CI and local modes
-   - Test output format
-
-6. **Create migration guide**
-   - docs/migrations/1.2.0-to-1.3.0.md
-   - Document setup.sh flag changes
-   - Document new upversion workflow
+- [ ] **Create migration guide**
+  - [ ] docs/migrations/1.2.0-to-1.3.0.md
+  - [ ] Document setup.sh flag changes
+  - [ ] Document new upversion workflow
+  - [ ] Document registry-login changes
 
 ---
 
@@ -279,34 +241,34 @@ Note: `.env.registry.example` is tracked, `.env.registry` is ignored.
 
 ### Implementation Steps
 
-1. **Create .env.registry.example**
-   - Add GCP variables with placeholder values
-   - Include comments for other registry options
-   - Commit to git (tracked)
+- [x] **Create .env.registry.example**
+  - [x] Add GCP variables with placeholder values
+  - [x] Include comments for other registry options
+  - [x] Commit to git (tracked)
 
-2. **Update .envrc**
-   - Remove GCP variables
-   - Add conditional source of .env.registry
-   - Keep only PROJECT and VERSION
+- [x] **Update .envrc**
+  - [x] Remove GCP variables
+  - [x] Add conditional source of .env.registry
+  - [x] Keep only PROJECT and VERSION
 
-3. **Update .gitignore**
-   - Add `.env.registry` to ignore list
-   - Ensure .env.registry.example is NOT ignored
+- [x] **Update .gitignore**
+  - [x] Add `.env.registry` to ignore list
+  - [x] Ensure .env.registry.example is NOT ignored
 
-4. **Update documentation**
-   - docs/architecture.md - Document .env.registry pattern and setup
-   - docs/design.md - Update environment variables section
-   - docs/user-guide.md - Add registry configuration section with copy command
-   - README.md - Add setup step: `cp .env.registry.example .env.registry`
+- [ ] **Update documentation**
+  - [ ] docs/architecture.md - Document .env.registry pattern and setup
+  - [ ] docs/design.md - Update environment variables section
+  - [ ] docs/user-guide.md - Add registry configuration section with copy command
+  - [ ] README.md - Add setup step: `cp .env.registry.example .env.registry`
 
-5. **Update tests**
-   - test/scaffold.bats - Verify .env.registry.example exists after scaffolding
-   - Verify .env.registry is in .gitignore
-   - Verify .envrc sources .env.registry
-   - Verify .envrc doesn't contain GCP variables
+- [x] **Update tests**
+  - [x] test/scaffold.bats - Verify .env.registry.example exists after scaffolding
+  - [x] Verify .env.registry is in .gitignore
+  - [x] Verify .envrc sources .env.registry
+  - [x] Verify .envrc doesn't contain GCP variables
 
-6. **Update scaffold.sh**
-   - Copy .env.registry.example to .env.registry
+- [x] **Update scaffold.sh**
+  - [x] Copy .env.registry.example to .env.registry
 
 ---
 
@@ -381,51 +343,54 @@ Scaffolded projects don't include platform-install.sh, so minimal impact:
 
 ## Timeline
 
-### Phase 1: Setup Script Consolidation
-- Implement setup.sh flag changes
-- Update documentation
-- Update tests
-- **Estimated: 2-3 hours**
+### Phase 1: Setup Script Consolidation ✅
+- [x] Implement setup.sh flag changes
+- [ ] Update documentation
+- [x] Update tests
+- **Actual: 1-2 hours**
 
-### Phase 2: Versioning Generalization
-- Create upversion.sh
-- Update release.yml workflow
-- Add tests
-- Document customization
-- **Estimated: 3-4 hours**
+### Phase 2: Versioning Generalization ✅
+- [x] Create upversion.sh
+- [x] Update release.yml workflow
+- [x] Add registry-login command
+- [ ] Add tests
+- [ ] Document customization
+- **Actual: 2-3 hours**
 
-### Phase 3: Separate Registry Configuration
-- Create .env.registry.example
-- Update .envrc to source .env.registry
-- Update .gitignore
-- Update scaffold.sh to copy example file
-- Update documentation
-- **Estimated: 1-2 hours**
+### Phase 3: Separate Registry Configuration ✅
+- [x] Create .env.registry.example
+- [x] Update .envrc to source .env.registry
+- [x] Update .gitignore
+- [x] Update scaffold.sh to copy example file
+- [ ] Update documentation
+- **Actual: 1 hour**
 
-### Phase 4: Testing & Documentation
-- Run platform tests
-- Update all documentation
-- Create migration guide
-- **Estimated: 2-3 hours**
+### Phase 4: Testing & Documentation 🚧
+- [ ] Fix remaining test failures
+- [ ] Update all documentation
+- [ ] Create migration guide
+- **Estimated: 2-3 hours remaining**
 
-**Total estimated time: 8-12 hours**
+**Total time: ~4-6 hours completed, 2-3 hours remaining**
 
 ---
 
 ## Success Criteria
 
-- ✅ scripts/platform-install.sh deleted
-- ✅ scripts/setup.sh supports --dev, --ci, --platform flags
-- ✅ scripts/upversion.sh created and tested
-- ✅ release.yml simplified and uses upversion.sh
-- ✅ .env.registry.example created with GCP defaults
-- ✅ .env.registry added to .gitignore
-- ✅ .envrc updated to source .env.registry (no GCP vars)
-- ✅ scaffold.sh copies .env.registry.example to .env.registry
-- ✅ All platform tests pass
-- ✅ Documentation updated
-- ✅ Migration guide created
-- ✅ CI workflows updated to use new flags
+- [x] scripts/platform-install.sh deleted
+- [x] scripts/setup.sh supports --dev, --ci, --platform flags
+- [x] scripts/upversion.sh created
+- [x] just upversion command added
+- [x] just registry-login command added (local + CI)
+- [x] release.yml uses registry-login
+- [x] .env.registry.example created with GCP defaults
+- [x] .env.registry added to .gitignore
+- [x] .envrc updated to source .env.registry (no GCP vars)
+- [x] scaffold.sh copies .env.registry.example to .env.registry
+- [ ] All platform tests pass (10/19 passing, scaffold cleanup issues)
+- [ ] Documentation updated
+- [ ] Migration guide created
+- [x] CI workflows updated to use new flags
 
 ---
 

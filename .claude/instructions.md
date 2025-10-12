@@ -11,6 +11,12 @@
 
 **How to update**: Read the current plan, review the todo list status, and rewrite the relevant sections to reflect actual progress and any new insights.
 
+**Format requirements**:
+- Use markdown checkboxes (`- [ ]` for incomplete, `- [x]` for completed)
+- Keep completed items visible with checked boxes
+- Update success criteria with checkboxes
+- Mark implementation steps as completed as work progresses
+
 **Reminder frequency**: Suggest updating the plan after completing 2-3 related tasks or at the end of a work session.
 
 ## Project Context
