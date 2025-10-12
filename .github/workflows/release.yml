@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup environment
-        run: just setup --ci
+        run: ./scripts/setup.sh --ci
 
       - name: Create new version
         id: upversion

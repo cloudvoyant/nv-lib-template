@@ -94,8 +94,8 @@ version-next: _load
     @bash -c 'source scripts/utils.sh && get_next_version'
 
 # Create new version based on commits (semantic-release)
-upversion: _load
-    @bash scripts/upversion.sh
+upversion *ARGS: _load
+    @bash scripts/upversion.sh {{ARGS}}
 
 # Authenticate with GCP (local: gcloud login, CI: service account)
 registry-login *ARGS: _load
