@@ -5,18 +5,29 @@ Installs development dependencies for this platform.
 Usage: setup.sh [OPTIONS]
 
 Options:
-  --include-optional    Also install optional dependencies
+  --dev         Install development tools (shellcheck, shfmt, docker, node/npx)
+  --ci          Install CI essentials (docker, node/npx)
+  --platform    Install platform development tools (bats-core)
 
-Required dependencies (setup will fail if these can't be installed):
+Flags can be combined: setup.sh --dev --platform
+
+Required dependencies (always installed):
 - bash (shell)
 - just (command runner)
 - direnv (environment management)
 
-Optional dependencies (only installed with --include-optional):
+Development tools (--dev):
 - docker (containerization)
 - node/npx (for semantic-release)
 - shellcheck (shell script linter)
 - shfmt (shell script formatter)
+
+CI essentials (--ci):
+- docker (containerization)
+- node/npx (for semantic-release)
+
+Platform development (--platform):
+- bats-core (bash testing framework)
 DOCUMENTATION
 
 # IMPORTS ----------------------------------------------------------------------
@@ -25,23 +36,37 @@ setup_script_lifecycle
 
 # ARGUMENT PARSING -------------------------------------------------------------
 
-INCLUDE_OPTIONAL=false
+INSTALL_DEV=false
+INSTALL_CI=false
+INSTALL_PLATFORM=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --include-optional)
-            INCLUDE_OPTIONAL=true
+        --dev)
+            INSTALL_DEV=true
+            shift
+            ;;
+        --ci)
+            INSTALL_CI=true
+            shift
+            ;;
+        --platform)
+            INSTALL_PLATFORM=true
             shift
             ;;
         -h|--help)
             echo "Usage: setup.sh [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  --include-optional    Also install optional dependencies"
-            echo "  -h, --help           Show this help message"
+            echo "  --dev         Install development tools"
+            echo "  --ci          Install CI essentials"
+            echo "  --platform    Install platform development tools"
+            echo "  -h, --help    Show this help message"
             echo ""
             echo "Required: bash, just, direnv"
-            echo "Optional: docker, node/npx, shellcheck, shfmt"
+            echo "Development (--dev): docker, node/npx, shellcheck, shfmt"
+            echo "CI (--ci): docker, node/npx"
+            echo "Platform (--platform): bats-core"
             exit 0
             ;;
         *)
@@ -326,18 +351,63 @@ install_shfmt() {
     log_success "shfmt installation completed"
 }
 
+# Install bats-core based on platform
+install_bats() {
+    log_info "Installing bats-core..."
+
+    case $PLATFORM in
+    Mac)
+        if command_exists brew; then
+            brew install bats-core
+        else
+            log_warn "Homebrew not found. Please install bats-core manually from https://github.com/bats-core/bats-core"
+            return 1
+        fi
+        ;;
+    Linux)
+        if command_exists apt-get; then
+            sudo apt-get update
+            sudo apt-get install -y bats
+        elif command_exists yum; then
+            sudo yum install -y bats
+        else
+            log_warn "Installing bats-core from source..."
+            git clone https://github.com/bats-core/bats-core.git /tmp/bats-core
+            cd /tmp/bats-core || return 1
+            sudo ./install.sh /usr/local
+            cd - > /dev/null || return 1
+            rm -rf /tmp/bats-core
+        fi
+        ;;
+    *)
+        log_warn "Unsupported platform for automatic bats-core installation. Please install bats-core manually from https://github.com/bats-core/bats-core"
+        return 1
+        ;;
+    esac
+
+    log_success "bats-core installation completed"
+}
+
 # Check and install dependencies
 check_dependencies() {
     log_info "Checking dependencies..."
     log_info "Required: bash, just, direnv"
-    if [ "$INCLUDE_OPTIONAL" = true ]; then
-        log_info "Optional: docker, node/npx, shellcheck, shfmt (will be installed)"
-    else
-        log_info "Optional: docker, node/npx, shellcheck, shfmt (skipped, use --include-optional to install)"
+
+    if [ "$INSTALL_DEV" = true ]; then
+        log_info "Development tools: docker, node/npx, shellcheck, shfmt (will be installed)"
+    fi
+    if [ "$INSTALL_CI" = true ]; then
+        log_info "CI essentials: docker, node/npx (will be installed)"
+    fi
+    if [ "$INSTALL_PLATFORM" = true ]; then
+        log_info "Platform development: bats-core (will be installed)"
+    fi
+    if [ "$INSTALL_DEV" = false ] && [ "$INSTALL_CI" = false ] && [ "$INSTALL_PLATFORM" = false ]; then
+        log_info "Optional tools: skipped (use --dev, --ci, or --platform flags to install)"
     fi
     echo ""
 
-    local total=7
+    local total=8
     local current=0
     local failed_required=0
 
@@ -396,64 +466,84 @@ check_dependencies() {
 
     # OPTIONAL DEPENDENCIES --------------------------------------------------------
 
-    if [ "$INCLUDE_OPTIONAL" = true ]; then
-        # Check Docker (OPTIONAL)
+    # Check Docker (for --dev or --ci)
+    if [ "$INSTALL_DEV" = true ] || [ "$INSTALL_CI" = true ]; then
         current=$((current + 1))
-        progress_step $current $total "Checking Docker (optional)..."
+        progress_step $current $total "Checking Docker..."
         if command_exists docker; then
             log_success "Docker is already installed: $(docker --version)"
         else
-            log_warn "Docker not found (optional - needed for containerization)"
+            log_warn "Docker not found (needed for containerization)"
             if install_docker; then
                 log_success "Docker installed successfully"
             else
                 log_warn "Skipping Docker - install manually from https://docker.com if needed"
             fi
         fi
+    fi
 
-        # Check Node.js and npx (OPTIONAL)
+    # Check Node.js and npx (for --dev or --ci)
+    if [ "$INSTALL_DEV" = true ] || [ "$INSTALL_CI" = true ]; then
         current=$((current + 1))
-        progress_step $current $total "Checking Node.js and npx (optional)..."
+        progress_step $current $total "Checking Node.js and npx..."
         if command_exists npx; then
             log_success "Node.js and npx are already installed: $(node --version)"
         else
-            log_warn "Node.js/npx not found (optional - needed for semantic-release)"
+            log_warn "Node.js/npx not found (needed for semantic-release)"
             if install_node; then
                 log_success "Node.js installed successfully"
             else
                 log_warn "Skipping Node.js - install manually from https://nodejs.org if needed"
             fi
         fi
+    fi
 
-        # Check shellcheck (OPTIONAL)
+    # Check shellcheck (for --dev only)
+    if [ "$INSTALL_DEV" = true ]; then
         current=$((current + 1))
-        progress_step $current $total "Checking shellcheck (optional)..."
+        progress_step $current $total "Checking shellcheck..."
         if command_exists shellcheck; then
             log_success "shellcheck is already installed: $(shellcheck --version | head -n2 | tail -n1)"
         else
-            log_warn "shellcheck not found (optional - recommended for shell script linting)"
+            log_warn "shellcheck not found (recommended for shell script linting)"
             if install_shellcheck; then
                 log_success "shellcheck installed successfully"
             else
                 log_warn "Skipping shellcheck - install manually from https://www.shellcheck.net if needed"
             fi
         fi
+    fi
 
-        # Check shfmt (OPTIONAL)
+    # Check shfmt (for --dev only)
+    if [ "$INSTALL_DEV" = true ]; then
         current=$((current + 1))
-        progress_step $current $total "Checking shfmt (optional)..."
+        progress_step $current $total "Checking shfmt..."
         if command_exists shfmt; then
             log_success "shfmt is already installed: $(shfmt --version)"
         else
-            log_warn "shfmt not found (optional - recommended for shell script formatting)"
+            log_warn "shfmt not found (recommended for shell script formatting)"
             if install_shfmt; then
                 log_success "shfmt installed successfully"
             else
                 log_warn "Skipping shfmt - install manually from https://github.com/mvdan/sh if needed"
             fi
         fi
-    else
-        log_info "Skipping optional dependencies (use --include-optional to install them)"
+    fi
+
+    # Check bats-core (for --platform only)
+    if [ "$INSTALL_PLATFORM" = true ]; then
+        current=$((current + 1))
+        progress_step $current $total "Checking bats-core..."
+        if command_exists bats; then
+            log_success "bats-core is already installed: $(bats --version)"
+        else
+            log_warn "bats-core not found (needed for platform testing)"
+            if install_bats; then
+                log_success "bats-core installed successfully"
+            else
+                log_warn "Skipping bats-core - install manually from https://github.com/bats-core/bats-core if needed"
+            fi
+        fi
     fi
 
     # Allow direnv if .envrc exists and is not already allowed

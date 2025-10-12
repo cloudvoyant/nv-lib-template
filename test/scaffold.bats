@@ -156,7 +156,6 @@ teardown() {
         --project testproject
 
     # Platform development files should be removed
-    [ ! -f "$DEST_DIR/scripts/platform-install.sh" ]
     [ ! -d "$DEST_DIR/test" ]
     [ ! -f "$DEST_DIR/CHANGELOG.md" ]
     [ ! -f "$DEST_DIR/RELEASE_NOTES.md" ]
@@ -164,6 +163,9 @@ teardown() {
     # Platform development section should be removed from justfile
     run grep "# PLATFORM DEVELOPMENT" "$DEST_DIR/justfile"
     [ "$status" -eq 1 ]
+
+    # setup.sh should exist (platform-install.sh merged into it)
+    [ -f "$DEST_DIR/scripts/setup.sh" ]
 }
 
 @test "replaces README.md with template" {
@@ -313,7 +315,7 @@ teardown() {
 
     # Platform development files should be kept
     [ -d "$DEST_DIR/test" ]
-    [ -f "$DEST_DIR/scripts/platform-install.sh" ]
+    [ -f "$DEST_DIR/scripts/setup.sh" ]  # platform-install.sh merged into setup.sh
 
     # Platform development justfile commands should be kept
     run grep "# PLATFORM DEVELOPMENT" "$DEST_DIR/justfile"
@@ -326,7 +328,6 @@ teardown() {
     [ "$status" -eq 0 ]
 
     # Platform-specific Claude commands should be kept
-    [ -f "$DEST_DIR/.claude/commands/validate-platform.md" ]
     [ -f "$DEST_DIR/.claude/commands/new-migration.md" ]
     [ -f "$DEST_DIR/.claude/migrations/generate-migration-guide.md" ]
 

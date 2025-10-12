@@ -39,36 +39,28 @@ jobs:
 
       - name: Setup environment
         if: steps.semantic_release.outputs.new_release_published == 'true'
-        run: bash scripts/setup.sh
+        run: bash scripts/setup.sh --ci
 
-      # ========================================================================
-      # GCP Authentication - CUSTOMIZE for other registries
-      #
-      # For npm: Remove GCP steps, add NPM_TOKEN to env in publish step
-      # For PyPI: Remove GCP steps, add TWINE_USERNAME/TWINE_PASSWORD to env
-      # For Docker Hub: Remove GCP steps, add docker login with DOCKER_USERNAME/DOCKER_PASSWORD
-      # For AWS ECR: Replace with aws-actions/configure-aws-credentials@v4
-      # For Azure ACR: Replace with azure/login@v1
-      # ========================================================================
-      - name: Authenticate to Google Cloud
-        if: steps.semantic_release.outputs.new_release_published == 'true'
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      - name: Set up Cloud SDK
-        if: steps.semantic_release.outputs.new_release_published == 'true'
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Publish package
+      - name: Authenticate with registry
         if: steps.semantic_release.outputs.new_release_published == 'true'
         env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           GCP_REGION: ${{ secrets.GCP_REGION }}
           GCP_REPOSITORY: ${{ secrets.GCP_REPOSITORY }}
         run: |
+          # Set up Cloud SDK
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+          sudo apt-get update && sudo apt-get install -y google-cloud-sdk
+
+          # Load registry config and authenticate
           source .envrc
-          just publish
+          just registry-login --ci
+
+      - name: Publish package
+        if: steps.semantic_release.outputs.new_release_published == 'true'
+        run: just publish
 
       - name: Create GitHub Release
         if: steps.semantic_release.outputs.new_release_published == 'true'

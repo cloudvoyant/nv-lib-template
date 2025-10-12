@@ -21,7 +21,8 @@ _load:
         source .envrc
     fi
 
-# Setup development environment (use --include-optional for optional deps)
+# Setup development environment
+# Flags: --dev (development tools), --ci (CI essentials), --platform (platform dev)
 setup *ARGS: _load
     @bash scripts/setup.sh {{ARGS}}
 
@@ -89,6 +90,22 @@ version: _load
 version-next: _load
     @bash -c 'source scripts/utils.sh && get_next_version'
 
+# Create new version based on commits (semantic-release)
+upversion: _load
+    @bash scripts/upversion.sh
+
+# Authenticate with GCP (local: gcloud login, CI: service account)
+registry-login *ARGS: _load
+    @if [[ " {{ARGS}} " =~ " --ci " ]]; then \
+        echo -e "{{INFO}}CI mode - authenticating with service account{{NORMAL}}"; \
+        echo "$$GCP_SA_KEY" | gcloud auth activate-service-account --key-file=-; \
+        gcloud config set project "$$GCP_PROJECT_ID"; \
+    else \
+        echo -e "{{INFO}}Local mode - interactive GCP login{{NORMAL}}"; \
+        gcloud auth login; \
+        gcloud config set project "$$GCP_PROJECT_ID"; \
+    fi
+
 # Upgrade to newer platform version (requires Claude Code)
 upgrade: _load
     @if command -v claude >/dev/null 2>&1; then \
@@ -111,11 +128,6 @@ upgrade: _load
 # PLATFORM DEVELOPMENT (Remove after scaffolding)
 # ==============================================================================
 
-# Install platform development dependencies
-[group('platform')]
-platform-install: _load
-    @bash scripts/platform-install.sh
-
 # Run platform tests
 [group('platform')]
 platform-test: _load
@@ -123,7 +135,7 @@ platform-test: _load
         echo -e "{{INFO}}Running platform tests...{{NORMAL}}"; \
         bats test/; \
     else \
-        echo -e "{{ERROR}}bats not installed. Run: just platform-install{{NORMAL}}"; \
+        echo -e "{{ERROR}}bats not installed. Run: just setup --platform{{NORMAL}}"; \
         exit 1; \
     fi
 

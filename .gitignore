@@ -53,6 +53,7 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+.env.registry
 *.key
 *.pem
 *.p12
