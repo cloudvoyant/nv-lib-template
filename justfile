@@ -53,8 +53,8 @@ test: build
     @echo -e "{{WARN}}TODO: Implement test{{NORMAL}}"
 
 # Publish the project
-publish: test build-prod
-    @echo "{{INFO}}Publishing package $PROJECT@$VERSION...{{NORMAL}}"
+publish: _load test build-prod
+    @echo -e "{{INFO}}Publishing package $PROJECT@$VERSION...{{NORMAL}}"
     @gcloud artifacts generic upload \
         --project=$GCP_REGISTRY_PROJECT_ID \
         --location=$GCP_REGISTRY_REGION \
