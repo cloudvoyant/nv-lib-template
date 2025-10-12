@@ -1,3 +1,10 @@
+## [1.6.4](https://github.com/cloudvoyant/lib/compare/v1.6.3...v1.6.4) (2025-10-12)
+
+
+### Bug Fixes
+
+* cleaned up justfile ([64def9c](https://github.com/cloudvoyant/lib/commit/64def9c96034e3c01c70e01ef1e58ecae0b04f99))
+
 ## [1.6.3](https://github.com/cloudvoyant/lib/compare/v1.6.2...v1.6.3) (2025-10-12)
 
 
