@@ -25,7 +25,7 @@ just clean    # Clean build artifacts
 List all commands:
 
 ```bash
-just --list
+just
 ```
 
 ## Features
