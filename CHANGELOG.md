@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/cloudvoyant/lib/compare/v1.4.1...v1.5.0) (2025-10-12)
+
+
+### Features
+
+* doc updates ([11e75ad](https://github.com/cloudvoyant/lib/commit/11e75ad451e48a0200b77b42c611a54e8984965f))
+
 ## [1.4.1](https://github.com/cloudvoyant/lib/compare/v1.4.0...v1.4.1) (2025-10-12)
 
 
