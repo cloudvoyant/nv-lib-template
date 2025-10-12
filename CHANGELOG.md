@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/cloudvoyant/lib/compare/v1.6.0...v1.6.1) (2025-10-12)
+
+
+### Bug Fixes
+
+* adding logging to publish task ([0ec390b](https://github.com/cloudvoyant/lib/commit/0ec390bcde8ab6c6ac349e96efb7dfba19523c8e))
+
 # [1.6.0](https://github.com/cloudvoyant/lib/compare/v1.5.0...v1.6.0) (2025-10-12)
 
 
