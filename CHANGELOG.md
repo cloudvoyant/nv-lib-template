@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/cloudvoyant/lib/compare/v1.6.6...v1.7.0) (2025-10-12)
+
+
+### Features
+
+* semantic setup flags, versioning script, and simplified config ([716a0e7](https://github.com/cloudvoyant/lib/commit/716a0e7bbf374ffa7e8223773e7504bbc96a0582))
+
 ## [1.6.6](https://github.com/cloudvoyant/lib/compare/v1.6.5...v1.6.6) (2025-10-12)
 
 
