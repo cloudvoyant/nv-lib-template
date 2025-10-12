@@ -17,9 +17,9 @@ default:
 # Load environment variables from .envrc
 _load:
     #!/usr/bin/env bash
-    if [ -f .envrc ]; then
-        source .envrc
-    fi
+    # if [ -f .envrc ]; then
+    #     source .envrc
+    # fi
 
 # Setup development environment
 # Flags: --dev (development tools), --ci (CI essentials), --platform (platform dev)

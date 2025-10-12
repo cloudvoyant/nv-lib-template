@@ -30,6 +30,11 @@ setup() {
 
     # Change to the platform clone directory (where scaffold will be called from)
     cd "$PLATFORM_CLONE"
+
+    # Source .envrc to get VERSION and PROJECT variables for tests
+    if [ -f ".envrc" ]; then
+        source ".envrc"
+    fi
 }
 
 teardown() {

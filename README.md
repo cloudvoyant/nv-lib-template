@@ -101,11 +101,25 @@ publish: test build-prod
 
 Run `just setup` to install required dependencies (just, direnv).
 
-For optional dependencies (docker, node, shellcheck, shfmt), run:
+For development tools (docker, node, shellcheck, shfmt), run:
 
 ```bash
-bash scripts/setup.sh --include-optional
+just setup --dev
 ```
+
+For CI environments (minimal tools):
+
+```bash
+just setup --ci
+```
+
+For platform development (adds bats-core for testing):
+
+```bash
+just setup --platform
+```
+
+Flags can be combined: `just setup --dev --platform`
 
 ## CI/CD Workflow
 
@@ -128,21 +142,19 @@ Run platform tests:
 just platform-test
 ```
 
-**TODO: Migration Tests**
+### Platform Development
 
-- Current tests don't actually test real migrations
-- Need to implement proper integration tests:
-  1. Clone platform to `.nv/platform-old` and checkout old git tag
-  2. Scaffold project from old version
-  3. Run `just upgrade` with auto-accept mode
-  4. Validate migration succeeded
-- See `.claude/plan.md` for detailed approach
+For platform maintainers, install all development tools:
 
-**TODO: Platform Generalization**
+```bash
+just setup --dev --platform
+```
 
-- Make platform registry-agnostic by removing GCP-specific defaults
-- Move GCP config from `.envrc` to optional `.env` file
-- Update CI/CD workflows to support multiple registries without hardcoded defaults
+Then run tests:
+
+```bash
+just platform-test  # Run all platform tests (19 tests)
+```
 
 ## License
 

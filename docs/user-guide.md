@@ -241,6 +241,23 @@ On merge to `main`, the CI/CD workflow will:
 
 ---
 
+## Customizing Versioning
+
+Test versioning locally (dry-run):
+
+```bash
+just upversion
+```
+
+Customize semantic-release by editing `.releaserc.json`. Add language-specific plugins:
+
+- **npm**: Add `@semantic-release/npm`
+- **Python**: Use `@semantic-release/exec` with `python -m build` and `twine upload`
+
+Install needed plugins in `scripts/setup.sh`. See [Architecture](architecture.md#scriptsupversionsh) for details.
+
+---
+
 ## CI/CD Configuration
 
 ### GitHub Organization Secrets (Recommended)

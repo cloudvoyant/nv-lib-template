@@ -111,6 +111,34 @@ Use conventional commits (feat:, fix:, docs:, etc.) with semantic-release to aut
 
 The `VERSION` variable in `.envrc` lists the current version and is managed by `semantic-release` in CI/CD.
 
+**Version Management:**
+
+The `scripts/upversion.sh` script wraps semantic-release with a consistent interface:
+
+```bash
+just upversion           # Local mode (dry-run, preview next version)
+just upversion --ci      # CI mode (creates tags, pushes to remote)
+```
+
+This script:
+- Analyzes commit history using conventional commit format
+- Determines next version (major, minor, or patch)
+- Updates CHANGELOG.md with new version
+- Creates git tag (in CI mode)
+- Outputs GitHub Actions compatible variables
+
+**Customizing semantic-release:**
+
+Edit `.releaserc.json` to configure language-specific plugins:
+
+- **Node.js/npm**: Add `@semantic-release/npm` plugin
+- **Python/PyPI**: Use `@semantic-release/exec` to run `python -m build` and `twine upload`
+- **Go**: Use `@semantic-release/exec` to update go.mod version
+- **Rust**: Use `@semantic-release/exec` to update Cargo.toml version
+- **Docker**: Use `@semantic-release/exec` to build and push images
+
+The platform uses `.releaserc.json` with `@semantic-release/changelog`, `@semantic-release/git`, and `@semantic-release/exec` plugins for maximum flexibility.
+
 ### Release Notes
 
 Hybrid approach for release documentation:

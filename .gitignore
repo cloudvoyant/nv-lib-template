@@ -97,3 +97,7 @@ test-results/
 *.bak
 *.backup
 *.old
+
+# Instance-specific development files
+.claude/plan.md
+.claude/todos.md

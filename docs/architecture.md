@@ -12,9 +12,9 @@ lib/
 ├── justfile                  # Command definitions
 ├── scripts/
 │   ├── utils.sh             # Shared bash functions
-│   ├── setup.sh             # Dependency installation
+│   ├── setup.sh             # Dependency installation (with --dev, --ci, --platform flags)
 │   ├── scaffold.sh          # Project initialization
-│   └── platform-install.sh  # Platform dev dependencies (removed after scaffolding)
+│   └── upversion.sh         # Version management with semantic-release
 ├── src/                      # User source code
 ├── test/
 │   └── scaffold.bats        # Platform tests (removed after scaffolding)
@@ -100,6 +100,17 @@ setup_script_lifecycle --lock .script.lock
 
 ### scripts/setup.sh
 
+**Semantic installation flags:**
+
+```bash
+just setup              # Required only: bash, just, direnv
+just setup --dev        # + Development tools: docker, node/npx, gcloud, shellcheck, shfmt
+just setup --ci         # + CI essentials: docker, node/npx, gcloud (minimal for CI)
+just setup --platform   # + Platform development: bats-core (for platform testing)
+```
+
+Flags can be combined: `just setup --dev --platform`
+
 Platform detection using `uname`:
 
 ```bash
@@ -120,18 +131,20 @@ Package manager detection for each platform:
 - Linux: `apt-get`, `yum`, `pacman`
 - Fallback: Binary installers via curl
 
-Dependencies installed:
-
+**Required dependencies** (always installed):
 1. Bash (shell)
-2. just (command runner)
-3. Docker (containerization)
-4. direnv (environment management)
-5. Node.js/npx (for semantic-release)
+2. just (command runner - uses pre-built binaries on Linux for speed)
+3. direnv (environment management)
+
+**Optional dependencies** (installed with flags):
+- `--dev` or `--ci`: Docker, Node.js/npx, gcloud
+- `--dev` only: shellcheck, shfmt
+- `--platform`: bats-core
 
 Progress tracking:
 
 ```bash
-local total=5
+local total=8
 local current=0
 current=$((current + 1))
 progress_step $current $total "Checking Bash..."
@@ -139,30 +152,93 @@ progress_step $current $total "Checking Bash..."
 
 ### scripts/scaffold.sh
 
-Currently a stub with TODO. Will implement:
+Initializes new projects from the platform template:
 
-- Interactive prompts for project name, description
-- String replacement: `{{PROJECT}}`, `{{DESCRIPTION}}`
-- Clean up `.claude/` directory (remove implementation plan)
-- Optional git history reset
-- Non-interactive mode for automation
+**Features:**
+- Interactive prompts for project name and registry configuration
+- Non-interactive mode for automation (`--non-interactive`)
+- Platform mode for creating new platforms (`--platform`)
+- String replacement in all case variants (PascalCase, camelCase, snake_case, kebab-case)
+- Copies `.envrc.template` and replaces placeholders
+- Adds platform tracking variables (`NV_PLATFORM`, `NV_PLATFORM_VERSION`)
+- Cleans up platform development files (unless `--platform` flag)
+- Backup and restore on failure
+
+**Usage:**
+```bash
+# Regular project
+bash scripts/scaffold.sh --src . --dest /path/to/project --project myproject
+
+# New platform
+bash scripts/scaffold.sh --src . --dest /path/to/platform --project myplatform --platform
+
+# Non-interactive
+bash scripts/scaffold.sh --src . --dest /path --project myapp --non-interactive
+```
+
+### scripts/upversion.sh
+
+Manages version creation using semantic-release:
+
+**Features:**
+- Wraps `npx semantic-release` with consistent interface
+- Analyzes commits since last release
+- Determines next version based on conventional commits
+- Updates CHANGELOG.md and VERSION file
+- Creates git tags
+- Outputs GitHub Actions compatible variables
+
+**Usage:**
+```bash
+just upversion           # Local mode (dry-run, no push)
+just upversion --ci      # CI mode (creates tags, pushes)
+```
+
+**Outputs for CI:**
+```bash
+new_release_published=true
+new_release_version=1.2.3
+new_release_major_version=1
+new_release_minor_version=2
+new_release_patch_version=3
+```
+
+Integrates with `.releaserc.json` for semantic-release configuration.
 
 ### .envrc
 
-Loaded by direnv or sourced by `_load` recipe:
+Loaded by direnv or sourced by `_load` recipe. Contains simple exports only (no bash logic):
 
 ```bash
 export PROJECT=platform-lib
+export VERSION=1.6.6
 
-# Read version from VERSION file if exists, otherwise default
-if [ -f VERSION ]; then
-    export VERSION=$(cat VERSION)
-else
-    export VERSION=0.0.1
-fi
+# Registry Configuration
+export GCP_REGISTRY_PROJECT_ID=devops-466002
+export GCP_REGISTRY_REGION=us-east1
+export GCP_REGISTRY_NAME=cloudvoyant-generic-registry
 ```
 
-Uses `get_version` function from `utils.sh` to read from git tags.
+**Design principles:**
+- Simple `export` statements preferred (avoid bash logic and sourcing if possible)
+- Each project commits its own `.envrc`
+- Actual secrets go in GitHub Secrets, .env or whatever clients decide, not `.envrc`
+
+**Template for scaffolding:**
+
+`.envrc.template` uses placeholders for new projects:
+
+```bash
+export PROJECT=__PROJECT_NAME__
+export VERSION=__VERSION__
+
+# Registry Configuration
+export GCP_REGISTRY_PROJECT_ID=your-project-id
+export GCP_REGISTRY_REGION=us-central1
+export GCP_REGISTRY_NAME=your-repository-name
+```
+
+scaffold.sh replaces `__PROJECT_NAME__` and `__VERSION__` using `sed_inplace`.
 
 ### CI/CD Workflows
 
@@ -402,12 +478,10 @@ Platform development uses **bats-core** (Bash Automated Testing System) for test
 **Installation:**
 
 ```bash
-just platform-install
+just setup --platform
 ```
 
-Or manually:
-- macOS: `brew install bats-core`
-- Linux: `apt-get install bats` or `yum install bats`
+This installs bats-core along with required dependencies.
 
 **Running Tests:**
 
@@ -418,15 +492,22 @@ just platform-test
 Tests are in `test/*.bats` and cover:
 - scaffold.sh validation and functionality
 - Non-interactive mode behavior
-- .envrc updates
-- Git history reset
+- .envrc template handling
+- Platform tracking variables
+- Case variant replacements
 - Platform file cleanup
+- GitHub template export behavior
 
 **Example test:**
 
 ```bash
-@test "validates project name" {
-    run bash scripts/scaffold.sh --non-interactive --project "my project"
+@test "validates project name in non-interactive mode" {
+    run bash scripts/scaffold.sh \
+        --src . \
+        --dest ../.. \
+        --non-interactive \
+        --project "my project"
+
     [ "$status" -eq 1 ]
     [[ "$output" == *"Invalid project name"* ]]
 }
@@ -435,11 +516,13 @@ Tests are in `test/*.bats` and cover:
 **Platform Cleanup:**
 
 The scaffold script automatically removes platform development files:
-- `scripts/platform-install.sh`
 - `test/` directory
 - Platform development section in justfile
+- Platform-specific Claude commands and migrations
 
 This ensures scaffolded projects don't include platform testing infrastructure.
+
+With `--platform` flag, these files are kept for creating new platforms.
 
 ## Production Builds
 
