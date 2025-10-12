@@ -41,6 +41,7 @@ The following files MUST be respected:
 - ❌ NO "🤖 Generated with [Claude Code]" lines
 - ❌ NO "Co-Authored-By: Claude <noreply@anthropic.com>" lines
 - ❌ NO self-attributions of any kind
+- ❌ NO emojis in commit messages
 
 Git commits should be clean, professional, and contain only the commit message itself.
 
