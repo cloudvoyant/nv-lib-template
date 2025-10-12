@@ -55,9 +55,9 @@ test: build
 # Publish the project
 publish: test build-prod
     @gcloud artifacts generic upload \
-        --project=$GCP_PROJECT_ID \
-        --location=$GCP_REGION \
-        --repository=$GCP_REPOSITORY \
+        --project=$GCP_REGISTRY_PROJECT_ID \
+        --location=$GCP_REGISTRY_REGION \
+        --repository=$GCP_REGISTRY_NAME \
         --package=$PROJECT \
         --version=$VERSION \
         --source=dist/artifact.txt
@@ -104,11 +104,11 @@ registry-login *ARGS: _load
         echo "$GCP_SA_KEY" > "$KEY_FILE"
         gcloud auth activate-service-account --key-file="$KEY_FILE"
         rm -f "$KEY_FILE"
-        gcloud config set project "$GCP_PROJECT_ID"
+        gcloud config set project "$GCP_REGISTRY_PROJECT_ID"
     else
         echo -e "{{INFO}}Local mode - interactive GCP login{{NORMAL}}"
         gcloud auth login
-        gcloud config set project "$GCP_PROJECT_ID"
+        gcloud config set project "$GCP_REGISTRY_PROJECT_ID"
     fi
 
 # Upgrade to newer platform version (requires Claude Code)

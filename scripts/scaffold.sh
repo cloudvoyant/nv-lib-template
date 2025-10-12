@@ -376,9 +376,9 @@ fi
 
 # Configure GCP if requested and registry file exists
 if [ "$CONFIGURE_GCP" = true ] && [ -f "$REGISTRY_FILE" ]; then
-    sed_inplace "s/export GCP_PROJECT_ID=.*/export GCP_PROJECT_ID=$gcp_project_id/" "$REGISTRY_FILE"
-    sed_inplace "s/export GCP_REGION=.*/export GCP_REGION=$gcp_region/" "$REGISTRY_FILE"
-    sed_inplace "s/export GCP_REPOSITORY=.*/export GCP_REPOSITORY=$gcp_repository/" "$REGISTRY_FILE"
+    sed_inplace "s/export GCP_REGISTRY_PROJECT_ID=.*/export GCP_REGISTRY_PROJECT_ID=$gcp_project_id/" "$REGISTRY_FILE"
+    sed_inplace "s/export GCP_REGISTRY_REGION=.*/export GCP_REGISTRY_REGION=$gcp_region/" "$REGISTRY_FILE"
+    sed_inplace "s/export GCP_REGISTRY_NAME=.*/export GCP_REGISTRY_NAME=$gcp_repository/" "$REGISTRY_FILE"
     log_success "GCP registry configured in .env.registry"
 fi
 

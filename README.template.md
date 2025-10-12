@@ -75,9 +75,9 @@ just publish
 
 ### Registry Configuration
 
-Publishing to artifact registries is optional. Configure in `.envrc`:
+Publishing to artifact registries is optional. Configure in `.env.registry`:
 
-- **GCP Artifact Registry**: Uncomment and set `GCP_PROJECT_ID`, `GCP_REGION`, `GCP_REPOSITORY`
+- **GCP Artifact Registry**: Set `GCP_REGISTRY_PROJECT_ID`, `GCP_REGISTRY_REGION`, `GCP_REGISTRY_NAME`
 - **Other registries**: Update the `publish` recipe in `justfile`
 
 See [docs/user-guide.md](docs/user-guide.md) for detailed setup and usage instructions.
