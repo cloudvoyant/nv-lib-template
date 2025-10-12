@@ -1,3 +1,11 @@
+# [1.3.0](https://github.com/cloudvoyant/lib/compare/v1.2.0...v1.3.0) (2025-10-12)
+
+
+### Features
+
+* consolidate setup, generalize versioning, and separate registry config ([d17cbfb](https://github.com/cloudvoyant/lib/commit/d17cbfbfda8ede27bb3235a9743a044014f40308))
+* replace just release-notes with Claude command ([d34ba73](https://github.com/cloudvoyant/lib/commit/d34ba737a848278f6c753111a4add7e6afc3ed78))
+
 # [1.2.0](https://github.com/cloudvoyant/lib/compare/v1.1.0...v1.2.0) (2025-10-11)
 
 ### Features
