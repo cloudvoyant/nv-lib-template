@@ -1,3 +1,10 @@
+## [1.6.6](https://github.com/cloudvoyant/lib/compare/v1.6.5...v1.6.6) (2025-10-12)
+
+
+### Bug Fixes
+
+* source .envrc in publish recipe for CI compatibility ([dee4d82](https://github.com/cloudvoyant/lib/commit/dee4d821f307c7ff2803848fdd516b73a1eed9a2))
+
 ## [1.6.5](https://github.com/cloudvoyant/lib/compare/v1.6.4...v1.6.5) (2025-10-12)
 
 
