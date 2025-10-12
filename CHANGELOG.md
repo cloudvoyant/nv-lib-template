@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/cloudvoyant/lib/compare/v1.4.0...v1.4.1) (2025-10-12)
+
+
+### Bug Fixes
+
+* use shebang for registry-login recipe to fix bash syntax error ([774ab53](https://github.com/cloudvoyant/lib/commit/774ab53fc6ff3e02373b54d9c343ca5ca1065d62))
+
 # [1.4.0](https://github.com/cloudvoyant/lib/compare/v1.3.0...v1.4.0) (2025-10-12)
 
 
