@@ -54,16 +54,23 @@ test: build
 
 # Publish the project
 publish: test build-prod
-    @direnv allow
-    @echo -e "{{INFO}}Publishing package $PROJECT@$VERSION...{{NORMAL}}"
-    @gcloud artifacts generic upload \
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    # Load environment variables
+    if [ -f .envrc ]; then
+        source .envrc
+    fi
+
+    echo -e "{{INFO}}Publishing package $PROJECT@$VERSION...{{NORMAL}}"
+    gcloud artifacts generic upload \
         --project=$GCP_REGISTRY_PROJECT_ID \
         --location=$GCP_REGISTRY_REGION \
         --repository=$GCP_REGISTRY_NAME \
         --package=$PROJECT \
         --version=$VERSION \
         --source=dist/artifact.txt
-    @echo -e "{{SUCCESS}}Published.{{NORMAL}}"
+    echo -e "{{SUCCESS}}Published.{{NORMAL}}"
 
 # Scaffold a new project
 scaffold: _load
