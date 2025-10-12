@@ -54,30 +54,46 @@ if ! command_exists npx; then
     exit 1
 fi
 
+# Capture current version before running semantic-release
+CURRENT_VERSION=""
+if [ -f ".envrc" ]; then
+    CURRENT_VERSION=$(grep "^export VERSION=" .envrc | cut -d'=' -f2)
+fi
+
 # Run semantic-release
-# Note: Outputs are captured by semantic-release GitHub Action in CI
-# For local runs, this will just show the dry-run results
 if [ -n "$CI" ]; then
     log_info "Running in CI mode - will create release and push"
     npx semantic-release
+    EXIT_CODE=$?
 else
     log_info "Running in local mode - dry-run only (no tags will be created)"
     npx semantic-release --dry-run
+    EXIT_CODE=$?
 fi
 
-# Capture exit code
-EXIT_CODE=$?
-
-if [ $EXIT_CODE -eq 0 ]; then
-    log_success "Semantic-release completed successfully"
-else
+if [ $EXIT_CODE -ne 0 ]; then
     log_error "Semantic-release failed with exit code $EXIT_CODE"
     exit $EXIT_CODE
 fi
 
-# In CI, semantic-release outputs are handled by the GitHub Action
-# The GitHub Action (cycjimmy/semantic-release-action) automatically sets:
-# - steps.semantic_release.outputs.new_release_published
-# - steps.semantic_release.outputs.new_release_version
+log_success "Semantic-release completed successfully"
+
+# Detect if a new release was published by checking if version changed
+NEW_VERSION=""
+if [ -f ".envrc" ]; then
+    NEW_VERSION=$(grep "^export VERSION=" .envrc | cut -d'=' -f2)
+fi
+
+# Set GitHub Actions outputs if running in CI
+if [ -n "$CI" ] && [ -n "$GITHUB_OUTPUT" ]; then
+    if [ "$CURRENT_VERSION" != "$NEW_VERSION" ] && [ -n "$NEW_VERSION" ]; then
+        echo "new_release_published=true" >> "$GITHUB_OUTPUT"
+        echo "new_release_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+        log_success "New release published: v$NEW_VERSION"
+    else
+        echo "new_release_published=false" >> "$GITHUB_OUTPUT"
+        log_info "No new release published (no commits requiring version bump)"
+    fi
+fi
 
 log_info "Version update complete"

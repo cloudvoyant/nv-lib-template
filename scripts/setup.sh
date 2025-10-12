@@ -19,12 +19,14 @@ Development tools (--dev):
 - direnv (environment management)
 - docker (containerization)
 - node/npx (for semantic-release)
+- gcloud (Google Cloud SDK)
 - shellcheck (shell script linter)
 - shfmt (shell script formatter)
 
 CI essentials (--ci):
 - docker (containerization)
 - node/npx (for semantic-release)
+- gcloud (Google Cloud SDK)
 
 Platform development (--platform):
 - bats-core (bash testing framework)
@@ -64,8 +66,8 @@ while [[ $# -gt 0 ]]; do
             echo "  -h, --help    Show this help message"
             echo ""
             echo "Required: bash, just"
-            echo "Development (--dev): direnv, docker, node/npx, shellcheck, shfmt"
-            echo "CI (--ci): docker, node/npx"
+            echo "Development (--dev): direnv, docker, node/npx, gcloud, shellcheck, shfmt"
+            echo "CI (--ci): docker, node/npx, gcloud"
             echo "Platform (--platform): bats-core"
             exit 0
             ;;
@@ -283,6 +285,61 @@ install_node() {
     log_success "Node.js installation completed"
 }
 
+# Install gcloud based on platform
+install_gcloud() {
+    log_info "Installing Google Cloud SDK..."
+
+    case $PLATFORM in
+    Mac)
+        if command_exists brew; then
+            brew install --cask google-cloud-sdk
+        else
+            log_warn "Homebrew not found. Please install gcloud manually from https://cloud.google.com/sdk/docs/install"
+            return 1
+        fi
+        ;;
+    Linux)
+        if command_exists apt-get; then
+            # Add gcloud apt repository
+            echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+
+            # Import Google Cloud public key
+            if command_exists curl; then
+                curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+            else
+                log_error "curl is required to install gcloud"
+                return 1
+            fi
+
+            # Install gcloud
+            sudo apt-get update && sudo apt-get install -y google-cloud-sdk
+        elif command_exists yum; then
+            # Add gcloud yum repository
+            sudo tee /etc/yum.repos.d/google-cloud-sdk.repo << EOM
+[google-cloud-sdk]
+name=Google Cloud SDK
+baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el8-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=0
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+       https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOM
+            sudo yum install -y google-cloud-sdk
+        else
+            log_warn "No suitable package manager found. Please install gcloud manually from https://cloud.google.com/sdk/docs/install"
+            return 1
+        fi
+        ;;
+    *)
+        log_warn "Unsupported platform for automatic gcloud installation. Please install gcloud manually from https://cloud.google.com/sdk/docs/install"
+        return 1
+        ;;
+    esac
+
+    log_success "Google Cloud SDK installation completed"
+}
+
 # Install shellcheck based on platform
 install_shellcheck() {
     log_info "Installing shellcheck..."
@@ -394,10 +451,10 @@ check_dependencies() {
     log_info "Required: bash, just"
 
     if [ "$INSTALL_DEV" = true ]; then
-        log_info "Development tools: direnv, docker, node/npx, shellcheck, shfmt (will be installed)"
+        log_info "Development tools: direnv, docker, node/npx, gcloud, shellcheck, shfmt (will be installed)"
     fi
     if [ "$INSTALL_CI" = true ]; then
-        log_info "CI essentials: docker, node/npx (will be installed)"
+        log_info "CI essentials: docker, node/npx, gcloud (will be installed)"
     fi
     if [ "$INSTALL_PLATFORM" = true ]; then
         log_info "Platform development: bats-core (will be installed)"
@@ -495,6 +552,37 @@ check_dependencies() {
                 log_success "Node.js installed successfully"
             else
                 log_warn "Skipping Node.js - install manually from https://nodejs.org if needed"
+            fi
+        fi
+
+        # Install semantic-release and required plugins if npx is available
+        if command_exists npx; then
+            current=$((current + 1))
+            progress_step $current $total "Installing semantic-release plugins..."
+            log_info "Installing semantic-release and plugins..."
+
+            # Install globally to avoid needing package.json in every project
+            npm install -g semantic-release \
+                @semantic-release/changelog \
+                @semantic-release/exec \
+                @semantic-release/git 2>&1 | grep -v "npm WARN" || true
+
+            log_success "semantic-release plugins installed"
+        fi
+    fi
+
+    # Check gcloud (for --dev or --ci)
+    if [ "$INSTALL_DEV" = true ] || [ "$INSTALL_CI" = true ]; then
+        current=$((current + 1))
+        progress_step $current $total "Checking Google Cloud SDK..."
+        if command_exists gcloud; then
+            log_success "Google Cloud SDK is already installed: $(gcloud --version | head -n1)"
+        else
+            log_warn "gcloud not found (needed for GCP Artifact Registry)"
+            if install_gcloud; then
+                log_success "Google Cloud SDK installed successfully"
+            else
+                log_warn "Skipping gcloud - install manually from https://cloud.google.com/sdk/docs/install if needed"
             fi
         fi
     fi

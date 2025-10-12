@@ -21,52 +21,36 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "lts/*"
-
-      - name: Run semantic-release
-        id: semantic_release
-        uses: cycjimmy/semantic-release-action@v4
-        with:
-          extra_plugins: |
-            @semantic-release/changelog
-            @semantic-release/exec
-            @semantic-release/git
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Setup environment
-        if: steps.semantic_release.outputs.new_release_published == 'true'
         run: bash scripts/setup.sh --ci
 
+      - name: Create new version
+        id: upversion
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI: true
+        run: bash scripts/upversion.sh
+
       - name: Authenticate with registry
-        if: steps.semantic_release.outputs.new_release_published == 'true'
+        if: steps.upversion.outputs.new_release_published == 'true'
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           GCP_REGION: ${{ secrets.GCP_REGION }}
           GCP_REPOSITORY: ${{ secrets.GCP_REPOSITORY }}
         run: |
-          # Set up Cloud SDK
-          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-          sudo apt-get update && sudo apt-get install -y google-cloud-sdk
-
-          # Load registry config and authenticate
           source .envrc
           just registry-login --ci
 
       - name: Publish package
-        if: steps.semantic_release.outputs.new_release_published == 'true'
+        if: steps.upversion.outputs.new_release_published == 'true'
         run: just publish
 
       - name: Create GitHub Release
-        if: steps.semantic_release.outputs.new_release_published == 'true'
+        if: steps.upversion.outputs.new_release_published == 'true'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.semantic_release.outputs.new_release_version }}
+          tag_name: v${{ steps.upversion.outputs.new_release_version }}
           body_path: RELEASE_NOTES.md
           generate_release_notes: true
           files: |

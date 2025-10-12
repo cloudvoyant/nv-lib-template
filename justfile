@@ -98,7 +98,10 @@ upversion: _load
 registry-login *ARGS: _load
     @if [[ " {{ARGS}} " =~ " --ci " ]]; then \
         echo -e "{{INFO}}CI mode - authenticating with service account{{NORMAL}}"; \
-        echo "$$GCP_SA_KEY" | gcloud auth activate-service-account --key-file=-; \
+        KEY_FILE=$$(mktemp); \
+        echo "$$GCP_SA_KEY" > "$$KEY_FILE"; \
+        gcloud auth activate-service-account --key-file="$$KEY_FILE"; \
+        rm -f "$$KEY_FILE"; \
         gcloud config set project "$$GCP_PROJECT_ID"; \
     else \
         echo -e "{{INFO}}Local mode - interactive GCP login{{NORMAL}}"; \
