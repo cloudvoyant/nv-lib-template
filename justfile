@@ -54,15 +54,16 @@ test: build
 
 # Publish the project
 publish: _load test build-prod
-    @echo -e "{{INFO}}Publishing package $PROJECT@$VERSION...{{NORMAL}}"
-    @gcloud artifacts generic upload \
+    #!/usr/bin/env bash
+    echo -e "{{INFO}}Publishing package $PROJECT@$VERSION...{{NORMAL}}"
+    gcloud artifacts generic upload \
         --project=$GCP_REGISTRY_PROJECT_ID \
         --location=$GCP_REGISTRY_REGION \
         --repository=$GCP_REGISTRY_NAME \
         --package=$PROJECT \
         --version=$VERSION \
         --source=dist/artifact.txt
-    @echo "{{SUCCESS}}Published.{{NORMAL}}"
+    echo "{{SUCCESS}}Published.{{NORMAL}}"
 
 # Scaffold a new project
 scaffold: _load

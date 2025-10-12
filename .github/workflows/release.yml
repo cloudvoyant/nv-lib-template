@@ -22,14 +22,14 @@ jobs:
           fetch-depth: 0
 
       - name: Setup environment
-        run: bash scripts/setup.sh --ci
+        run: just setup --ci
 
       - name: Create new version
         id: upversion
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CI: true
-        run: bash scripts/upversion.sh
+        run: just upversion --ci
 
       - name: Authenticate with registry
         if: steps.upversion.outputs.new_release_published == 'true'
