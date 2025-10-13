@@ -89,8 +89,7 @@ Update documentation when:
 Documentation files:
 
 - `README.md` - Quick start and overview
-- `docs/design.md` - Design and key components
-- `docs/architecture.md` - Implementation details
+- `docs/architecture.md` - Design, architecture, and implementation
 
 Follow the documentation style guide:
 

@@ -26,4 +26,4 @@ When making significant architectural decisions:
 2. Use the next sequential number (NNN)
 3. Follow the ADR template (see `.claude/style.md`)
 4. Add an entry to this index
-5. Update relevant documentation (design.md, architecture.md)
+5. Update relevant documentation (architecture.md)

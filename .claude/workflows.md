@@ -2,22 +2,21 @@
 
 ## Project Overview
 
-Language-agnostic build system. Users fork, edit `justfile`, and it works with their language.
+Get project overview from README.md
 
-## Critical Workflow Rules
+## Spec-Driven Workflow
 
-**ALWAYS follow these rules:**
+**Always follow this pattern:**
 
-1. **Check `plan.md` first** - Review current phase and tasks before starting work
-2. **Update `plan.md` continuously** - Mark tasks complete as you finish them
-3. **Take breaks between phases** - When a phase is complete, inform the user and wait for confirmation before starting the next phase
-4. **Use TodoWrite for task tracking** - Keep the user informed of progress within phases
+1. **Read plan.md first** - Understand current phase and tasks
+2. **Implement in order** - Work through tasks sequentially, add sub-checkboxes for complex tasks
+3. **Mark complete immediately** - Check off items as you finish
+4. **Use TodoWrite within phases** - Track progress for user visibility
+5. **Pause between phases** - Inform user when phase completes, wait for confirmation, ask to commit
+6. **Update docs when done** - Sync architecture.md and user-guide.md with reality
+7. **Delete plan.md** - Clean up when complete
 
-## File Organization
-
-- **`.claude/plan.md`** - Implementation roadmap, phases, and task tracking (keep up to date!)
-- **`.claude/workflows.md`** - This file - how Claude should work on this project
-- **`.claude/tasks.md`** - Templates and examples for common development tasks
+See `/upgrade` command for reference implementation of this pattern.
 
 ## Key Principles
 

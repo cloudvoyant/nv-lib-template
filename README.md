@@ -1,65 +1,74 @@
-# platform-lib
+# nv-lib
 
-A fork-friendly build system that works with any programming language. Provides common development workflows (build, test, run, publish) with automated versioning and CI/CD.
+![Version](https://img.shields.io/github/v/release/your-org/nv-lib?label=version)
+![CI](https://github.com/your-org/nv-lib/workflows/CI/badge.svg)
+![Release](https://github.com/your-org/nv-lib/workflows/Release/badge.svg)
 
-## Quick Start
-
-Clone and setup:
-
-```bash
-git clone <your-fork>
-cd lib
-just setup
-```
-
-Daily development:
-
-```bash
-just install  # Install project dependencies
-just build    # Build the project
-just test     # Run tests
-just run      # Run locally
-just clean    # Clean build artifacts
-```
-
-List all commands:
-
-```bash
-just
-```
+Language-agnostic template for building projects with automated versioning, testing, and CI/CD workflows. GCP-forward by default, but easily adapted for npm, PyPI, Docker Hub, etc.
 
 ## Features
 
 - Language-agnostic command interface via `justfile`
+- Auto-load environment variables with `direnv` for simplified scripting and CLI tool usage
+- CI/CD platform agnostic bash scripting to support users overriding CI/CD behavior
 - Automated versioning with conventional commits
-- CI/CD with GitHub Actions
-- Development container support
+- CI/CD with GitHub Actions (test on PR, release on merge, publish on tags)
+- GCP Artifact Registry publishing (easily modified for other registries)
+- Dev container support
 - Cross-platform (macOS, Linux, Windows via WSL)
 
-## Customization
+## Quick Start
 
-Create a new project from this template:
+Scaffold a new project:
 
-1. Use GitHub's "Use this template" button or Nedavellir CLI
-2. Run scaffold script to customize for your project
-3. Edit `justfile` - replace TODO placeholders with your build commands
-4. Configure CI/CD secrets (optional) - See [User Guide](docs/user-guide.md#cicd-configuration)
-5. Commit using conventional commit format (feat:, fix:, docs:, etc.)
-6. Push - CI/CD runs automatically
+```bash
+# Option 1: Nedavellir CLI (automated)
+nv create your-project-name --platform nv-lib
 
-**Full instructions:** See the [User Guide](docs/user-guide.md)
+# Option 2: GitHub template + scaffold script
+# Click "Use this template" on GitHub, then:
+git clone <your-new-repo>
+cd <your-new-repo>
+bash scripts/scaffold.sh --src . --dest . --project your-project-name
+```
 
-Example for Node.js:
+Install dependencies and adapt:
+
+```bash
+just setup              # Required: bash, just, direnv
+direnv allow            # Load environment
+claude /adapt           # Guided customization
+```
+
+## How It Works
+
+The template follows a simple flow:
+
+```
+direnv → just → scripts → GitHub Actions
+                ↓
+              Claude (for complex workflows)
+```
+
+Customize by editing `justfile` recipes for your language. Override CI/CD behavior by editing scripts in `scripts/`, never workflows directly.
+
+## Getting Started
+
+1. Scaffold from template (see Quick Start above)
+2. Edit `justfile` - replace TODO placeholders with language-specific commands
+3. Configure `.envrc` for your registry (GCP by default, or npm/PyPI/Docker)
+4. Commit using conventional commits (`feat:`, `fix:`, `docs:`)
+5. Push to main - CI/CD runs automatically
+
+Example justfile customization:
 
 ```just
-install: _load
+# Node.js
+install:
     npm install
 
-build: _load
+build:
     npm run build
-
-build-prod: _load
-    NODE_ENV=production npm run build
 
 test: build
     npm test
@@ -68,93 +77,21 @@ publish: test build-prod
     npm publish
 ```
 
-Example for Python:
-
-```just
-install: _load
-    pip install -r requirements.txt
-
-build: _load
-    python -m build
-
-build-prod: _load
-    python -m build
-
-test: build
-    pytest
-
-publish: test build-prod
-    python -m twine upload dist/*
-```
+Use `/adapt` command for guided setup with examples for Python, Node.js, Go, Docker, etc.
 
 ## Documentation
 
-- [User Guide](docs/user-guide.md) - Complete guide for creating and managing projects
-- [Design](docs/design.md) - System overview, features, and key components
-- [Architecture](docs/architecture.md) - Implementation details and internals
-- [Migration Guides](docs/migrations/) - Version upgrade instructions
+- [User Guide](docs/user-guide.md) - Complete setup and usage guide
+- [Architecture](docs/architecture.md) - Design and implementation details
 
 ## Requirements
 
 - bash 3.2+
 - git
 
-Run `just setup` to install required dependencies (just, direnv).
+Run `just setup` to install remaining dependencies (just, direnv).
 
-For development tools (docker, node, shellcheck, shfmt), run:
-
-```bash
-just setup --dev
-```
-
-For CI environments (minimal tools):
-
-```bash
-just setup --ci
-```
-
-For platform development (adds bats-core for testing):
-
-```bash
-just setup --platform
-```
-
-Flags can be combined: `just setup --dev --platform`
-
-## CI/CD Workflow
-
-- Push to feature branch → Tests run
-- Merge to main → Release workflow runs
-  - semantic-release analyzes commits and creates version tag
-  - Builds production artifacts
-  - Publishes to registry (uses organization secrets)
-  - Creates GitHub release
-
-**Note:** Configure organization secrets once, and all scaffolded projects automatically work with CI/CD. See [User Guide](docs/user-guide.md#cicd-configuration).
-
-## Development
-
-### Platform Testing
-
-Run platform tests:
-
-```bash
-just platform-test
-```
-
-### Platform Development
-
-For platform maintainers, install all development tools:
-
-```bash
-just setup --dev --platform
-```
-
-Then run tests:
-
-```bash
-just platform-test  # Run all platform tests (19 tests)
-```
+Optional: `just setup --dev` for development tools, `just setup --template` for template testing.
 
 ## License
 

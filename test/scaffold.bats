@@ -100,7 +100,7 @@ teardown() {
     # Adds platform tracking (reads from source .envrc)
     run grep "NV_PLATFORM=" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"platform-lib"* ]]
+    [[ "$output" == *"nv-lib"* ]]
 
     run grep "NV_PLATFORM_VERSION=" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
@@ -160,16 +160,16 @@ teardown() {
         --non-interactive \
         --project testproject
 
-    # Platform development files should be removed
+    # Template development files should be removed
     [ ! -d "$DEST_DIR/test" ]
     [ ! -f "$DEST_DIR/CHANGELOG.md" ]
     [ ! -f "$DEST_DIR/RELEASE_NOTES.md" ]
 
-    # Platform development section should be removed from justfile
-    run grep "# PLATFORM DEVELOPMENT" "$DEST_DIR/justfile"
+    # Template section should be removed from justfile
+    run grep "# TEMPLATE" "$DEST_DIR/justfile"
     [ "$status" -eq 1 ]
 
-    # setup.sh should exist (platform-install.sh merged into it)
+    # setup.sh should exist
     [ -f "$DEST_DIR/scripts/setup.sh" ]
 }
 
@@ -187,8 +187,8 @@ teardown() {
     run grep "# myproject" "$DEST_DIR/README.md"
     [ "$status" -eq 0 ]
 
-    # Should contain platform name
-    run grep "platform-lib" "$DEST_DIR/README.md"
+    # Should contain template name
+    run grep "nv-lib" "$DEST_DIR/README.md"
     [ "$status" -eq 0 ]
 
     # Should contain platform version
@@ -294,55 +294,60 @@ teardown() {
     run grep "myAwesomeProjectHelper" "$DEST_DIR/src/sample-code.txt"
     [ "$status" -eq 0 ]
 
-    # Check replacements in docs files
-    run grep "MyAwesomeProject" "$DEST_DIR/docs/example-usage.md"
-    [ "$status" -eq 0 ]
-
-    run grep "myAwesomeProjectConfig" "$DEST_DIR/docs/example-usage.md"
-    [ "$status" -eq 0 ]
-
     # Check README contains project name
     run grep "my_awesome_project" "$DEST_DIR/README.md"
     [ "$status" -eq 0 ]
 
-    # Verify platform name no longer appears in .envrc
-    run grep -r "export PROJECT=platform-lib" "$DEST_DIR" --exclude-dir=.nv
+    # Verify template name no longer appears in .envrc
+    run grep -r "export PROJECT=nv-lib" "$DEST_DIR" --exclude-dir=.nv
     [ "$status" -eq 1 ]
 }
 
-@test "scaffolds new platform with --platform flag" {
+@test "scaffolded project has correct justfile commands" {
     bash ./scripts/scaffold.sh \
         --src . \
         --dest ../.. \
         --non-interactive \
-        --project new-platform \
-        --platform
+        --project testproject
 
-    # Platform development files should be kept
-    [ -d "$DEST_DIR/test" ]
-    [ -f "$DEST_DIR/scripts/setup.sh" ]  # platform-install.sh merged into setup.sh
+    cd "$DEST_DIR"
 
-    # Platform development justfile commands should be kept
-    run grep "# PLATFORM DEVELOPMENT" "$DEST_DIR/justfile"
+    # Should have upgrade command
+    run grep -q "^upgrade:" justfile
     [ "$status" -eq 0 ]
 
-    run grep "^platform-test: _load" "$DEST_DIR/justfile"
+    # Upgrade command should call claude /upgrade
+    run bash -c "grep -A 10 '^upgrade:' justfile | grep -q 'claude /upgrade'"
     [ "$status" -eq 0 ]
 
-    run grep "^new-migration: _load" "$DEST_DIR/justfile"
-    [ "$status" -eq 0 ]
+    # Should NOT have template development commands
+    run grep -q "^new-migration:" justfile
+    [ "$status" -eq 1 ]
 
-    # Platform-specific Claude commands should be kept
-    [ -f "$DEST_DIR/.claude/commands/new-migration.md" ]
-    [ -f "$DEST_DIR/.claude/migrations/generate-migration-guide.md" ]
+    run grep -q "^template-test:" justfile
+    [ "$status" -eq 1 ]
 
-    # Instance-specific files should still be removed
-    [ ! -f "$DEST_DIR/.claude/plan.md" ]
-    [ ! -f "$DEST_DIR/.claude/tasks.md" ]
-
-    # Migrations and decisions should be removed
-    [ ! -d "$DEST_DIR/docs/migrations" ]
-    [ ! -d "$DEST_DIR/docs/decisions" ]
-    [ ! -f "$DEST_DIR/CHANGELOG.md" ]
-    [ ! -f "$DEST_DIR/RELEASE_NOTES.md" ]
+    # Should NOT have TEMPLATE section
+    run grep -q "# TEMPLATE" justfile
+    [ "$status" -eq 1 ]
 }
+
+@test "template source has development commands" {
+    cd "$SRC_DIR"
+
+    # User-facing commands
+    run grep -q "^upgrade:" justfile
+    [ "$status" -eq 0 ]
+
+    # Template development commands (for testing the template itself)
+    run grep -q "^new-migration:" justfile
+    [ "$status" -eq 0 ]
+
+    run grep -q "^template-test:" justfile
+    [ "$status" -eq 0 ]
+
+    # TEMPLATE section (kept in source, removed when scaffolding)
+    run grep -q "# TEMPLATE" justfile
+    [ "$status" -eq 0 ]
+}
+

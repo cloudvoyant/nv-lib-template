@@ -14,34 +14,31 @@ NORMAL := '\033[0m'
 default:
     @just --list
 
-# Load environment variables from .envrc
-_load:
-    #!/usr/bin/env bash
-    # if [ -f .envrc ]; then
-    #     source .envrc
-    # fi
+# ==============================================================================
+# CORE DEVELOPMENT
+# ==============================================================================
 
 # Setup development environment
-# Flags: --dev (development tools), --ci (CI essentials), --platform (platform dev)
-setup *ARGS: _load
+# Flags: --dev (development tools), --ci (CI essentials), --template (template dev)
+setup *ARGS:
     @bash scripts/setup.sh {{ARGS}}
 
 # Install dependencies
-install: _load
+install:
     @echo -e "{{WARN}}TODO: Implement install{{NORMAL}}"
 
 # Build the project
-build: _load
+build:
     @echo -e "{{WARN}}TODO: Implement build{{NORMAL}}"
 
 # Build for production
-build-prod: _load
+build-prod:
     @mkdir -p dist
     @echo "$PROJECT $VERSION - Replace with your build artifact" > dist/artifact.txt
     @echo -e "{{SUCCESS}}Production artifact created: dist/artifact.txt{{NORMAL}}"
 
 # Clean build artifacts
-clean: _load
+clean:
     @echo -e "{{WARN}}TODO: Implement clean{{NORMAL}}"
 
 # Run project locally
@@ -52,7 +49,84 @@ run: build
 test: build
     @echo -e "{{WARN}}TODO: Implement test{{NORMAL}}"
 
+# ==============================================================================
+# CODE QUALITY
+# ==============================================================================
+
+# Format code
+format *PATHS:
+    @echo -e "{{WARN}}TODO: Implement formatting{{NORMAL}}"
+
+# Check code formatting (CI mode)
+format-check *PATHS:
+    @echo -e "{{WARN}}TODO: Implement format checking{{NORMAL}}"
+
+# Lint code
+lint *PATHS:
+    @echo -e "{{WARN}}TODO: Implement linting{{NORMAL}}"
+
+# Lint and auto-fix issues
+lint-fix *PATHS:
+    @echo -e "{{WARN}}TODO: Implement lint auto-fixing{{NORMAL}}"
+
+# Upgrade to newer template version (requires Claude Code)
+upgrade:
+    #!/usr/bin/env bash
+    if command -v claude >/dev/null 2>&1; then
+        if grep -q "NV_PLATFORM=" .envrc 2>/dev/null; then
+            claude /upgrade;
+        else
+            echo -e "{{ERROR}}This project is not based on a template{{NORMAL}}";
+            echo "";
+            echo "To adopt a template, use the nv CLI:";
+            echo "  nv scaffold <template>";
+            exit 1;
+        fi;
+    else
+        echo -e "{{ERROR}}Claude Code CLI not found{{NORMAL}}";
+        echo "Install Claude Code or run: /upgrade";
+        exit 1;
+    fi
+
+# ==============================================================================
+# CI/CD
+# ==============================================================================
+
+# Get current version
+[group('ci')]
+version:
+    @echo "$VERSION"
+
+# Get next version (from semantic-release)
+[group('ci')]
+version-next:
+    @bash -c 'source scripts/utils.sh && get_next_version'
+
+# Create new version based on commits (semantic-release)
+[group('ci')]
+upversion *ARGS:
+    @bash -c scripts/upversion.sh {{ARGS}}
+
+# Authenticate with GCP (local: gcloud login, CI: service account)
+[group('ci')]
+registry-login *ARGS:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [[ " {{ARGS}} " =~ " --ci " ]]; then
+        echo -e "{{INFO}}CI mode - authenticating with service account{{NORMAL}}"
+        KEY_FILE=$(mktemp)
+        echo "$GCP_SA_KEY" > "$KEY_FILE"
+        gcloud auth activate-service-account --key-file="$KEY_FILE"
+        rm -f "$KEY_FILE"
+        gcloud config set project "$GCP_REGISTRY_PROJECT_ID"
+    else
+        echo -e "{{INFO}}Local mode - interactive GCP login{{NORMAL}}"
+        gcloud auth login
+        gcloud config set project "$GCP_REGISTRY_PROJECT_ID"
+    fi
+
 # Publish the project
+[group('ci')]
 publish: test build-prod
     #!/usr/bin/env bash
     set -euo pipefail
@@ -72,92 +146,29 @@ publish: test build-prod
         --source=dist/artifact.txt
     echo -e "{{SUCCESS}}Published.{{NORMAL}}"
 
+# ==============================================================================
+# TEMPLATE
+# ==============================================================================
+
 # Scaffold a new project
-scaffold: _load
+[group('template')]
+scaffold:
     @bash scripts/scaffold.sh
 
-# Format code
-format *PATHS: _load
-    @echo -e "{{WARN}}TODO: Implement formatting{{NORMAL}}"
-
-# Check code formatting (CI mode)
-format-check *PATHS: _load
-    @echo -e "{{WARN}}TODO: Implement format checking{{NORMAL}}"
-
-# Lint code
-lint *PATHS: _load
-    @echo -e "{{WARN}}TODO: Implement linting{{NORMAL}}"
-
-# Lint and auto-fix issues
-lint-fix *PATHS: _load
-    @echo -e "{{WARN}}TODO: Implement lint auto-fixing{{NORMAL}}"
-
-# Get current version
-version: _load
-    @echo "$VERSION"
-
-# Get next version (from semantic-release)
-version-next: _load
-    @bash -c 'source scripts/utils.sh && get_next_version'
-
-# Create new version based on commits (semantic-release)
-upversion *ARGS: _load
-    @bash -c scripts/upversion.sh {{ARGS}}
-
-# Authenticate with GCP (local: gcloud login, CI: service account)
-registry-login *ARGS: _load
-    #!/usr/bin/env bash
-    set -euo pipefail
-    if [[ " {{ARGS}} " =~ " --ci " ]]; then
-        echo -e "{{INFO}}CI mode - authenticating with service account{{NORMAL}}"
-        KEY_FILE=$(mktemp)
-        echo "$GCP_SA_KEY" > "$KEY_FILE"
-        gcloud auth activate-service-account --key-file="$KEY_FILE"
-        rm -f "$KEY_FILE"
-        gcloud config set project "$GCP_REGISTRY_PROJECT_ID"
-    else
-        echo -e "{{INFO}}Local mode - interactive GCP login{{NORMAL}}"
-        gcloud auth login
-        gcloud config set project "$GCP_REGISTRY_PROJECT_ID"
-    fi
-
-# Upgrade to newer platform version (requires Claude Code)
-upgrade: _load
-    #!/usr/bin/env bash
-    if command -v claude >/dev/null 2>&1; then
-        if grep -q "NV_PLATFORM=" .envrc 2>/dev/null; then
-            claude /upgrade;
-        else
-            echo -e "{{ERROR}}This project is not based on a platform{{NORMAL}}";
-            echo "";
-            echo "To adopt a platform, use the nv CLI:";
-            echo "  nv scaffold <platform>";
-            exit 1;
-        fi;
-    else
-        echo -e "{{ERROR}}Claude Code CLI not found{{NORMAL}}";
-        echo "Install Claude Code or run: /upgrade";
-        exit 1;
-    fi
-
-# ==============================================================================
-# PLATFORM DEVELOPMENT (Remove after scaffolding)
-# ==============================================================================
-
-# Run platform tests
-[group('platform')]
-platform-test: _load
+# Run template tests
+[group('template')]
+template-test:
     @if command -v bats >/dev/null 2>&1; then \
-        echo -e "{{INFO}}Running platform tests...{{NORMAL}}"; \
+        echo -e "{{INFO}}Running template tests...{{NORMAL}}"; \
         bats test/; \
     else \
-        echo -e "{{ERROR}}bats not installed. Run: just setup --platform{{NORMAL}}"; \
+        echo -e "{{ERROR}}bats not installed. Run: just setup --template{{NORMAL}}"; \
         exit 1; \
     fi
 
 # Create a new migration guide (requires Claude Code)
-[group('platform')]
-new-migration: _load
+[group('template')]
+new-migration:
     @if command -v claude >/dev/null 2>&1; then \
         claude /new-migration; \
     else \

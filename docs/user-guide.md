@@ -1,138 +1,130 @@
 # User Guide
 
-**platform-lib** is a language-agnostic platform template for building scaffolded projects with automated versioning, testing, and CI/CD workflows.
+nv-lib is a language-agnostic template for building projects with automated versioning, testing, and CI/CD workflows. GCP-forward by default, but easily adapted for npm, PyPI, Docker Hub, etc.
 
-## Table of Contents
+## Getting Started
 
-- [Creating a New Project](#creating-a-new-project)
-- [Initial Setup](#initial-setup)
-- [Development Workflow](#development-workflow)
-- [Just Commands Reference](#just-commands-reference)
-- [CI/CD Configuration](#cicd-configuration)
-- [Upgrading Projects](#upgrading-projects)
-- [Troubleshooting](#troubleshooting)
+### Quick Start
 
----
-
-## Creating a New Project
-
-There are **two ways** to create a new project from this platform:
-
-### Option 1: GitHub Template (Recommended)
-
-1. Click **"Use this template"** on GitHub
-2. Name your new repository
-3. Clone your repository:
-   ```bash
-   git clone <your-new-repo>
-   cd <your-new-repo>
-   ```
-4. Run the scaffold script to customize:
-   ```bash
-   bash scripts/scaffold.sh --src . --dest . --project your-project-name
-   ```
-
-Platform development files (tests, migrations, changelogs) are automatically excluded from the template.
-
-### Option 2: Nedavellir CLI (Automated)
-
-If you have the Nedavellir CLI installed:
+Scaffold a new project using the Nedavellir CLI or GitHub template:
 
 ```bash
-nv create your-project-name --platform platform-lib
+# Option 1: Nedavellir CLI (automated)
+nv create your-project-name --platform nv-lib
+
+# Option 2: GitHub template + scaffold script
+# Click "Use this template" on GitHub, then:
+git clone <your-new-repo>
+cd <your-new-repo>
+bash scripts/scaffold.sh --src . --dest . --project your-project-name
 ```
 
-This handles everything automatically - cloning, scaffolding, and cleanup.
-
-### Option 3: Create a New Platform (Advanced)
-
-If you want to create a **new platform** (not a regular project), use the `--platform` flag:
+Install dependencies:
 
 ```bash
-bash scripts/scaffold.sh --src . --dest /path/to/new-platform --project new-platform-name --platform
+just setup              # Required: bash, just, direnv
+just setup --dev        # + Development tools (docker, node, shellcheck)
 ```
 
-This keeps platform development tools:
-- ✅ Test suite (`test/` directory)
-- ✅ Platform commands (`just platform-test`, `just new-migration`)
-- ✅ Platform Claude commands (`/validate-platform`, `/new-migration`)
-- ❌ Removes migrations and decisions (specific to parent platform)
-- ❌ Removes changelogs (CHANGELOG.md, RELEASE_NOTES.md)
-
-Use this when forking the platform to create your own customized version.
-
----
-
-## Initial Setup
-
-### 1. Install Development Dependencies
-
-Run the setup script to install required tools:
-
-```bash
-just setup
-```
-
-This installs **required dependencies**:
-
-- **bash** - Shell scripting
-- **just** - Command runner
-- **direnv** - Environment management
-
-**Optional dependencies** (install with `--include-optional`):
-
-- **docker** - Containerization
-- **node/npx** - For semantic-release
-- **shellcheck** - Shell script linting
-- **shfmt** - Shell script formatting
-
-To install all dependencies including optional ones:
-
-```bash
-bash scripts/setup.sh --include-optional
-```
-
-Or via just:
-
-```bash
-just setup --include-optional
-```
-
-### 2. Configure Environment
-
-Edit `.envrc` to set your project variables:
-
-```bash
-export PROJECT=your-project-name
-export VERSION=0.1.0
-
-# Optional: GCP Artifact Registry
-# export GCP_REGISTRY_PROJECT_ID="your-gcp-project"
-# export GCP_REGISTRY_REGION="us-east1"
-# export GCP_REGISTRY_NAME="your-repo"
-```
-
-Allow direnv to load the environment:
+Allow direnv to load your environment:
 
 ```bash
 direnv allow
 ```
 
-### 3. Customize Build Commands
+That's it! You now have a working project with CI/CD.
 
-Edit `justfile` and replace the TODO placeholders with your actual build commands.
+### Using Dev Containers
 
-**Example for Node.js:**
+The template includes a pre-configured devcontainer for consistent development environments across your team.
+
+**Prerequisites on host:**
+
+- Docker Desktop or Docker Engine
+- VS Code with Remote - Containers extension
+- SSH agent running with keys loaded (`ssh-add -l` to verify)
+- For gcloud: Run `gcloud auth login` once on host
+
+**To use:**
+
+1. Open project in VS Code
+2. Command Palette (Cmd/Ctrl+Shift+P) → "Dev Containers: Reopen in Container"
+3. Wait for container build (first time only)
+
+**What's included:**
+
+- Git, GitHub CLI, and Google Cloud CLI pre-installed
+- Git credentials automatically shared from host via SSH agent forwarding
+- Claude CLI credentials mounted from `~/.claude`
+- All VS Code extensions for shell development (shellcheck, just syntax, etc.)
+- Docker-in-Docker support for building containers
+
+**Authentication:**
+
+- **Git/GitHub**: Automatic via SSH agent forwarding (no setup needed)
+- **gcloud**: Run `gcloud auth login` inside the container on first use
+- **Claude**: Automatically available if configured on host
+
+**Cross-platform:**
+
+The devcontainer works on macOS, Linux, and Windows. Credential mounting uses environment variable substitution (`${localEnv:HOME}${localEnv:USERPROFILE}`) to support both Unix and Windows paths.
+
+## Usage
+
+### Daily Commands
+
+```bash
+just install    # Install project dependencies
+just build      # Build for development
+just test       # Run tests
+just run        # Run locally
+just clean      # Clean build artifacts
+```
+
+List all available commands:
+
+```bash
+just --list
+```
+
+### Commit and Release
+
+Use conventional commits for automatic versioning:
+
+```bash
+git commit -m "feat: add new feature"      # Minor bump (0.1.0 → 0.2.0)
+git commit -m "fix: resolve bug"           # Patch bump (0.1.0 → 0.1.1)
+git commit -m "docs: update readme"        # No bump
+git commit -m "feat!: breaking change"     # Major bump (0.1.0 → 1.0.0)
+```
+
+Push to main:
+
+```bash
+git push origin main
+```
+
+CI/CD automatically runs tests, creates a release, and publishes to your configured registry.
+
+## Adapting
+
+### For Your Language
+
+The `justfile` contains TODO placeholders. Run Claude's `/adapt` command for guided customization:
+
+```bash
+claude /adapt
+```
+
+Or manually replace placeholders with your language's commands:
 
 ```just
-install: _load
+# Node.js example
+install:
     npm install
 
-build: _load
+build:
     npm run build
-
-build-prod: _load
-    NODE_ENV=production npm run build
 
 test: build
     npm test
@@ -141,309 +133,107 @@ publish: test build-prod
     npm publish
 ```
 
-**Example for Python:**
+### For Your Registry
+
+The `publish` recipe defaults to GCP Artifact Registry. Edit it for your registry:
 
 ```just
-install: _load
-    pip install -r requirements.txt
-
-build: _load
-    python -m build
-
-test: build
-    pytest
-
+# npm
 publish: test build-prod
-    python -m twine upload dist/*
+    npm publish
+
+# PyPI
+publish: test build-prod
+    twine upload dist/*
+
+# Docker
+publish: test build-prod
+    docker push myimage:{{VERSION}}
 ```
 
----
-
-## Development Workflow
-
-### Daily Commands
+Configure your `.envrc` accordingly:
 
 ```bash
-just install    # Install dependencies
-just build      # Build the project
-just test       # Run tests
-just run        # Run locally
-just clean      # Clean build artifacts
+# GCP (default)
+export GCP_REGISTRY_PROJECT_ID="my-project"
+export GCP_REGISTRY_REGION="us-east1"
+export GCP_REGISTRY_NAME="my-registry"
+
+# Or use registry-specific variables for npm, PyPI, etc.
 ```
 
-### List All Commands
+### CI/CD Secrets
 
-```bash
-just
-```
+Configure secrets once at the organization level (Settings → Secrets → Actions):
 
-### Commit Convention
-
-Use conventional commits for automatic versioning:
-
-```bash
-git commit -m "feat: add new feature"      # Minor version bump
-git commit -m "fix: resolve bug"           # Patch version bump
-git commit -m "docs: update readme"        # No version bump
-git commit -m "feat!: breaking change"     # Major version bump
-```
-
-### Push and Release
-
-```bash
-git push origin main
-```
-
-On merge to `main`, the CI/CD workflow will:
-
-1. Run tests
-2. Analyze commits and determine version
-3. Build production artifacts
-4. Publish to configured registry
-5. Create GitHub release with changelog
-
----
-
-## Just Commands Reference
-
-### Core Commands
-
-| Command           | Description                            |
-| ----------------- | -------------------------------------- |
-| `just install`    | Install project dependencies           |
-| `just build`      | Build the project                      |
-| `just build-prod` | Build production artifacts             |
-| `just test`       | Run tests                              |
-| `just run`        | Run the project locally                |
-| `just clean`      | Remove build artifacts                 |
-| `just publish`    | Publish to registry (requires secrets) |
-
-### Utility Commands
-
-| Command      | Description                   |
-| ------------ | ----------------------------- |
-| `just setup` | Install development tools     |
-| `just --list`| Show all available commands   |
-
-### Claude Commands
-
-| Command                     | Description                             |
-| --------------------------- | --------------------------------------- |
-| `/generate-release-notes`   | Generate user-friendly release notes    |
-| `/validate-docs`            | Validate documentation consistency      |
-| `/upgrade`                  | Upgrade to newer platform version       |
-
-### Project Migration
-
-| Command        | Description                       |
-| -------------- | --------------------------------- |
-| `just upgrade` | Upgrade to newer platform version |
-
----
-
-## Customizing Versioning
-
-Test versioning locally (dry-run):
-
-```bash
-just upversion
-```
-
-Customize semantic-release by editing `.releaserc.json`. Add language-specific plugins:
-
-- **npm**: Add `@semantic-release/npm`
-- **Python**: Use `@semantic-release/exec` with `python -m build` and `twine upload`
-
-Install needed plugins in `scripts/setup.sh`. See [Architecture](architecture.md#scriptsupversionsh) for details.
-
----
-
-## CI/CD Configuration
-
-### GitHub Organization Secrets (Recommended)
-
-Configure secrets **once** at the organization level. All scaffolded projects automatically inherit them.
-
-**Setup:**
-
-1. Go to GitHub Organization → Settings → Secrets and variables → Actions
-2. Add organization secrets based on your publishing target:
-
-**For npm:**
-
-- `NPM_TOKEN` - npm authentication token
-
-**For PyPI:**
-
-- `PYPI_TOKEN` - PyPI API token
-
-**For Docker Hub:**
-
-- `DOCKER_USERNAME` - Docker Hub username
-- `DOCKER_PASSWORD` - Docker Hub password
-
-**For GCP Artifact Registry:**
+For GCP (default):
 
 - `GCP_SA_KEY` - Service account JSON key
-- `GCP_REGISTRY_PROJECT_ID` - GCP project ID
-- `GCP_REGISTRY_REGION` - Registry region (e.g., us-east1)
-- `GCP_REGISTRY_NAME` - Repository name
+- `GCP_REGISTRY_PROJECT_ID`, `GCP_REGISTRY_REGION`, `GCP_REGISTRY_NAME`
 
-3. Set repository access to "All repositories" or selected repositories
+For other registries:
 
-**This is a one-time setup** - all new projects automatically have access.
+- npm: `NPM_TOKEN`
+- PyPI: `PYPI_TOKEN`
+- Docker Hub: `DOCKER_USERNAME`, `DOCKER_PASSWORD`
 
-### GCP Service Account Setup
+All projects automatically inherit organization secrets.
 
-To create a service account key for GCP Artifact Registry:
+## Overriding CI/CD
 
-```bash
-# Create service account
-gcloud iam service-accounts create github-actions
+### Customizing Behavior
 
-# Grant permissions
-gcloud projects add-iam-policy-binding PROJECT_ID \
-    --member="serviceAccount:github-actions@PROJECT_ID.iam.gserviceaccount.com" \
-    --role="roles/artifactregistry.writer"
+Scripts in `scripts/` provide hooks for overriding CI/CD behavior:
 
-# Create key
-gcloud iam service-accounts keys create key.json \
-    --iam-account=github-actions@PROJECT_ID.iam.gserviceaccount.com
-```
+- `scripts/upversion.sh` - Modify versioning logic
+- `scripts/setup.sh` - Add custom dependencies
+- `scripts/scaffold.sh` - Keep as-is (template initialization)
 
-Copy the contents of `key.json` to the `GCP_SA_KEY` organization secret.
+Edit these scripts to change how CI/CD runs, but never edit `.github/workflows/` directly.
 
-### Repository Secrets (Alternative)
+### Example: Custom Versioning
 
-For individual developers without organization access:
+To change how versions are calculated, edit `scripts/upversion.sh` or modify `.releaserc.json` to add semantic-release plugins.
 
-1. Go to Repository → Settings → Secrets and variables → Actions
-2. Add the same secrets listed above
+### Example: Additional Setup Steps
 
-Note: This requires manual configuration for each project.
+To add custom dependencies during CI setup, extend `scripts/setup.sh` with your logic.
 
-### Branch Protection (Recommended)
+## LLM Assistance with Claude
 
-Protect the `main` branch to ensure all code is tested:
+Claude commands provide guided workflows for complex tasks.
 
-1. Repository → Settings → Branches → Add rule
-2. Branch name pattern: `main`
-3. Enable:
-   - ✅ Require a pull request before merging
-   - ✅ Require status checks to pass before merging
-   - Select: `test` and `build` as required checks
-   - ✅ Require branches to be up to date before merging
-4. Save changes
-
-### Workflow Triggers
-
-The automated CI/CD workflow:
-
-1. **Push to feature branch** → CI tests run
-2. **Merge to main** → Release workflow runs:
-   - semantic-release analyzes commits
-   - Creates version tag and updates CHANGELOG.md
-   - Builds production artifacts
-   - Publishes to registry
-   - Creates GitHub release
-
----
-
-## Upgrading Projects
-
-When a new platform version is released, upgrade your project:
-
-### Using Just
+### Available Commands
 
 ```bash
-just upgrade
+claude /adapt                   # Customize template for your language
+claude /upgrade                 # Migrate to newer template version
+claude /adr-new                 # Create architectural decision record
+claude /adr-capture             # Capture decisions from conversation
+claude /docs                    # Validate documentation
 ```
 
-This launches an interactive migration assistant that:
+### Upgrading Projects
 
-1. Detects your current platform version
-2. Finds the migration path to the latest version
-3. Applies migrations sequentially
-4. Validates the upgrade
-
-### Using Slash Command
-
-If you have Claude Code installed:
+When a new template version is released:
 
 ```bash
 claude /upgrade
 ```
 
-### Manual Migration
-
-1. Check your current version:
-
-   ```bash
-   grep NV_PLATFORM_VERSION .envrc
-   ```
-
-2. Find the migration guide in `docs/migrations/`:
-
-   ```bash
-   ls docs/migrations/
-   # Example: 1.0.4-to-1.1.0.md
-   ```
-
-3. Follow the migration guide instructions
-
-4. Update your platform version in `.envrc`:
-
-   ```bash
-   export NV_PLATFORM_VERSION=1.1.0
-   ```
-
-5. Test your project:
-   ```bash
-   just test
-   ```
-
----
+This creates a comprehensive migration plan, compares files, and walks you through changes while preserving your customizations.
 
 ## Troubleshooting
 
-### semantic-release fails with "ERELEASEBRANCHES"
-
-**Cause:** Repository doesn't have a `main` branch
-
-**Solution:**
-
-1. Ensure your default branch is named `main`
-2. Or update `.releaserc.json` to match your branch name:
-   ```json
-   {
-     "branches": ["your-branch-name"]
-   }
-   ```
-
-### Tests fail in CI but pass locally
-
-**Cause:** Environment differences
-
-**Solution:**
-
-1. Check that runtime versions match CI (Node.js, Python, Go, etc.)
-2. Ensure all dependencies are committed (package-lock.json, requirements.txt, etc.)
-3. Review CI logs for specific errors
-4. Run tests in Docker locally to match CI environment
-
 ### direnv not loading .envrc
 
-**Cause:** direnv not configured in shell
-
-**Solution:**
-
-Add to your shell config (~/.bashrc, ~/.zshrc, etc.):
+Add to your shell config (~/.bashrc, ~/.zshrc):
 
 ```bash
-eval "$(direnv hook bash)"  # or zsh, fish, etc.
+eval "$(direnv hook bash)"  # or zsh, fish
 ```
 
-Then reload:
+Reload and allow:
 
 ```bash
 source ~/.bashrc
@@ -452,69 +242,47 @@ direnv allow
 
 ### just command not found
 
-**Cause:** just not installed or not in PATH
-
-**Solution:**
+Install just:
 
 ```bash
-# macOS
-brew install just
-
-# Linux
-curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | sudo bash -s -- --to /usr/local/bin
-
-# Or run setup
-bash scripts/setup.sh
+brew install just           # macOS
+# Or run: bash scripts/setup.sh
 ```
+
+### Tests pass locally but fail in CI
+
+Check that:
+
+- Runtime versions match CI (Node.js, Python, Go versions)
+- Lock files are committed (package-lock.json, requirements.txt)
+- All dependencies are declared
 
 ### Publish fails with authentication error
 
-**Cause:** Missing or invalid registry credentials
+Verify GitHub organization secrets are configured:
 
-**Solution:**
+1. Organization → Settings → Secrets → Actions
+2. Check secrets exist (GCP_SA_KEY, NPM_TOKEN, etc.)
+3. Ensure repository access is enabled
 
-1. Verify GitHub organization secrets are configured (see [CI/CD Configuration](#cicd-configuration))
-2. Check that secrets are accessible to your repository
-3. For GCP, ensure service account has correct permissions
-4. For npm/PyPI, verify token is still valid
+For GCP, verify service account has `roles/artifactregistry.writer` permission.
 
-### Migration guide not found
+### semantic-release fails
 
-**Cause:** No migration path exists for your version
+Ensure:
 
-**Solution:**
-
-1. Check available migration guides:
-   ```bash
-   ls docs/migrations/
-   ```
-2. If your version is too old, migrate incrementally:
-   - 1.0.4 → 1.1.0
-   - 1.1.0 → 1.2.0
-   - etc.
-3. If no guide exists, check the CHANGELOG.md for breaking changes
-
----
-
-## Getting Help
-
-- **Documentation**: [Architecture](architecture.md) | [Design](design.md)
-- **Migration Guides**: [docs/migrations/](../docs/migrations/)
-- **Issues**: [GitHub Issues](https://github.com/cloudvoyant/lib/issues)
-- **Changelog**: [CHANGELOG.md](../CHANGELOG.md)
-
----
+- Default branch is named `main` (or update `.releaserc.json`)
+- At least one commit uses conventional format
+- GITHUB_TOKEN secret is accessible
 
 ## Next Steps
 
-After setup:
+1. Customize `justfile` for your language
+2. Write code in `src/`
+3. Add tests
+4. Configure GitHub organization secrets
+5. Set up branch protection on `main`
+6. Make your first conventional commit
+7. Push and watch the automated release
 
-1. ✅ Customize your `justfile` with language-specific commands
-2. ✅ Write your code in `src/`
-3. ✅ Add tests
-4. ✅ Configure GitHub organization secrets (for CI/CD)
-5. ✅ Set up branch protection on `main`
-6. ✅ Make your first commit using conventional commits
-7. ✅ Push and watch the automated release workflow
-
-Happy building! 🚀
+See [Architecture](architecture.md) for implementation details.

@@ -5,11 +5,12 @@ Installs development dependencies for this platform.
 Usage: setup.sh [OPTIONS]
 
 Options:
-  --dev         Install development tools (direnv, shellcheck, shfmt, docker, node/npx)
-  --ci          Install CI essentials (docker, node/npx)
-  --platform    Install platform development tools (bats-core)
+  --dev              Install development tools (direnv, shellcheck, shfmt, docker, node/npx)
+  --ci               Install CI essentials (docker, node/npx)
+  --template         Install template development tools (bats-core)
+  --docker-optimize  Optimize for Docker image size (consolidate operations, aggressive cleanup)
 
-Flags can be combined: setup.sh --dev --platform
+Flags can be combined: setup.sh --dev --template --docker-optimize
 
 Required dependencies (always installed):
 - bash (shell)
@@ -28,7 +29,7 @@ CI essentials (--ci):
 - node/npx (for semantic-release)
 - gcloud (Google Cloud SDK)
 
-Platform development (--platform):
+Template development (--template):
 - bats-core (bash testing framework)
 DOCUMENTATION
 
@@ -41,6 +42,7 @@ setup_script_lifecycle
 INSTALL_DEV=false
 INSTALL_CI=false
 INSTALL_PLATFORM=false
+DOCKER_OPTIMIZE=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -52,8 +54,12 @@ while [[ $# -gt 0 ]]; do
             INSTALL_CI=true
             shift
             ;;
-        --platform)
+        --template)
             INSTALL_PLATFORM=true
+            shift
+            ;;
+        --docker-optimize)
+            DOCKER_OPTIMIZE=true
             shift
             ;;
         -h|--help)
@@ -62,13 +68,13 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "  --dev         Install development tools"
             echo "  --ci          Install CI essentials"
-            echo "  --platform    Install platform development tools"
+            echo "  --template    Install template development tools"
             echo "  -h, --help    Show this help message"
             echo ""
             echo "Required: bash, just, direnv"
             echo "Development (--dev): docker, node/npx, gcloud, shellcheck, shfmt"
             echo "CI (--ci): docker, node/npx, gcloud"
-            echo "Platform (--platform): bats-core"
+            echo "Template (--template): bats-core"
             exit 0
             ;;
         *)
@@ -113,8 +119,9 @@ install_bash() {
         fi
         ;;
     Linux)
-        if command_exists apt-get; then
-            sudo apt-get update
+        if command_exists apk; then
+            sudo apk add --no-cache bash
+        elif command_exists apt-get; then
             sudo apt-get install -y bash
         elif command_exists yum; then
             sudo yum install -y bash
@@ -183,8 +190,11 @@ install_docker() {
         fi
         ;;
     Linux)
-        if command_exists apt-get; then
-            sudo apt-get update
+        if command_exists apk; then
+            sudo apk add --no-cache docker docker-compose
+            sudo rc-update add docker boot 2>/dev/null || true
+            sudo service docker start 2>/dev/null || true
+        elif command_exists apt-get; then
             sudo apt-get install -y docker.io docker-compose
             sudo systemctl start docker
             sudo systemctl enable docker
@@ -224,19 +234,20 @@ install_direnv() {
         fi
         ;;
     Linux)
-        if command_exists apt-get; then
-            sudo apt-get update
+        # Try binary installation first (recommended by direnv)
+        if command_exists curl; then
+            log_info "Installing direnv from binary release..."
+            curl -sfL https://direnv.net/install.sh | bash
+        elif command_exists apk; then
+            sudo apk add --no-cache direnv
+        elif command_exists apt-get; then
             sudo apt-get install -y direnv
         elif command_exists yum; then
             sudo yum install -y direnv
         elif command_exists pacman; then
             sudo pacman -S direnv
-        elif command_exists curl; then
-            # Install from binary release
-            ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
-            curl -sfL https://direnv.net/install.sh | bash
         else
-            log_warn "No suitable package manager found. Please install direnv manually from https://direnv.net/docs/installation.html"
+            log_warn "curl not found and no suitable package manager found. Please install direnv manually from https://direnv.net/docs/installation.html"
             return 1
         fi
         ;;
@@ -264,8 +275,9 @@ install_node() {
         fi
         ;;
     Linux)
-        if command_exists apt-get; then
-            sudo apt-get update
+        if command_exists apk; then
+            sudo apk add --no-cache nodejs npm
+        elif command_exists apt-get; then
             sudo apt-get install -y nodejs npm
         elif command_exists yum; then
             sudo yum install -y nodejs npm
@@ -299,7 +311,19 @@ install_gcloud() {
         fi
         ;;
     Linux)
-        if command_exists apt-get; then
+        if command_exists apk; then
+            # Alpine doesn't have official gcloud package, install from tarball
+            log_info "Installing gcloud from official tarball..."
+            if ! command_exists python3; then
+                sudo apk add --no-cache python3 py3-pip
+            fi
+            curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz
+            tar -xf google-cloud-cli-linux-x86_64.tar.gz
+            sudo ./google-cloud-sdk/install.sh --quiet --install-dir=/usr/local
+            rm -rf google-cloud-sdk google-cloud-cli-linux-x86_64.tar.gz
+            # Add to PATH
+            echo 'export PATH=$PATH:/usr/local/google-cloud-sdk/bin' | sudo tee -a /etc/profile.d/gcloud.sh
+        elif command_exists apt-get; then
             # Add gcloud apt repository
             echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 
@@ -312,7 +336,7 @@ install_gcloud() {
             fi
 
             # Install gcloud
-            sudo apt-get update && sudo apt-get install -y google-cloud-sdk
+            sudo apt-get install -y google-cloud-sdk
         elif command_exists yum; then
             # Add gcloud yum repository
             sudo tee /etc/yum.repos.d/google-cloud-sdk.repo << EOM
@@ -354,8 +378,9 @@ install_shellcheck() {
         fi
         ;;
     Linux)
-        if command_exists apt-get; then
-            sudo apt-get update
+        if command_exists apk; then
+            sudo apk add --no-cache shellcheck
+        elif command_exists apt-get; then
             sudo apt-get install -y shellcheck
         elif command_exists yum; then
             sudo yum install -y ShellCheck
@@ -422,8 +447,9 @@ install_bats() {
         fi
         ;;
     Linux)
-        if command_exists apt-get; then
-            sudo apt-get update
+        if command_exists apk; then
+            sudo apk add --no-cache bats
+        elif command_exists apt-get; then
             sudo apt-get install -y bats
         elif command_exists yum; then
             sudo yum install -y bats
@@ -457,12 +483,23 @@ check_dependencies() {
         log_info "CI essentials: docker, node/npx, gcloud (will be installed)"
     fi
     if [ "$INSTALL_PLATFORM" = true ]; then
-        log_info "Platform development: bats-core (will be installed)"
+        log_info "Template development: bats-core (will be installed)"
     fi
     if [ "$INSTALL_DEV" = false ] && [ "$INSTALL_CI" = false ] && [ "$INSTALL_PLATFORM" = false ]; then
-        log_info "Optional tools: skipped (use --dev, --ci, or --platform flags to install)"
+        log_info "Optional tools: skipped (use --dev, --ci, or --template flags to install)"
     fi
     echo ""
+
+    # Run package manager update once at the beginning (for Linux systems)
+    if [ "$PLATFORM" = "Linux" ]; then
+        if command_exists apk; then
+            log_info "Updating package lists..."
+            sudo apk update
+        elif command_exists apt-get; then
+            log_info "Updating package lists..."
+            sudo apt-get update
+        fi
+    fi
 
     local total=8
     local current=0
@@ -618,14 +655,14 @@ check_dependencies() {
         fi
     fi
 
-    # Check bats-core (for --platform only)
+    # Check bats-core (for --template only)
     if [ "$INSTALL_PLATFORM" = true ]; then
         current=$((current + 1))
         progress_step $current $total "Checking bats-core..."
         if command_exists bats; then
             log_success "bats-core is already installed: $(bats --version)"
         else
-            log_warn "bats-core not found (needed for platform testing)"
+            log_warn "bats-core not found (needed for template testing)"
             if install_bats; then
                 log_success "bats-core installed successfully"
             else
@@ -643,6 +680,26 @@ check_dependencies() {
         else
             log_success "direnv already allowed for this directory"
         fi
+    fi
+
+    # Cleanup if optimizing for Docker
+    if [ "$DOCKER_OPTIMIZE" = true ]; then
+        log_info "Cleaning up package caches..."
+        if [ "$PLATFORM" = "Linux" ]; then
+            if command_exists apk; then
+                sudo rm -rf /var/cache/apk/*
+            elif command_exists apt-get; then
+                sudo rm -rf /var/lib/apt/lists/*
+            elif command_exists yum; then
+                sudo yum clean all
+            elif command_exists pacman; then
+                sudo pacman -Sc --noconfirm
+            fi
+        fi
+        if command_exists npm; then
+            npm cache clean --force
+        fi
+        log_success "Cleanup completed"
     fi
 
     echo ""

@@ -1,28 +1,28 @@
 # Sample Code File for Testing Case Replacements
 
-# Platform name in different formats:
+# Template name in different formats:
 # snake_case
-platform_name = platform_lib
+template_name = nv_lib
 
 # kebab-case
-platform-name: platform-lib
+template-name: nv-lib
 
 # PascalCase
-class PlatformLib:
+class NvLib:
     pass
 
-class PlatformLibService:
+class NvLibService:
     pass
 
 # camelCase
-const platformLib = "platform";
-const platformLibConfig = {};
+const nvLib = "template";
+const nvLibConfig = {};
 
 # flatcase
-platformlibproject
+nvlibproject
 
 # Mixed examples
-def create_platform_lib_instance():
-    return PlatformLib()
+def create_nv_lib_instance():
+    return NvLib()
 
-export const platformLibHelper = new PlatformLibService();
+export const nvLibHelper = new NvLibService();

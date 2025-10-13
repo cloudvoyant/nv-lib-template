@@ -1,28 +1,30 @@
 {
-  "name": "Language-Agnostic Build System",
   "build": {
-    "dockerfile": "Dockerfile"
+    "dockerfile": "Dockerfile",
+    "context": ".."
   },
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "mounts": [
+    // Claude CLI credentials (cross-platform: HOME on Unix, USERPROFILE on Windows)
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached"
+  ],
   "customizations": {
     "vscode": {
       "extensions": [
+        "ms-azuretools.vscode-docker",
         "mkhl.direnv",
         "skellock.just",
-        "ms-azuretools.vscode-docker",
         "nefrob.vscode-just-syntax",
-        "yzhang.markdown-all-in-one",
-        "shd101wyy.markdown-preview-enhanced",
-        "zaaack.markdown-editor",
-        "timonwong.shellcheck"
+        "timonwong.shellcheck",
+        "foxundermoon.shell-format"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash"
       }
     }
   },
-  "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
-  },
-  "postCreateCommand": "bash scripts/setup.sh",
   "remoteUser": "vscode"
 }

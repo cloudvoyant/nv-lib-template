@@ -1,6 +1,6 @@
 # Claude Commands
 
-Custom slash commands for platform and project management.
+Custom slash commands for template and project management.
 
 ## Available Commands
 
@@ -8,12 +8,14 @@ Custom slash commands for platform and project management.
 
 #### `/upgrade`
 
-Upgrade this project to a newer platform version.
+Migrate this project to the latest template version using a spec-driven approach.
 
-- Detects current platform and version
-- Finds migration path to target version
-- Guides through sequential migrations
-- Validates successful migration
+- Detects current template version
+- Clones latest template for comparison
+- Creates comprehensive migration plan
+- Reviews all critical files (scripts, configs, .claude, .vscode, dotfiles)
+- Works through changes systematically
+- Tests and validates migration
 
 **Usage:**
 
@@ -21,55 +23,23 @@ Upgrade this project to a newer platform version.
 /upgrade
 ```
 
-#### `/validate-docs`
+#### `/adapt`
 
-Validate documentation for completeness and consistency.
+Adapt this template to your project's specific needs using a spec-driven approach.
 
-- Checks documentation structure
-- Validates internal links
-- Verifies code examples
-- Checks version references
-- Finds TODOs and placeholders
-
-**Usage:**
-
-```
-/validate-docs
-```
-
-#### `/generate-release-notes`
-
-Generate user-friendly release notes from CHANGELOG.md.
-
-- Transforms technical changelog into user-focused release notes
-- Adds new versions to existing RELEASE_NOTES.md (preserves history)
-- Uses clear, concise language for end users
-- Highlights key features and breaking changes
+- Understands your requirements (language, framework, publishing)
+- Creates comprehensive adaptation plan in plan.md
+- Guides through customizations systematically
+- Provides examples for common languages (Python, Node.js, Go, Docker)
+- Tests and validates adaptations
 
 **Usage:**
 
 ```
-/generate-release-notes
+/adapt
 ```
 
-### For Platform Development
-
-#### `/new-migration`
-
-Generate a migration guide for a new platform version.
-
-- Analyzes git history since last version
-- Identifies breaking changes and new features
-- Creates migration guide from template
-- Documents upgrade path
-
-**Usage:**
-
-```
-/new-migration
-```
-
-#### `/new-decision`
+#### `/adr-new`
 
 Interactively create a new Architectural Decision Record (ADR).
 
@@ -82,10 +52,10 @@ Interactively create a new Architectural Decision Record (ADR).
 **Usage:**
 
 ```
-/new-adr
+/adr-new
 ```
 
-#### `/capture-decisions`
+#### `/adr-capture`
 
 Capture significant decisions from the current session as ADRs.
 
@@ -97,19 +67,31 @@ Capture significant decisions from the current session as ADRs.
 **Usage:**
 
 ```
-/capture-decisions
+/adr-capture
 ```
 
-## Workflows
+#### `/docs`
 
-These commands invoke workflows in `.claude/migrations/`:
+Validate documentation for completeness and consistency.
 
-| Command          | Workflow File                 | Purpose                     |
-| ---------------- | ----------------------------- | --------------------------- |
-| `/upgrade`       | `assist-project-migration.md` | Migrate scaffolded projects |
-| `/new-migration` | `generate-migration-guide.md` | Create migration guides     |
+- Checks documentation structure
+- Validates internal links
+- Verifies code examples
+- Checks version references
+- Finds TODOs and placeholders
 
-Additional workflows:
+**Usage:**
 
-- `detect-scaffolded-version.md` - Detect platform/version (used by `/upgrade`)
-- `validate-project-migration.md` - Verify migration success (used by `/upgrade`)
+```
+/docs
+```
+
+## How It Works
+
+The `/upgrade` command provides a comprehensive, self-contained migration workflow:
+
+1. Detects current version from `.envrc`
+2. Clones latest template for comparison
+3. Creates detailed migration plan
+4. Reviews all files systematically
+5. Tests and validates changes

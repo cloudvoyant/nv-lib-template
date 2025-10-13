@@ -6,18 +6,16 @@ Called by Nedavellir CLI after copying platform files to destination.
 Updates project-specific configuration in the destination directory.
 
 Usage:
-  bash scripts/scaffold.sh --src /path/to/platform --dest /path/to/project
-  bash scripts/scaffold.sh --src /path/to/platform --dest /path/to/project --non-interactive
-  bash scripts/scaffold.sh --src /path/to/platform --dest /path/to/project --project myapp
-  bash scripts/scaffold.sh --src /path/to/platform --dest /path/to/project --platform
+  bash scripts/scaffold.sh --src /path/to/template --dest /path/to/project
+  bash scripts/scaffold.sh --src /path/to/template --dest /path/to/project --non-interactive
+  bash scripts/scaffold.sh --src /path/to/template --dest /path/to/project --project myapp
 
 Options:
-  --src PATH           Path to platform source directory (required)
+  --src PATH           Path to template source directory (required)
   --dest PATH          Path to destination project directory (required)
   --non-interactive    Skip prompts, use defaults
   --project NAME       Project name (default: destination directory name)
   --keep-claude        Keep .claude/ directory for AI workflows
-  --platform           Scaffold a new platform (keeps platform development tools)
 DOCUMENTATION
 
 # IMPORTS ----------------------------------------------------------------------
@@ -69,7 +67,6 @@ trap cleanup_on_error EXIT
 # PARSE OPTIONS ----------------------------------------------------------------
 NON_INTERACTIVE=false
 KEEP_CLAUDE=false
-SCAFFOLD_PLATFORM=false
 PROJECT_NAME=""
 SRC_DIR=""
 DEST_DIR=""
@@ -96,10 +93,6 @@ while [[ $# -gt 0 ]]; do
             KEEP_CLAUDE=true
             shift
             ;;
-        --platform)
-            SCAFFOLD_PLATFORM=true
-            shift
-            ;;
         *)
             log_error "Unknown option: $1"
             exit 1
@@ -110,7 +103,7 @@ done
 # VALIDATION -------------------------------------------------------------------
 if [ -z "$SRC_DIR" ] || [ -z "$DEST_DIR" ]; then
     log_error "Both --src and --dest are required"
-    echo "Usage: bash scripts/scaffold.sh --src /path/to/platform --dest /path/to/project" >&2
+    echo "Usage: bash scripts/scaffold.sh --src /path/to/template --dest /path/to/project" >&2
     exit 1
 fi
 
@@ -270,30 +263,16 @@ log_success "Backup created"
 log_info "Copying platform files to destination..."
 
 # Copy all files from source to destination
-# Always exclude: .git, .nv, docs/migrations/, docs/decisions/, CHANGELOG.md, RELEASE_NOTES.md
-# For regular projects (not platforms): also exclude test/ and scripts/platform-install.sh
-if [ "$SCAFFOLD_PLATFORM" = true ]; then
-    # Scaffolding a new platform - keep platform development files
-    rsync -a \
-        --exclude='.git' \
-        --exclude='.nv' \
-        --exclude='docs/migrations/' \
-        --exclude='docs/decisions/' \
-        --exclude='CHANGELOG.md' \
-        --exclude='RELEASE_NOTES.md' \
-        "$SRC_DIR/" "$DEST_DIR/"
-else
-    # Scaffolding a regular project - exclude platform development files
-    rsync -a \
-        --exclude='.git' \
-        --exclude='.nv' \
-        --exclude='test/' \
-        --exclude='docs/migrations/' \
-        --exclude='docs/decisions/' \
-        --exclude='CHANGELOG.md' \
-        --exclude='RELEASE_NOTES.md' \
-        "$SRC_DIR/" "$DEST_DIR/"
-fi
+# Exclude: .git, .nv, test/, docs/migrations/, docs/decisions/, CHANGELOG.md, RELEASE_NOTES.md
+rsync -a \
+    --exclude='.git' \
+    --exclude='.nv' \
+    --exclude='test/' \
+    --exclude='docs/migrations/' \
+    --exclude='docs/decisions/' \
+    --exclude='CHANGELOG.md' \
+    --exclude='RELEASE_NOTES.md' \
+    "$SRC_DIR/" "$DEST_DIR/"
 
 log_success "Platform files copied"
 
@@ -376,54 +355,29 @@ log_success "Created and configured .envrc from template"
 
 # CLEAN UP .CLAUDE/ DIRECTORY --------------------------------------------------
 if [ "$KEEP_CLAUDE" = false ]; then
-    if [ "$SCAFFOLD_PLATFORM" = true ]; then
-        log_info "Cleaning .claude/ directory for new platform..."
+    log_info "Cleaning .claude/ directory..."
 
-        # For platforms: keep platform development files, remove instance-specific files
-        rm -f "$DEST_DIR/.claude/plan.md"
-        rm -f "$DEST_DIR/.claude/tasks.md"
+    # Remove instance-specific files
+    rm -f "$DEST_DIR/.claude/plan.md"
+    rm -f "$DEST_DIR/.claude/tasks.md"
 
-        # Keep platform-specific commands and workflows:
-        # - commands: new-migration.md, validate-platform.md (platform development)
-        # - migrations: generate-migration-guide.md (platform development)
+    # Keep user-facing files:
+    # - instructions.md, style.md, workflows.md
+    # - commands: upgrade.md, adapt.md, docs.md, adr-new.md, adr-capture.md
 
-        log_success "Removed instance-specific files from .claude/"
-    else
-        log_info "Cleaning .claude/ directory..."
-
-        # For regular projects: remove all platform development files
-        rm -f "$DEST_DIR/.claude/plan.md"
-        rm -f "$DEST_DIR/.claude/tasks.md"
-
-        # Remove platform-specific migration workflows and commands
-        rm -f "$DEST_DIR/.claude/migrations/generate-migration-guide.md"
-        rm -f "$DEST_DIR/.claude/commands/new-migration.md"
-        rm -f "$DEST_DIR/.claude/commands/validate-platform.md"
-        rm -f "$DEST_DIR/.claude/commands/validate-docs.md"
-
-        # Keep user-facing files:
-        # - instructions.md, style.md, workflows.md
-        # - commands: upgrade.md, new-decision.md, capture-decisions.md
-        # - migrations: detect-scaffolded-version.md, assist-project-migration.md, validate-project-migration.md
-
-        log_success "Removed platform development files from .claude/"
-    fi
+    log_success "Removed template development files from .claude/"
 else
     log_info "Keeping .claude/ directory"
 fi
 
-# CLEAN UP PLATFORM DEVELOPMENT FILES ------------------------------------------
-if [ "$SCAFFOLD_PLATFORM" = false ]; then
-    log_info "Cleaning platform development files..."
+# CLEAN UP TEMPLATE FILES ------------------------------------------------------
+log_info "Cleaning template files..."
 
-    # Remove platform development section from justfile (only for regular projects)
-    JUSTFILE="$DEST_DIR/justfile"
-    if [ -f "$JUSTFILE" ]; then
-        # Remove everything from "# PLATFORM DEVELOPMENT" to end of file
-        sed_inplace '/# PLATFORM DEVELOPMENT/,$d' "$JUSTFILE"
-    fi
-else
-    log_info "Keeping platform development files for new platform..."
+# Remove template section from justfile
+JUSTFILE="$DEST_DIR/justfile"
+if [ -f "$JUSTFILE" ]; then
+    # Remove everything from "# TEMPLATE" comment to end of file
+    sed_inplace '/# TEMPLATE$/,$ {/# TEMPLATE$/d; d;}' "$JUSTFILE"
 fi
 
 # Replace README.md with template
@@ -441,9 +395,7 @@ else
     log_warning "README.template.md not found, keeping original README.md"
 fi
 
-if [ "$SCAFFOLD_PLATFORM" = false ]; then
-    log_success "Removed platform development files"
-fi
+log_success "Removed template development files"
 
 # CLEANUP BACKUP ---------------------------------------------------------------
 # Remove backup on success

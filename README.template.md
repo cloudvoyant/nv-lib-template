@@ -1,5 +1,9 @@
 # {{PROJECT_NAME}}
 
+![Version](https://img.shields.io/github/v/release/your-org/{{PROJECT_NAME}}?label=version)
+![CI](https://github.com/your-org/{{PROJECT_NAME}}/workflows/CI/badge.svg)
+![Release](https://github.com/your-org/{{PROJECT_NAME}}/workflows/Release/badge.svg)
+
 > A new project scaffolded from the {{PLATFORM_NAME}} platform
 
 ## Overview
@@ -75,12 +79,30 @@ just publish
 
 ### Registry Configuration
 
-Publishing to artifact registries is optional. Configure in `.envrc`:
+Publishing to artifact registries is optional. This project defaults to GCP Artifact Registry but can be configured for npm, PyPI, Docker Hub, etc.
 
-- **GCP Artifact Registry**: Set `GCP_REGISTRY_PROJECT_ID`, `GCP_REGISTRY_REGION`, `GCP_REGISTRY_NAME`
-- **Other registries**: Update the `publish` recipe in `justfile`
+Configure in `.envrc`:
 
-See [docs/user-guide.md](docs/user-guide.md) for detailed setup and usage instructions.
+- **GCP Artifact Registry** (default): Set `GCP_REGISTRY_PROJECT_ID`, `GCP_REGISTRY_REGION`, `GCP_REGISTRY_NAME`
+- **Other registries**: Update the `publish` recipe in `justfile` and add registry-specific variables to `.envrc`
+
+Examples:
+
+```just
+# npm
+publish: test build-prod
+    npm publish
+
+# PyPI
+publish: test build-prod
+    twine upload dist/*
+
+# Docker
+publish: test build-prod
+    docker push myimage:{{VERSION}}
+```
+
+See the [{{PLATFORM_NAME}} User Guide](https://github.com/your-org/{{PLATFORM_NAME}}/blob/main/docs/user-guide.md) for detailed configuration instructions.
 
 ## License
 
