@@ -711,4 +711,4 @@ check_dependencies() {
 detect_platform
 check_dependencies
 
-log_info "Setup complete! Run 'just build' to build, 'just test' to run tests, or 'just --list' to see all commands."
+log_info "Setup complete! Run 'just build' to build, 'just test' to run tests, or 'just' to see all commands."

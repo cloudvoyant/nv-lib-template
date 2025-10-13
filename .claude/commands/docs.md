@@ -11,6 +11,7 @@ ls -la docs/ README.md
 ```
 
 Common documentation files to look for:
+
 - `README.md` - Main project documentation
 - User guides, tutorials, or getting started docs
 - Architecture or design documentation
@@ -28,6 +29,7 @@ grep -r "\[.*\](.*/.*\.md)" docs/ README.md
 ```
 
 For each link found:
+
 - Verify the target file exists
 - Check if section anchors are valid (if present)
 
@@ -48,10 +50,11 @@ Check code examples in documentation match the actual project:
 grep -r "just [a-z-]*" docs/ README.md
 
 # Compare with actual justfile
-just --list
+just
 ```
 
 For each command or code example:
+
 - Verify syntax is correct for the language
 - Check that file paths referenced actually exist in the project
 - Ensure bash/just commands are accurate and exist
@@ -68,6 +71,7 @@ grep -r "version" docs/ README.md --ignore-case
 ```
 
 Ensure:
+
 - Current version matches across documentation
 - No outdated version references
 - Changelogs or release notes are up to date
@@ -83,6 +87,7 @@ grep -r "{{.*}}" docs/ README.md
 ```
 
 Review each TODO:
+
 - Is it still relevant?
 - Should it be tracked as an issue?
 - Can it be resolved now?
@@ -113,6 +118,7 @@ command -v just git docker node python go 2>/dev/null
 ```
 
 For the project:
+
 - Installation instructions match actual setup requirements
 - Configuration file examples match actual file structure
 - Documented commands actually exist and work
@@ -142,11 +148,13 @@ Documentation Validation Report
 ```
 
 For each issue found:
+
 - Describe the problem (e.g., "docs reference `just deploy` but command doesn't exist in justfile")
 - Suggest a fix (e.g., "Add `just deploy` command or update docs to reference correct command")
 - Indicate priority (high/medium/low)
 
 **Key consistency checks:**
+
 - All documented commands exist and work
 - File paths in examples point to real files
 - Configuration examples match actual config structure

@@ -28,7 +28,7 @@ Use `just` as the primary command interface for all platform and user commands.
 
 - Simple, intuitive syntax similar to Make but cleaner, easier than Taskfile for those unfamiliar
 - Cross-platform (Windows, macOS, Linux)
-- Built-in help (`just --list`) makes commands discoverable / self-documenting
+- Built-in help (`just`) makes commands discoverable / self-documenting
 - Recipe dependencies enable task composition
 - Language-agnostic - works for any project type
 - Easy to install via package managers or cargo

@@ -84,7 +84,7 @@ just clean      # Clean build artifacts
 List all available commands:
 
 ```bash
-just --list
+just
 ```
 
 ### Commit and Release
