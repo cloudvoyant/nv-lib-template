@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/cloudvoyant/lib/compare/v1.8.0...v1.8.1) (2025-10-13)
+
+
+### Bug Fixes
+
+* remove RELEASE_NOTES.md reference from release workflow ([07c9912](https://github.com/cloudvoyant/lib/commit/07c9912d7e72114efeaf98fa2653ce333805a166))
+
 # [1.8.0](https://github.com/cloudvoyant/lib/compare/v1.7.0...v1.8.0) (2025-10-13)
 
 
