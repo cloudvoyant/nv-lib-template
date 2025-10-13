@@ -121,50 +121,6 @@ log_debug() {
     log "DEBUG" "$1"
 }
 
-# Find repository root by looking for .git directory
-find_repo_root() {
-    local current_dir="$PWD"
-
-    while [ "$current_dir" != "/" ]; do
-        if [ -d "$current_dir/.git" ] || [ -f "$current_dir/.git" ]; then
-            echo "$current_dir"
-            return 0
-        fi
-        current_dir="$(dirname "$current_dir")"
-    done
-
-    log_error "Not in a git repository"
-    echo "TIP: Initialize a git repository with 'git init' or ensure you're in the project directory" >&2
-    return 1
-}
-
-# Change to repository root
-goto_repo_root() {
-    local repo_root
-    repo_root=$(find_repo_root)
-
-    if [ $? -ne 0 ]; then
-        return 1
-    fi
-
-    cd "$repo_root" || {
-        log_error "Failed to change to repository root: $repo_root (permission denied or directory missing)"
-        return 1
-    }
-
-    return 0
-}
-
-# Check if running from repository root (for backwards compatibility)
-check_repo_root() {
-    if [ ! -d ".git" ] && [ ! -f ".git" ]; then
-        log_error "Must run from repository root"
-        echo "TIP: Run 'cd \$(git rev-parse --show-toplevel)' to navigate to the repository root" >&2
-        return 1
-    fi
-    return 0
-}
-
 # Check if command exists
 command_exists() {
     command -v "$1" &>/dev/null
@@ -178,21 +134,6 @@ sed_inplace() {
 
     # Use .bak extension for cross-platform compatibility (works on both macOS and Linux)
     sed -i.bak "$expression" "$file" && rm -f "${file}.bak"
-}
-
-# Require command exists with optional version check
-require_command() {
-    local cmd=$1
-    local min_version=${2:-}
-
-    if ! command_exists "$cmd"; then
-        log_error "$cmd is not installed"
-        echo "TIP: Install $cmd or run 'just setup' to install all dependencies" >&2
-        return 1
-    fi
-
-    # TODO: Add version comparison if min_version is provided
-    return 0
 }
 
 # Prompt user for confirmation
@@ -209,52 +150,6 @@ confirm() {
             return 1
             ;;
     esac
-}
-
-# Retry a command with exponential backoff
-retry() {
-    local max_attempts=${1:-3}
-    local delay=${2:-2}
-    local attempt=1
-    shift 2
-    local cmd="$@"
-
-    while [ $attempt -le $max_attempts ]; do
-        if eval "$cmd"; then
-            return 0
-        fi
-
-        if [ $attempt -lt $max_attempts ]; then
-            log_warn "Command failed (attempt $attempt/$max_attempts). Retrying in ${delay}s..."
-            sleep $delay
-            delay=$((delay * 2))
-        fi
-
-        attempt=$((attempt + 1))
-    done
-
-    log_error "Command failed after $max_attempts attempts"
-    return 1
-}
-
-# Create lock file to prevent concurrent runs
-create_lock_file() {
-    local lock_file="${1:-.script.lock}"
-
-    if [ -f "$lock_file" ]; then
-        log_error "Script is already running (lock file exists: $lock_file)"
-        echo "TIP: If the script is not actually running, remove the stale lock file with 'rm $lock_file'" >&2
-        return 1
-    fi
-
-    echo $$ > "$lock_file"
-    return 0
-}
-
-# Release lock file
-release_lock_file() {
-    local lock_file="${1:-.script.lock}"
-    rm -f "$lock_file"
 }
 
 # Get git repository name from remote origin URL
@@ -311,40 +206,4 @@ get_next_version() {
 
     echo "$next_version"
     return 0
-}
-
-# SCRIPT LIFECYCLE SETUP -------------------------------------------------------
-
-# Initialize script lifecycle (error handling, traps, etc.)
-# Call this at the start of every script after sourcing utils.sh
-# Options:
-#   --lock <file>    Create and manage a lock file for this script
-setup_script_lifecycle() {
-    local lock_file=""
-
-    while [[ $# -gt 0 ]]; do
-        case $1 in
-            --lock)
-                lock_file="$2"
-                shift 2
-                ;;
-            *)
-                shift
-                ;;
-        esac
-    done
-
-    set -euo pipefail
-    trap 'log_error "Script failed at line $LINENO"; exit 1' ERR
-
-    # Set up lock file if requested
-    if [[ -n "$lock_file" ]]; then
-        if ! create_lock_file "$lock_file"; then
-            log_error "Failed to acquire lock file: $lock_file"
-            exit 1
-        fi
-        trap "release_lock_file '$lock_file'" EXIT
-    else
-        trap 'release_lock_file' EXIT
-    fi
 }

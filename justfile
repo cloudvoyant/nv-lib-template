@@ -11,17 +11,14 @@ ERROR := '\033[0;31m'
 NORMAL := '\033[0m'
 
 # Default recipe (show help)
-default:
-    @just --list
+_default:
+    @just --list --unsorted
 
 # ==============================================================================
 # CORE DEVELOPMENT
 # ==============================================================================
 
-# Setup development environment
-# Flags: --dev (development tools), --ci (CI essentials), --template (template dev)
-setup *ARGS:
-    @bash scripts/setup.sh {{ARGS}}
+
 
 # Install dependencies
 install:
@@ -31,16 +28,6 @@ install:
 build:
     @echo -e "{{WARN}}TODO: Implement build{{NORMAL}}"
 
-# Build for production
-build-prod:
-    @mkdir -p dist
-    @echo "$PROJECT $VERSION - Replace with your build artifact" > dist/artifact.txt
-    @echo -e "{{SUCCESS}}Production artifact created: dist/artifact.txt{{NORMAL}}"
-
-# Clean build artifacts
-clean:
-    @echo -e "{{WARN}}TODO: Implement clean{{NORMAL}}"
-
 # Run project locally
 run: build
     @echo -e "{{WARN}}TODO: Implement run{{NORMAL}}"
@@ -49,27 +36,41 @@ run: build
 test: build
     @echo -e "{{WARN}}TODO: Implement test{{NORMAL}}"
 
+# Clean build artifacts
+clean:
+    @echo -e "{{WARN}}TODO: Implement clean{{NORMAL}}"
+
 # ==============================================================================
-# CODE QUALITY
+# UTILITIES
 # ==============================================================================
 
+# Setup development environment
+[group('utils')]
+setup *ARGS:
+    @bash scripts/setup.sh {{ARGS}}
+
 # Format code
+[group('utils')]
 format *PATHS:
     @echo -e "{{WARN}}TODO: Implement formatting{{NORMAL}}"
 
 # Check code formatting (CI mode)
+[group('utils')]
 format-check *PATHS:
     @echo -e "{{WARN}}TODO: Implement format checking{{NORMAL}}"
 
 # Lint code
+[group('utils')]
 lint *PATHS:
     @echo -e "{{WARN}}TODO: Implement linting{{NORMAL}}"
 
 # Lint and auto-fix issues
+[group('utils')]
 lint-fix *PATHS:
     @echo -e "{{WARN}}TODO: Implement lint auto-fixing{{NORMAL}}"
 
 # Upgrade to newer template version (requires Claude Code)
+[group('utils')]
 upgrade:
     #!/usr/bin/env bash
     if command -v claude >/dev/null 2>&1; then
@@ -91,6 +92,13 @@ upgrade:
 # ==============================================================================
 # CI/CD
 # ==============================================================================
+
+# Build for production
+[group('ci')]
+build-prod:
+    @mkdir -p dist
+    @echo "$PROJECT $VERSION - Replace with your build artifact" > dist/artifact.txt
+    @echo -e "{{SUCCESS}}Production artifact created: dist/artifact.txt{{NORMAL}}"
 
 # Get current version
 [group('ci')]
@@ -158,21 +166,11 @@ scaffold:
 # Run template tests
 [group('template')]
 template-test:
-    @if command -v bats >/dev/null 2>&1; then \
-        echo -e "{{INFO}}Running template tests...{{NORMAL}}"; \
-        bats test/; \
-    else \
-        echo -e "{{ERROR}}bats not installed. Run: just setup --template{{NORMAL}}"; \
-        exit 1; \
-    fi
-
-# Create a new migration guide (requires Claude Code)
-[group('template')]
-new-migration:
-    @if command -v claude >/dev/null 2>&1; then \
-        claude /new-migration; \
-    else \
-        echo -e "{{ERROR}}Claude Code CLI not found{{NORMAL}}"; \
-        echo "Install Claude Code or run: /new-migration"; \
-        exit 1; \
+    #!/usr/bin/env bash
+    if command -v bats >/dev/null 2>&1; then
+        echo -e "{{INFO}}Running template tests...{{NORMAL}}";
+        bats test/;
+    else
+        echo -e "{{ERROR}}bats not installed. Run: just setup --template{{NORMAL}}";
+        exit 1;
     fi

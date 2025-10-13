@@ -20,7 +20,7 @@ DOCUMENTATION
 
 # IMPORTS ----------------------------------------------------------------------
 source "$(dirname "$0")/utils.sh"
-setup_script_lifecycle
+set -euo pipefail
 
 # Unset PROJECT and VERSION to force fresh read from .envrc
 unset PROJECT VERSION

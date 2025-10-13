@@ -1,8 +1,8 @@
 # nv-lib
 
-![Version](https://img.shields.io/github/v/release/your-org/nv-lib?label=version)
-![CI](https://github.com/your-org/nv-lib/workflows/CI/badge.svg)
-![Release](https://github.com/your-org/nv-lib/workflows/Release/badge.svg)
+![Version](https://img.shields.io/github/v/release/cloudvoyant/nv-lib?label=version)
+![CI](https://github.com/cloudvoyant/nv-lib/workflows/CI/badge.svg)
+![Release](https://github.com/cloudvoyant/nv-lib/workflows/Release/badge.svg)
 
 Language-agnostic template for building projects with automated versioning, testing, and CI/CD workflows. GCP-forward by default, but easily adapted for npm, PyPI, Docker Hub, etc.
 
@@ -10,9 +10,9 @@ Language-agnostic template for building projects with automated versioning, test
 
 - Language-agnostic command interface via `justfile`
 - Auto-load environment variables with `direnv` for simplified scripting and CLI tool usage
-- CI/CD platform agnostic bash scripting to support users overriding CI/CD behavior
+- Easy CI/CD customization with platform agnostic bash scripting
 - Automated versioning with conventional commits
-- CI/CD with GitHub Actions (test on PR, release on merge, publish on tags)
+- CI/CD with GitHub Actions (test on PR, tag and release on merge)
 - GCP Artifact Registry publishing (easily modified for other registries)
 - Dev container support
 - Cross-platform (macOS, Linux, Windows via WSL)

@@ -45,7 +45,7 @@ See `/upgrade` command for reference implementation of this pattern.
 
 - Include DOCUMENTATION heredoc at top
 - Source utils.sh for shared functions
-- Use `setup_script_lifecycle` for error handling
+- Use `set -euo pipefail` for error handling
 - Make executable with `chmod +x`
 
 **Justfile recipes**:

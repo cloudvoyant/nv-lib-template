@@ -1,9 +1,5 @@
 # {{PROJECT_NAME}}
 
-![Version](https://img.shields.io/github/v/release/your-org/{{PROJECT_NAME}}?label=version)
-![CI](https://github.com/your-org/{{PROJECT_NAME}}/workflows/CI/badge.svg)
-![Release](https://github.com/your-org/{{PROJECT_NAME}}/workflows/Release/badge.svg)
-
 > A new project scaffolded from the {{PLATFORM_NAME}} platform
 
 ## Overview

@@ -42,7 +42,7 @@ DOCUMENTATION
 
 # IMPORTS ----------------------------------------------------------------------
 source "$(dirname "$0")/utils.sh"
-setup_script_lifecycle
+set -euo pipefail
 
 # MAIN -------------------------------------------------------------------------
 

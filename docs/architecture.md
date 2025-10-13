@@ -118,7 +118,7 @@ The `scripts/` directory contains language-agnostic bash automation:
 - `upversion.sh` - Wraps semantic-release with a consistent interface (local dry-run mode vs CI mode)
 - `utils.sh` - Provides shared functions for logging, version reading, and cross-platform compatibility
 
-All scripts use `set -euo pipefail` and call `setup_script_lifecycle` for consistent error handling.
+All scripts use `set -euo pipefail` for consistent error handling.
 
 ### Component: .envrc
 

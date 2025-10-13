@@ -73,11 +73,9 @@ Description: What this script does
 Usage: ./script.sh [options]
 DOCUMENTATION
 
-set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/utils.sh"
-setup_script_lifecycle
+set -euo pipefail
 ```
 
 Use `scripts/utils.sh` functions. Test with bats.
