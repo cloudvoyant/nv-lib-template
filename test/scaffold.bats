@@ -335,15 +335,12 @@ teardown() {
 @test "template source has development commands" {
     cd "$SRC_DIR"
 
-    # User-facing commands
-    run grep -q "^upgrade:" justfile
+    # User-facing commands (in utils group)
+    run grep -q "upgrade:" justfile
     [ "$status" -eq 0 ]
 
     # Template development commands (for testing the template itself)
-    run grep -q "^new-migration:" justfile
-    [ "$status" -eq 0 ]
-
-    run grep -q "^template-test:" justfile
+    run grep -q "template-test:" justfile
     [ "$status" -eq 0 ]
 
     # TEMPLATE section (kept in source, removed when scaffolding)

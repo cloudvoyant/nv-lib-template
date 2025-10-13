@@ -52,15 +52,10 @@ teardown() {
     # User-facing Claude commands should be included
     [ -f "$EXTRACT_DIR/.claude/commands/README.md" ]
     [ -f "$EXTRACT_DIR/.claude/commands/upgrade.md" ]
-    [ -f "$EXTRACT_DIR/.claude/commands/new-decision.md" ]
-    [ -f "$EXTRACT_DIR/.claude/commands/capture-decisions.md" ]
-    [ -f "$EXTRACT_DIR/.claude/commands/validate-docs.md" ]
-
-    # User-facing migration workflows should be included
-    [ -f "$EXTRACT_DIR/.claude/migrations/README.md" ]
-    [ -f "$EXTRACT_DIR/.claude/migrations/detect-scaffolded-version.md" ]
-    [ -f "$EXTRACT_DIR/.claude/migrations/assist-project-migration.md" ]
-    [ -f "$EXTRACT_DIR/.claude/migrations/validate-project-migration.md" ]
+    [ -f "$EXTRACT_DIR/.claude/commands/adapt.md" ]
+    [ -f "$EXTRACT_DIR/.claude/commands/adr-new.md" ]
+    [ -f "$EXTRACT_DIR/.claude/commands/adr-capture.md" ]
+    [ -f "$EXTRACT_DIR/.claude/commands/docs.md" ]
 
     # User-facing Claude config files should be included
     [ -f "$EXTRACT_DIR/.claude/instructions.md" ]
