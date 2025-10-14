@@ -1,14 +1,13 @@
 # nv-lib-template
 
 ![Version](https://img.shields.io/github/v/release/cloudvoyant/nv-lib-template?label=version)
-![CI](https://github.com/cloudvoyant/nv-lib-template/workflows/CI/badge.svg)
 ![Release](https://github.com/cloudvoyant/nv-lib-template/workflows/Release/badge.svg)
 
-Language-agnostic template for building projects with automated versioning, testing, and CI/CD workflows. GCP-forward by default, but easily adapted for npm, PyPI, Docker Hub, etc.
+`nv-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. GCP-forward by default, but easily adapted for npm, PyPI, Docker Hub, etc.
 
 ## Features
 
-- Language-agnostic command interface via `justfile`
+- Language-agnostic self-documenting command interface via `justfile`
 - Auto-load environment variables with `direnv` for simplified scripting and CLI tool usage
 - Easy CI/CD customization with platform agnostic bash scripting
 - Automated versioning with conventional commits
