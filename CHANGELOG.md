@@ -1,3 +1,10 @@
+## [1.8.2](https://github.com/cloudvoyant/nv-lib-template/compare/v1.8.1...v1.8.2) (2025-10-14)
+
+
+### Bug Fixes
+
+* readme badhes ([c2990cb](https://github.com/cloudvoyant/nv-lib-template/commit/c2990cbccd56accccc95ebcf92eec1c102d05947))
+
 ## [1.8.1](https://github.com/cloudvoyant/lib/compare/v1.8.0...v1.8.1) (2025-10-13)
 
 
