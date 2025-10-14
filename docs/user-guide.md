@@ -1,6 +1,6 @@
 # User Guide
 
-nv-lib is a language-agnostic template for building projects with automated versioning, testing, and CI/CD workflows. GCP-forward by default, but easily adapted for npm, PyPI, Docker Hub, etc.
+nv-lib-template is a language-agnostic template for building projects with automated versioning, testing, and CI/CD workflows. GCP-forward by default, but easily adapted for npm, PyPI, Docker Hub, etc.
 
 ## Getting Started
 
@@ -10,7 +10,7 @@ Scaffold a new project using the Nedavellir CLI or GitHub template:
 
 ```bash
 # Option 1: Nedavellir CLI (automated)
-nv create your-project-name --platform nv-lib
+nv create your-project-name --platform nv-lib-template
 
 # Option 2: GitHub template + scaffold script
 # Click "Use this template" on GitHub, then:

@@ -100,7 +100,7 @@ teardown() {
     # Adds platform tracking (reads from source .envrc)
     run grep "NV_PLATFORM=" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"nv-lib"* ]]
+    [[ "$output" == *"nv-lib-template"* ]]
 
     run grep "NV_PLATFORM_VERSION=" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
@@ -188,7 +188,7 @@ teardown() {
     [ "$status" -eq 0 ]
 
     # Should contain template name
-    run grep "nv-lib" "$DEST_DIR/README.md"
+    run grep "nv-lib-template" "$DEST_DIR/README.md"
     [ "$status" -eq 0 ]
 
     # Should contain platform version
@@ -299,7 +299,7 @@ teardown() {
     [ "$status" -eq 0 ]
 
     # Verify template name no longer appears in .envrc
-    run grep -r "export PROJECT=nv-lib" "$DEST_DIR" --exclude-dir=.nv
+    run grep -r "export PROJECT=nv-lib-template" "$DEST_DIR" --exclude-dir=.nv
     [ "$status" -eq 1 ]
 }
 

@@ -2,7 +2,7 @@ Help me adapt this template to my project's specific needs using a spec-driven a
 
 ## Overview
 
-This workflow helps you customize the nv-lib template for your specific use case by:
+This workflow helps you customize the nv-lib-template for your specific use case by:
 1. Understanding your requirements
 2. Creating a comprehensive adaptation plan
 3. Working through changes systematically
@@ -24,7 +24,7 @@ I'll ask you about:
 I'll create `.claude/plan.md` with phases for:
 
 ```markdown
-# Adaptation Plan: nv-lib → <your-project>
+# Adaptation Plan: nv-lib-template → <your-project>
 
 ## Phase 1: Language Setup
 - [ ] Update justfile build recipe for <language>

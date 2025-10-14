@@ -2,33 +2,33 @@
 
 # Test cases using template name in different formats:
 
-test_nv_lib_functionality() {
+test_nv_lib_template_functionality() {
     # snake_case usage
-    assert nv_lib == "template"
+    assert nv_lib_template == "template"
 }
 
-test-nv-lib-integration() {
+test-nv-lib-template-integration() {
     # kebab-case usage
-    config.template-name = nv-lib
+    config.template-name = nv-lib-template
 }
 
-class TestNvLib {
+class TestNvLibTemplate {
     // PascalCase usage
-    NvLib instance;
-    NvLibService service;
+    NvLibTemplate instance;
+    NvLibTemplateService service;
 }
 
-describe('nvLib', () => {
+describe('nvLibTemplate', () => {
     // camelCase usage
-    const nvLibInstance = new NvLib();
-    const nvLibConfig = getNvLibConfig();
+    const nvLibTemplateInstance = new NvLibTemplate();
+    const nvLibTemplateConfig = getNvLibTemplateConfig();
 });
 
 # Configuration examples
-NV_LIB_CONFIG_PATH=/etc/nv-lib/config
-nv_lib_database_url=postgres://nv-lib:password@localhost/nv_lib
+NV_LIB_TEMPLATE_CONFIG_PATH=/etc/nv-lib-template/config
+nv_lib_template_database_url=postgres://nv-lib-template:password@localhost/nv_lib_template
 
 # Function names
-function initialize_nv_lib() { }
-function createNvLibService() { }
-function NvLibFactory() { }
+function initialize_nv_lib_template() { }
+function createNvLibTemplateService() { }
+function NvLibTemplateFactory() { }

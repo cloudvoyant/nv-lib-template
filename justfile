@@ -1,42 +1,54 @@
 # justfile - Command runner for project automation
 # Requires: just (https://github.com/casey/just)
 
-set shell := ["bash", "-c"]
+set shell   := ["bash", "-c"]
+
+# Dependencies
+bash        := require("bash")
+direnv      := require("direnv")
 
 # Color codes for output
-INFO := '\033[0;34m'
-SUCCESS := '\033[0;32m'
-WARN := '\033[1;33m'
-ERROR := '\033[0;31m'
-NORMAL := '\033[0m'
-
-# Default recipe (show help)
-_default:
-    @just --list --unsorted
+INFO        := '\033[0;34m'
+SUCCESS     := '\033[0;32m'
+WARN        := '\033[1;33m'
+ERROR       := '\033[0;31m'
+NORMAL      := '\033[0m'
 
 # ==============================================================================
 # CORE DEVELOPMENT
 # ==============================================================================
 
+# Default recipe (show help)
+_default:
+    @just --list --unsorted
 
+# Load environment
+[group('dev')]
+load:
+    @direnv allow
 
 # Install dependencies
+[group('dev')]
 install:
     @echo -e "{{WARN}}TODO: Implement install{{NORMAL}}"
 
 # Build the project
+[group('dev')]
 build:
-    @echo -e "{{WARN}}TODO: Implement build{{NORMAL}}"
+    @echo -e "{{WARN}}TODO: Implement build for $PROJECT@$VERSION{{NORMAL}}"
 
 # Run project locally
+[group('dev')]
 run: build
     @echo -e "{{WARN}}TODO: Implement run{{NORMAL}}"
 
 # Run tests
+[group('dev')]
 test: build
     @echo -e "{{WARN}}TODO: Implement test{{NORMAL}}"
 
 # Clean build artifacts
+[group('dev')]
 clean:
     @echo -e "{{WARN}}TODO: Implement clean{{NORMAL}}"
 
@@ -89,6 +101,24 @@ upgrade:
         exit 1;
     fi
 
+# Authenticate with GCP (local: gcloud login, CI: service account)
+[group('utils')]
+registry-login *ARGS:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [[ " {{ARGS}} " =~ " --ci " ]]; then
+        echo -e "{{INFO}}CI mode - authenticating with service account{{NORMAL}}"
+        KEY_FILE=$(mktemp)
+        echo "$GCP_SA_KEY" > "$KEY_FILE"
+        gcloud auth activate-service-account --key-file="$KEY_FILE"
+        rm -f "$KEY_FILE"
+        gcloud config set project "$GCP_REGISTRY_PROJECT_ID"
+    else
+        echo -e "{{INFO}}Local mode - interactive GCP login{{NORMAL}}"
+        gcloud auth login
+        gcloud config set project "$GCP_REGISTRY_PROJECT_ID"
+    fi
+
 # ==============================================================================
 # CI/CD
 # ==============================================================================
@@ -114,24 +144,6 @@ version-next:
 [group('ci')]
 upversion *ARGS:
     @bash -c scripts/upversion.sh {{ARGS}}
-
-# Authenticate with GCP (local: gcloud login, CI: service account)
-[group('ci')]
-registry-login *ARGS:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    if [[ " {{ARGS}} " =~ " --ci " ]]; then
-        echo -e "{{INFO}}CI mode - authenticating with service account{{NORMAL}}"
-        KEY_FILE=$(mktemp)
-        echo "$GCP_SA_KEY" > "$KEY_FILE"
-        gcloud auth activate-service-account --key-file="$KEY_FILE"
-        rm -f "$KEY_FILE"
-        gcloud config set project "$GCP_REGISTRY_PROJECT_ID"
-    else
-        echo -e "{{INFO}}Local mode - interactive GCP login{{NORMAL}}"
-        gcloud auth login
-        gcloud config set project "$GCP_REGISTRY_PROJECT_ID"
-    fi
 
 # Publish the project
 [group('ci')]

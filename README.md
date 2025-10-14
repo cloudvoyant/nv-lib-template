@@ -1,8 +1,8 @@
-# nv-lib
+# nv-lib-template
 
-![Version](https://img.shields.io/github/v/release/cloudvoyant/nv-lib?label=version)
-![CI](https://github.com/cloudvoyant/nv-lib/workflows/CI/badge.svg)
-![Release](https://github.com/cloudvoyant/nv-lib/workflows/Release/badge.svg)
+![Version](https://img.shields.io/github/v/release/cloudvoyant/nv-lib-template?label=version)
+![CI](https://github.com/cloudvoyant/nv-lib-template/workflows/CI/badge.svg)
+![Release](https://github.com/cloudvoyant/nv-lib-template/workflows/Release/badge.svg)
 
 Language-agnostic template for building projects with automated versioning, testing, and CI/CD workflows. GCP-forward by default, but easily adapted for npm, PyPI, Docker Hub, etc.
 
@@ -23,7 +23,7 @@ Scaffold a new project:
 
 ```bash
 # Option 1: Nedavellir CLI (automated)
-nv create your-project-name --platform nv-lib
+nv create your-project-name --platform nv-lib-template
 
 # Option 2: GitHub template + scaffold script
 # Click "Use this template" on GitHub, then:

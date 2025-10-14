@@ -2,7 +2,7 @@
 
 ## Overview
 
-nv-lib is a language-agnostic template providing consistent build/test/publish workflows. Customize for any language by editing `justfile` recipes.
+nv-lib-template is a language-agnostic template providing consistent build/test/publish workflows. Customize for any language by editing `justfile` recipes.
 
 GCP-forward by default (uses GCP Artifact Registry), but easily modified for npm, PyPI, Docker Hub, etc.
 

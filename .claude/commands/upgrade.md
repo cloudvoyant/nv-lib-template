@@ -1,4 +1,4 @@
-Help me migrate this project to the latest nv-lib template version using a spec-driven approach.
+Help me migrate this project to the latest nv-lib-template version using a spec-driven approach.
 
 ## Overview
 
@@ -46,7 +46,7 @@ Create `.claude/plan.md` with a structured migration plan. I'll help you create 
 # Migration Plan: v<current> → v<target>
 
 ## Overview
-Migrate from nv-lib v<current> to v<target>
+Migrate from nv-lib-template v<current> to v<target>
 
 ## Files to Review
 
@@ -202,7 +202,7 @@ If `.envrc` doesn't have `NV_PLATFORM_VERSION`, add it:
 ```bash
 echo '' >> .envrc
 echo '# Nedavellir platform tracking' >> .envrc
-echo 'export NV_PLATFORM=nv-lib' >> .envrc
+echo 'export NV_PLATFORM=nv-lib-template' >> .envrc
 echo 'export NV_PLATFORM_VERSION=<current-version>' >> .envrc
 ```
 
