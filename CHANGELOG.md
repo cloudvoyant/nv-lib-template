@@ -1,3 +1,15 @@
+# [1.9.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.8.2...v1.9.0) (2025-10-14)
+
+
+### Bug Fixes
+
+* getting version from tags to keep single source of truth, and avoid need for drenv reloads due to .,envrc changes on commits ([6c0004a](https://github.com/cloudvoyant/nv-lib-template/commit/6c0004a58dc66d95fcfa5b2eb45ba86d8a587a94))
+
+
+### Features
+
+* use version.txt as single source of truth for versioning ([956fe0d](https://github.com/cloudvoyant/nv-lib-template/commit/956fe0d7bab5e14e377ead1de652d31148ed11ee))
+
 ## [1.8.2](https://github.com/cloudvoyant/nv-lib-template/compare/v1.8.1...v1.8.2) (2025-10-14)
 
 
