@@ -323,9 +323,11 @@ fi
 # Copy template to destination
 cp "$ENVRC_TEMPLATE" "$ENVRC_FILE"
 
-# Update PROJECT name and reset VERSION for new project
+# Create version.txt with initial version
+echo "0.1.0" > "$DEST_DIR/version.txt"
+
+# Update PROJECT name
 sed_inplace "s/__PROJECT_NAME__/$PROJECT_NAME/" "$ENVRC_FILE"
-sed_inplace "s/__VERSION__/0.1.0/" "$ENVRC_FILE"
 
 # Configure GCP if requested
 if [ "$CONFIGURE_GCP" = true ]; then

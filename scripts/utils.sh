@@ -166,16 +166,23 @@ get_git_repo_name() {
     echo "$repo_url" | sed 's|.*/||' | sed 's|\.git.*||'
 }
 
-# Get current version using semantic-release
+# Get current version from version.txt
 get_version() {
     local version=""
+    local version_file="${PROJECT_ROOT}/version.txt"
 
-    # Get latest git tag
+    # Read from version.txt if it exists
+    if [ -f "$version_file" ]; then
+        version=$(cat "$version_file" | tr -d '[:space:]')
+        if [[ -n "$version" ]]; then
+            echo "$version"
+            return 0
+        fi
+    fi
+
+    # Fallback: try git tags
     if command -v git &>/dev/null; then
-        # Fetch tags from remote first
         git fetch --tags 2>/dev/null || true
-
-        # Get latest tag sorted by version
         version=$(git tag -l --sort=-v:refname | head -n1 | sed 's/^v//')
         if [[ -n "$version" ]]; then
             echo "$version"
@@ -184,7 +191,7 @@ get_version() {
     fi
 
     # Default if nothing found
-    echo "0.0.1"
+    echo "0.1.0"
     return 0
 }
 

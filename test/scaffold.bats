@@ -106,10 +106,11 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"$VERSION"* ]]
 
-    # Resets project version to 0.1.0
-    run grep "^export VERSION=" "$DEST_DIR/.envrc"
+    # Resets project version to 0.1.0 in version.txt
+    [ -f "$DEST_DIR/version.txt" ]
+    run cat "$DEST_DIR/version.txt"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"0.1.0"* ]]
+    [[ "$output" == "0.1.0" ]]
 
     # No duplicates on second run
     bash ./scripts/scaffold.sh \

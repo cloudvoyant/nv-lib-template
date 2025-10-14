@@ -12,13 +12,13 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "sed -i.bak 's/export VERSION=.*/export VERSION=${nextRelease.version}/' .envrc && rm -f .envrc.bak"
+        "prepareCmd": "echo ${nextRelease.version} > version.txt"
       }
     ],
     [
       "@semantic-release/git",
       {
-        "assets": ["CHANGELOG.md", "RELEASE_NOTES.md", ".envrc"],
+        "assets": ["CHANGELOG.md", "version.txt"],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
     ],

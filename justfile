@@ -7,6 +7,13 @@ set shell   := ["bash", "-c"]
 bash        := require("bash")
 direnv      := require("direnv")
 
+# Environment variables available for all scripts
+export _PROJECT                 := `source .envrc && echo $PROJECT`
+export VERSION                  := `source .envrc && echo $VERSION`
+export GCP_REGISTRY_PROJECT_ID  := `source .envrc && echo $GCP_REGISTRY_PROJECT_ID`
+export GCP_REGISTRY_REGION      := `source .envrc && echo $GCP_REGISTRY_REGION`
+export GCP_REGISTRY_NAME        := `source .envrc && echo $GCP_REGISTRY_NAME`
+
 # Color codes for output
 INFO        := '\033[0;34m'
 SUCCESS     := '\033[0;32m'
@@ -35,7 +42,7 @@ install:
 # Build the project
 [group('dev')]
 build:
-    @echo -e "{{WARN}}TODO: Implement build for $PROJECT@$VERSION{{NORMAL}}"
+    @echo -e "{{WARN}}TODO: Implement build for $_PROJECT@$VERSION{{NORMAL}}"
 
 # Run project locally
 [group('dev')]

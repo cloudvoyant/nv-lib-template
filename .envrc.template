@@ -1,5 +1,8 @@
+#!/usr/bin/env bash
+source ./scripts/utils.sh
+
 export PROJECT=__PROJECT_NAME__
-export VERSION=__VERSION__
+export VERSION=$(get_version)
 
 # Registry Configuration
 # Configure these for your target registry
