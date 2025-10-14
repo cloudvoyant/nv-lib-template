@@ -3,7 +3,7 @@
 ![Version](https://img.shields.io/github/v/release/cloudvoyant/nv-lib-template?label=version)
 ![Release](https://github.com/cloudvoyant/nv-lib-template/workflows/Release/badge.svg)
 
-`nv-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. GCP-forward by default, but easily adapted for npm, PyPI, Docker Hub, etc.
+`nv-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. It uses GCP Artifact Registry for publishing generic packages by default, but can be easily adapted for npm, PyPI, NuGet, CodeArtifact, etc.
 
 ## Features
 
@@ -35,7 +35,7 @@ Install dependencies and adapt:
 
 ```bash
 just setup              # Required: bash, just, direnv
-direnv allow            # Load environment
+just load               # Runs direnv allow
 claude /adapt           # Guided customization
 ```
 
