@@ -128,8 +128,7 @@ just publish  # Calls your language's publish command
 # Test the entire pipeline locally
 just test
 just build
-just upversion --dry-run
-just publish --dry-run
+just upversion      # Dry-run by default (only creates tags in CI)
 ```
 
 **Actions only work in CI:**

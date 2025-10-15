@@ -388,8 +388,8 @@ if [ -f "$SRC_DIR/README.template.md" ]; then
 
     # Copy template and substitute variables
     sed "s/{{PROJECT_NAME}}/$PROJECT_NAME/g; \
-         s/{{PLATFORM_NAME}}/$PLATFORM_NAME/g; \
-         s/{{PLATFORM_VERSION}}/$PLATFORM_VERSION/g" \
+         s/{{TEMPLATE_NAME}}/$PLATFORM_NAME/g; \
+         s/{{TEMPLATE_VERSION}}/$PLATFORM_VERSION/g" \
         "$SRC_DIR/README.template.md" > "$DEST_DIR/README.md"
 
     log_success "Created README.md from template"

@@ -2,7 +2,44 @@ Validate documentation for completeness, consistency, and accuracy.
 
 ## Validation Steps
 
-### 1. Check Documentation Structure
+### 1. Validate Project-Specific Content
+
+Verify documentation matches the actual project state:
+
+```bash
+# Check that documented files exist
+ls -la .envrc justfile package.json setup.py Cargo.toml 2>/dev/null
+
+# Verify documented directories exist
+ls -la src/ docs/ test/ .github/ 2>/dev/null
+
+# Check documented commands work
+command -v just git docker node python go 2>/dev/null
+```
+
+For the project:
+
+- Design and architecture docs accurately reflect the implementation
+- Installation instructions match actual setup requirements
+- Configuration file examples match actual file structure
+- Documented commands actually exist and work
+- File paths in examples point to real files
+- Directory structure matches what's documented
+- Dependencies listed match actual requirements files
+- Environment variables match .envrc or similar config
+- Example code is accurate and reflects current implementation
+- Contributing guidelines are present (if accepting contributions)
+
+### 2. Validate Documentation Readability
+
+Check whether the documentation is concise and readable.
+
+- Project readme should be to the point for template clients and maintainers
+- Template readme should be appropriate for client projects
+- User guide should be readable and easy to follow, utilize progressive disclosure
+- Architecture documentation should provide meaningful design descriptions or component breakdown for maintainers, and explicitly state important implementation details accurately
+
+### 3. Check Documentation Structure
 
 Verify documentation files exist:
 
@@ -19,7 +56,7 @@ Common documentation files to look for:
 - Contributing guidelines
 - Changelog or release notes
 
-### 2. Validate Internal Links
+### 4. Validate Internal Links
 
 Check for broken internal links in documentation:
 
@@ -33,7 +70,7 @@ For each link found:
 - Verify the target file exists
 - Check if section anchors are valid (if present)
 
-### 3. Check Cross-References
+### 5. Check Cross-References
 
 Verify documentation cross-references are consistent:
 
@@ -41,7 +78,7 @@ Verify documentation cross-references are consistent:
 - Verify that related documents link to each other appropriately
 - Ensure index files (if present) list all related documents
 
-### 4. Validate Code Examples
+### 6. Validate Code Examples
 
 Check code examples in documentation match the actual project:
 
@@ -61,22 +98,7 @@ For each command or code example:
 - Verify configuration examples match actual config files
 - Check that code snippets reflect current implementation
 
-### 5. Check Version References
-
-If the project uses version numbers in documentation:
-
-```bash
-# Check for version mentions in docs
-grep -r "version" docs/ README.md --ignore-case
-```
-
-Ensure:
-
-- Current version matches across documentation
-- No outdated version references
-- Changelogs or release notes are up to date
-
-### 6. Validate TODOs and Placeholders
+### 7. Validate TODOs and Placeholders
 
 Find any TODOs or placeholders that need attention:
 
@@ -92,7 +114,7 @@ Review each TODO:
 - Should it be tracked as an issue?
 - Can it be resolved now?
 
-### 7. Check Markdown Formatting
+### 8. Check Markdown Formatting
 
 Verify markdown syntax is valid:
 
@@ -101,34 +123,6 @@ Verify markdown syntax is valid:
 - Lists are consistently formatted
 - Tables are properly aligned
 - No trailing whitespace
-
-### 8. Validate Project-Specific Content
-
-Verify documentation matches the actual project state:
-
-```bash
-# Check that documented files exist
-ls -la .envrc justfile package.json setup.py Cargo.toml 2>/dev/null
-
-# Verify documented directories exist
-ls -la src/ docs/ test/ .github/ 2>/dev/null
-
-# Check documented commands work
-command -v just git docker node python go 2>/dev/null
-```
-
-For the project:
-
-- Installation instructions match actual setup requirements
-- Configuration file examples match actual file structure
-- Documented commands actually exist and work
-- File paths in examples point to real files
-- Directory structure matches what's documented
-- Dependencies listed match actual requirements files
-- Environment variables match .envrc or similar config
-- Example code is accurate and reflects current implementation
-- Contributing guidelines are present (if accepting contributions)
-- License information is included and matches LICENSE file
 
 ## Report Findings
 

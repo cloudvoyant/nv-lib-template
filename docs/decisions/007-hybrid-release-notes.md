@@ -31,7 +31,7 @@ Auto-generate `CHANGELOG.md` from commits via semantic-release, and use Claude C
 - `CHANGELOG.md` provides complete technical history from commits
 - `RELEASE_NOTES.md` explains user impact and improvements
 - Serves different audiences (developers vs users/stakeholders)
-- Claude makes human-friendly notes easy to create (`just release-notes`)
+- Claude makes human-friendly notes easy to create (via Claude Code commands or manual curation)
 - Both can coexist in GitHub releases
 - Developers can choose which to include based on their needs
 - Best of both worlds - automation + human insight

@@ -1,6 +1,6 @@
 # User Guide
 
-nv-lib-template is a language-agnostic template for building projects with automated versioning, testing, and CI/CD workflows. GCP-forward by default, but easily adapted for npm, PyPI, Docker Hub, etc.
+`nv-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and CI/CD workflows. It is GCP-forward by default, but can be easily adapted for npm, PyPI, Docker Hub, etc.
 
 ## Getting Started
 
