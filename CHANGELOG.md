@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/cloudvoyant/nv-lib-template/compare/v1.9.0...v1.9.1) (2025-10-15)
+
+
+### Bug Fixes
+
+* use get_version() in upversion.sh to properly detect new releases ([a145bc2](https://github.com/cloudvoyant/nv-lib-template/commit/a145bc270bbc01c75100d927ff5aa210caf33842))
+
 # [1.9.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.8.2...v1.9.0) (2025-10-14)
 
 
