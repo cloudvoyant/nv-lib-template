@@ -55,10 +55,7 @@ if ! command_exists npx; then
 fi
 
 # Capture current version before running semantic-release
-CURRENT_VERSION=""
-if [ -f ".envrc" ]; then
-    CURRENT_VERSION=$(grep "^export VERSION=" .envrc | cut -d'=' -f2)
-fi
+CURRENT_VERSION=$(get_version)
 
 # Run semantic-release
 if [ -n "$CI" ]; then
@@ -79,10 +76,7 @@ fi
 log_success "Semantic-release completed successfully"
 
 # Detect if a new release was published by checking if version changed
-NEW_VERSION=""
-if [ -f ".envrc" ]; then
-    NEW_VERSION=$(grep "^export VERSION=" .envrc | cut -d'=' -f2)
-fi
+NEW_VERSION=$(get_version)
 
 # Set GitHub Actions outputs if running in CI
 if [ -n "$CI" ] && [ -n "$GITHUB_OUTPUT" ]; then
