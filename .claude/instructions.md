@@ -15,19 +15,19 @@ See `/upgrade` command for the canonical example:
 
 ### File Purposes
 
-**`.claude/plan.md`** - Active work only
+`.claude/plan.md` - Active work only
 
 - Current implementation tasks
 - Phases and checkboxes
 - Delete when complete
 
-**`.claude/tasks.md`** - Future work
+`.claude/tasks.md` - Future work
 
 - Deferred features
 - Ideas from abandoned plan items
 - Reference for next session
 
-**`docs/`** - Permanent knowledge
+`docs/` - Permanent knowledge
 
 - `architecture.md` - design principles, system architecture (prime directive)
 - `user-guide.md` - how to use the project

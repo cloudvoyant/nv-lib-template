@@ -1,8 +1,8 @@
 # ADR-012: No External Bash Dependencies
 
-**Status:** Accepted
+Status: Accepted
 
-**Date:** 2024-10-10
+Date: 2024-10-10
 
 ## Context
 
@@ -15,16 +15,16 @@ Use only bash builtins and standard Unix utilities (sed, grep, awk, etc.) availa
 ## Alternatives Considered
 
 ### Allow dependencies like jq, yq
-- **Pros:** Better JSON/YAML parsing
-- **Cons:** Additional installation step, not always available, adds complexity
+- Pros: Better JSON/YAML parsing
+- Cons: Additional installation step, not always available, adds complexity
 
 ### Use Python for complex tasks
-- **Pros:** More powerful, better for data processing
-- **Cons:** Requires Python installation, breaks "bash for scripts" principle
+- Pros: More powerful, better for data processing
+- Cons: Requires Python installation, breaks "bash for scripts" principle
 
 ### Require specific tools per script
-- **Pros:** Use best tool for each job
-- **Cons:** Inconsistent dependencies, harder setup, portability issues
+- Pros: Use best tool for each job
+- Cons: Inconsistent dependencies, harder setup, portability issues
 
 ## Rationale
 

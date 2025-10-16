@@ -17,7 +17,7 @@ Migrate this project to the latest template version using a spec-driven approach
 - Works through changes systematically
 - Tests and validates migration
 
-**Usage:**
+Usage:
 
 ```
 /upgrade
@@ -33,7 +33,7 @@ Adapt this template to your project's specific needs using a spec-driven approac
 - Provides examples for common languages (Python, Node.js, Go, Docker)
 - Tests and validates adaptations
 
-**Usage:**
+Usage:
 
 ```
 /adapt
@@ -49,7 +49,7 @@ Interactively create a new Architectural Decision Record (ADR).
 - Creates ADR with proper formatting
 - Supports WIP (Work In Progress) status
 
-**Usage:**
+Usage:
 
 ```
 /adr-new
@@ -64,7 +64,7 @@ Capture significant decisions from the current session as ADRs.
 - Generates ADR files for each decision
 - Updates ADR index automatically
 
-**Usage:**
+Usage:
 
 ```
 /adr-capture
@@ -80,10 +80,46 @@ Validate documentation for completeness and consistency.
 - Checks version references
 - Finds TODOs and placeholders
 
-**Usage:**
+Usage:
 
 ```
 /docs
+```
+
+#### `/commit`
+
+Create a git commit following conventional commit standards.
+
+- Analyzes git status and diff to understand changes
+- Drafts professional, concise commit message
+- Follows conventional commits (feat, fix, docs, etc.)
+- No self-attribution or branding
+- Enforces 72 character limit and imperative mood
+
+Usage:
+
+```
+/commit
+```
+
+#### `/plan`
+
+Manage project planning using `.claude/plan.md`.
+
+- new: Create a new plan by exploring requirements and building a structured plan
+- init: Initialize an empty plan template without starting the planning process
+- refresh: Review existing plan and update checklist status
+- pause: Create a summary section capturing insights from planning
+- go: Execute or continue the existing plan using spec-driven development
+
+Usage:
+
+```
+/plan new      # Start interactive planning session
+/plan init     # Create empty plan template
+/plan refresh  # Update plan status and verify completion markers
+/plan pause    # Capture insights and context for resuming later
+/plan go       # Execute the plan with spec-driven development flow
 ```
 
 ## How It Works

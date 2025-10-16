@@ -38,7 +38,7 @@ nv create your-project-name --platform nv-lib-template
 # Click "Use this template" on GitHub, then:
 git clone <your-new-repo>
 cd <your-new-repo>
-bash scripts/scaffold.sh --src . --dest . --project your-project-name
+bash scripts/scaffold.sh --project your-project-name
 ```
 
 Install dependencies and adapt the template for your needs:
@@ -92,6 +92,7 @@ To learn more about using this template, read the docs:
 
 - [ ] Docker & docker-compose support
 - [ ] Pre-release publishing
+- [ ] Template docs improvements
 
 ## References
 

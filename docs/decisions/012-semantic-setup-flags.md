@@ -1,8 +1,8 @@
 # ADR-012: Semantic Setup Flags
 
-**Status:** Accepted
+Status: Accepted
 
-**Date:** 2025-10-12
+Date: 2025-10-12
 
 ## Context
 
@@ -16,7 +16,7 @@ We needed to decide how to structure setup script flags to give users control ov
 
 ## Decision
 
-Use **semantic flags** that describe the installation context:
+Use semantic flags that describe the installation context:
 
 - `--dev` - Install development tools (docker, node/npx, gcloud, shellcheck, shfmt)
 - `--ci` - Install CI essentials (docker, node/npx, gcloud)
@@ -24,7 +24,7 @@ Use **semantic flags** that describe the installation context:
 
 Flags can be combined: `setup.sh --dev --platform`
 
-**Required dependencies** (always installed):
+Required dependencies (always installed):
 - bash (shell)
 - just (command runner)
 - direnv (environment management)
@@ -38,11 +38,11 @@ setup.sh --include-optional  # Install everything
 setup.sh                      # Install minimal
 ```
 
-**Pros:**
+Pros:
 - Simple binary choice
 - Easy to understand
 
-**Cons:**
+Cons:
 - Forces users to install things they don't need
 - CI environments would install unnecessary dev tools (shellcheck, shfmt)
 - No way to install just CI tools without dev tools
@@ -54,11 +54,11 @@ setup.sh                      # Install minimal
 setup.sh --docker --node --shellcheck --shfmt --bats
 ```
 
-**Pros:**
+Pros:
 - Maximum granularity
 - Users install only what they want
 
-**Cons:**
+Cons:
 - Verbose and tedious
 - Requires users to know all tool names
 - Hard to remember which tools are needed together
@@ -76,11 +76,11 @@ elif [ -f "test/" ]; then
 fi
 ```
 
-**Pros:**
+Pros:
 - Zero configuration
 - Automatic context detection
 
-**Cons:**
+Cons:
 - Magic behavior is hard to debug
 - Users lose control
 - May install wrong things in edge cases
@@ -100,20 +100,20 @@ This is clearer than listing individual tools.
 
 Each flag installs exactly what's needed for that context:
 
-**Development (`--dev`):**
+Development (`--dev`):
 - docker - For containerized testing
 - node/npx - For semantic-release and local versioning
 - gcloud - For testing registry publishing
 - shellcheck - For linting shell scripts
 - shfmt - For formatting shell scripts
 
-**CI (`--ci`):**
+CI (`--ci`):
 - docker - For containerized builds
 - node/npx - For semantic-release in pipelines
 - gcloud - For publishing to GCP Artifact Registry
 - NO linters/formatters (not needed in CI)
 
-**Platform (`--platform`):**
+Platform (`--platform`):
 - bats-core - For running platform tests
 - Used by platform maintainers only
 
@@ -127,10 +127,10 @@ Users can combine flags for their specific needs:
 
 ### Clear separation of concerns
 
-- **Required** - Always installed, no flag needed
-- **Development** - Optional, for active development
-- **CI** - Optional, for automated pipelines
-- **Platform** - Optional, for platform maintenance
+- Required - Always installed, no flag needed
+- Development - Optional, for active development
+- CI - Optional, for automated pipelines
+- Platform - Optional, for platform maintenance
 
 ## Consequences
 

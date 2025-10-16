@@ -1,8 +1,8 @@
 # ADR-009: Scaffold Script Removes Platform Files
 
-**Status:** Accepted
+Status: Accepted
 
-**Date:** 2024-10-10
+Date: 2024-10-10
 
 ## Context
 
@@ -16,13 +16,13 @@ The `scaffold.sh` script automatically removes `test/`, `scripts/platform-instal
 
 ### Keep all files, document what to delete
 
-- **Pros:** Users have full visibility
-- **Cons:** Manual cleanup required, error-prone, confusing for users, larger projects
+- Pros: Users have full visibility
+- Cons: Manual cleanup required, error-prone, confusing for users, larger projects
 
 ### Use .gitattributes export-ignore only
 
-- **Pros:** Works for GitHub templates
-- **Cons:** Doesn't help local scaffolding, incomplete solution
+- Pros: Works for GitHub templates
+- Cons: Doesn't help local scaffolding, incomplete solution
 
 ## Rationale
 

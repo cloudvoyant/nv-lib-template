@@ -1,8 +1,8 @@
 # ADR-001: Use Just as Command Runner
 
-**Status:** Accepted
+Status: Accepted
 
-**Date:** 2024-10-10
+Date: 2024-10-10
 
 ## Context
 
@@ -16,13 +16,13 @@ Use `just` as the primary command interface for all platform and user commands.
 
 ### Bash scripts only
 
-- **Pros:** No additional dependencies
-- **Cons:** No dependency management between tasks, harder to discover available commands, no built-in help
+- Pros: No additional dependencies
+- Cons: No dependency management between tasks, harder to discover available commands, no built-in help
 
 ### Taskfile.dev
 
-- **Pros:** Smart cancellation between tasks, larger community
-- **Cons:** Poor support for command args, yaml and special syntax heavy
+- Pros: Smart cancellation between tasks, larger community
+- Cons: Poor support for command args, yaml and special syntax heavy
 
 ## Rationale
 

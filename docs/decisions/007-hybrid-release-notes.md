@@ -1,8 +1,8 @@
 # ADR-007: Hybrid Release Notes (CHANGELOG + RELEASE_NOTES)
 
-**Status:** Accepted
+Status: Accepted
 
-**Date:** 2024-10-10
+Date: 2024-10-10
 
 ## Context
 
@@ -15,16 +15,16 @@ Auto-generate `CHANGELOG.md` from commits via semantic-release, and use Claude C
 ## Alternatives Considered
 
 ### Only auto-generated changelog
-- **Pros:** Fully automated, consistent
-- **Cons:** Too technical for end users, lacks context and impact explanation
+- Pros: Fully automated, consistent
+- Cons: Too technical for end users, lacks context and impact explanation
 
 ### Only human-written release notes
-- **Pros:** User-friendly, explains impact
-- **Cons:** Manual work, easy to forget details, no complete technical record
+- Pros: User-friendly, explains impact
+- Cons: Manual work, easy to forget details, no complete technical record
 
 ### Single file for both audiences
-- **Pros:** One place to look
-- **Cons:** Either too technical or too high-level, can't serve both audiences well
+- Pros: One place to look
+- Cons: Either too technical or too high-level, can't serve both audiences well
 
 ## Rationale
 

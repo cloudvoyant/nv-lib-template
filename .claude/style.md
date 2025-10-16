@@ -12,6 +12,26 @@ Style:
 - Minimal bold/emphasis
 - Code examples where helpful
 
+## Markdown Formatting
+
+All markdown files (`.claude/`, `docs/`, `README.md`):
+
+- Use bold for emphasis within sentences, not for headings
+- Bold headings are unreadable in code editors
+- Use bold for important keywords: **IMPORTANT**, **REQUIRED**, **CRITICAL**
+- Keep text terse and structured
+
+Examples:
+```markdown
+Good:
+1. Configuration Settings
+   - Update the file and **do not skip** validation
+
+Bad:
+1. **Configuration Settings**
+   - Update the file and **Do Not Skip** validation
+```
+
 ## Architectural Decision Records (ADRs)
 
 Location: `docs/decisions/NNN-short-title.md`

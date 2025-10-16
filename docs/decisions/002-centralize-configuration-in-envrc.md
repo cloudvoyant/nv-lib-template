@@ -1,8 +1,8 @@
 # ADR-002: Centralize Configuration in .envrc
 
-**Status:** Accepted
+Status: Accepted
 
-**Date:** 2024-10-10
+Date: 2024-10-10
 
 ## Context
 
@@ -16,13 +16,13 @@ Use `.envrc` as the single source of truth for all configuration and environment
 
 ### Environment-specific files (.env.dev, .env.prod)
 
-- **Pros:** Environment separation
-- **Cons:** More complex, most projects don't need this, harder to share common config
+- Pros: Environment separation
+- Cons: More complex, most projects don't need this, harder to share common config
 
 ### Command-line arguments only
 
-- **Pros:** Explicit, no file management
-- **Cons:** Verbose, hard to maintain, no defaults, not shareable
+- Pros: Explicit, no file management
+- Cons: Verbose, hard to maintain, no defaults, not shareable
 
 ## Rationale
 

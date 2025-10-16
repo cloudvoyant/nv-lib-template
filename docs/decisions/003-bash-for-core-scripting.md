@@ -1,8 +1,8 @@
 # ADR-003: Bash for Core Scripting
 
-**Status:** Accepted
+Status: Accepted
 
-**Date:** 2024-10-10
+Date: 2024-10-10
 
 ## Context
 
@@ -16,13 +16,13 @@ Use bash for all core platform scripts.
 
 ### Python
 
-- **Pros:** More powerful, better for complex logic, good standard library
-- **Cons:** Requires interpreter installation, overkill for simple wrapper scripts, not always available by default
+- Pros: More powerful, better for complex logic, good standard library
+- Cons: Requires interpreter installation, overkill for simple wrapper scripts, not always available by default
 
 ### Shell (sh/POSIX shell)
 
-- **Pros:** Most portable, available everywhere
-- **Cons:** Too limited, missing bash features like arrays, harder to write maintainable code
+- Pros: Most portable, available everywhere
+- Cons: Too limited, missing bash features like arrays, harder to write maintainable code
 
 ## Rationale
 

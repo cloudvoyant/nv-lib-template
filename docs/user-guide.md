@@ -1,12 +1,33 @@
 # User Guide
 
-`nv-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and CI/CD workflows. It is GCP-forward by default, but can be easily adapted for npm, PyPI, Docker Hub, etc.
+`nv-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. It uses GCP Artifact Registry for publishing generic packages by default, but can be easily adapted for npm, PyPI, NuGet, CodeArtifact, etc.
+
+## Features
+
+Here's what this template gives you off the bat:
+
+- A language-agnostic self-documenting command interface via `just`. Keep all your project commands organized in one file!
+- Auto-load environment variables and configure shell environment with `direnv` - share project scoped shell configurations and simplify scripting and CLI tool usage without needing to pass around flags and inline environment variables.
+- CI/CD with GitHub Actions - run test on MR commits, tag and release on merges to main.
+- Easy CI/CD customization with platform agnostic bash scripting - No need to get too deep into GitHub Actions for customization. Modify the publish recipe, set GitHub Secrets and you're good to go.
+- Trunk based development and automated versioning with conventional commits - semantic-release will handle version bumping for you! Work on feature branches and merge to main for bumps.
+- GCP Artifact Registry publishing (easily modified for other registries)
+- Cross-platform (macOS, Linux, Windows via WSL) - use the setup script to install dependencies, or alternately develop with Dev Containers or run tasks via Docker
+
+## Requirements
+
+- bash 3.2+
+- [just](https://just.systems/man/en/)
+
+Run `just setup` to install remaining dependencies (just, direnv).
+
+Optional: `just setup --dev` for development tools, `just setup --template` for template testing.
 
 ## Getting Started
 
-### Quick Start
+## Quick Start
 
-Scaffold a new project using the Nedavellir CLI or GitHub template:
+Scaffold a new project:
 
 ```bash
 # Option 1: Nedavellir CLI (automated)
@@ -16,42 +37,65 @@ nv create your-project-name --platform nv-lib-template
 # Click "Use this template" on GitHub, then:
 git clone <your-new-repo>
 cd <your-new-repo>
-bash scripts/scaffold.sh --src . --dest . --project your-project-name
+bash scripts/scaffold.sh --project your-project-name
 ```
 
-Install dependencies:
+Install dependencies and adapt the template for your needs:
 
 ```bash
 just setup              # Required: bash, just, direnv
-just setup --dev        # + Development tools (docker, node, shellcheck)
+just scaffold           # Scaffold project - apply project name and reset version
+claude /adapt           # Guided customization for your language / package manager
 ```
 
-Allow direnv to load your environment:
+Type `just` to see all the tasks at your disposal:
 
 ```bash
-direnv allow
+❯ just
+Available recipes:
+    [dev]
+    load                 # Load environment
+    install              # Install dependencies
+    build                # Build the project
+    run                  # Run project locally
+    test                 # Run tests
+    clean                # Clean build artifacts
+
+[ OUTPUT TRUNCATED ]
 ```
 
-That's it! You now have a working project with CI/CD.
+Build run and test with `just`. The template will show TODO messages in console prior to adapting.
+
+```bash
+❯ just run
+TODO: Implement build for nv-lib-template@1.9.1
+TODO: Implement run
+
+❯ just test
+TODO: Implement build for nv-lib-template@1.9.1
+TODO: Implement test
+```
+
+Note how just runs the necessary dependencies for a task on it's own!
+
+Commit using conventional commits (`feat:`, `fix:`, `docs:`). Merge/push to main and CI/CD will run automatically bumping your project version and publishing a package.
 
 ### Using Dev Containers
 
-The template includes a pre-configured devcontainer for consistent development environments across your team.
+The template includes a pre-configured devcontainer for consistent cross-platform development environments across your team.
 
-**Prerequisites on host:**
+Prerequisites on host:
 
 - Docker Desktop or Docker Engine
-- VS Code with Remote - Containers extension
-- SSH agent running with keys loaded (`ssh-add -l` to verify)
-- For gcloud: Run `gcloud auth login` once on host
+- VS Code with Dev Containers extension
 
-**To use:**
+If you have Docker running and the Dev Container extension installed, then you can simply:
 
 1. Open project in VS Code
 2. Command Palette (Cmd/Ctrl+Shift+P) → "Dev Containers: Reopen in Container"
 3. Wait for container build (first time only)
 
-**What's included:**
+VS Code should reopen. In your terminal, you will now find everything you need including `just`, `direnv`, `gcloud` and more:
 
 - Git, GitHub CLI, and Google Cloud CLI pre-installed
 - Git credentials automatically shared from host via SSH agent forwarding
@@ -59,17 +103,13 @@ The template includes a pre-configured devcontainer for consistent development e
 - All VS Code extensions for shell development (shellcheck, just syntax, etc.)
 - Docker-in-Docker support for building containers
 
-**Authentication:**
+Authentication:
 
-- **Git/GitHub**: Automatic via SSH agent forwarding (no setup needed)
-- **gcloud**: Run `gcloud auth login` inside the container on first use
-- **Claude**: Automatically available if configured on host
+- Git/GitHub: Automatic via SSH agent forwarding (no setup needed)
+- gcloud: Run `gcloud auth login` inside the container on first use
+- Claude: Automatically available if configured on host
 
-**Cross-platform:**
-
-The devcontainer works on macOS, Linux, and Windows. Credential mounting uses environment variable substitution (`${localEnv:HOME}${localEnv:USERPROFILE}`) to support both Unix and Windows paths.
-
-## Usage
+## The Basics
 
 ### Daily Commands
 
@@ -79,12 +119,6 @@ just build      # Build for development
 just test       # Run tests
 just run        # Run locally
 just clean      # Clean build artifacts
-```
-
-List all available commands:
-
-```bash
-just
 ```
 
 ### Commit and Release
@@ -106,7 +140,7 @@ git push origin main
 
 CI/CD automatically runs tests, creates a release, and publishes to your configured registry.
 
-## Adapting
+## Customizing The Template For Your Needs
 
 ### For Your Language
 
@@ -185,11 +219,10 @@ All projects automatically inherit organization secrets.
 
 Scripts in `scripts/` provide hooks for overriding CI/CD behavior:
 
-- `scripts/upversion.sh` - Modify versioning logic
-- `scripts/setup.sh` - Add custom dependencies
-- `scripts/scaffold.sh` - Keep as-is (template initialization)
+- `scripts/upversion.sh` - Modify versioning logic here
+- `scripts/setup.sh` - Add custom dependencies here
 
-Edit these scripts to change how CI/CD runs, but never edit `.github/workflows/` directly.
+Edit these scripts to change how CI/CD runs, but avoid editing `.github/workflows/` directly.
 
 ### Example: Custom Versioning
 
@@ -208,6 +241,10 @@ Claude commands provide guided workflows for complex tasks.
 ```bash
 claude /adapt                   # Customize template for your language
 claude /upgrade                 # Migrate to newer template version
+claude /plan new                # Create a new project plan
+claude /plan go                 # Execute the plan with spec-driven development
+claude /plan pause              # Capture insights for resuming work later
+claude /plan refresh            # Update plan status
 claude /adr-new                 # Create architectural decision record
 claude /adr-capture             # Capture decisions from conversation
 claude /docs                    # Validate documentation
@@ -284,5 +321,7 @@ Ensure:
 5. Set up branch protection on `main`
 6. Make your first conventional commit
 7. Push and watch the automated release
+
+Or just run `claude /adapt`.
 
 See [Architecture](architecture.md) for implementation details.

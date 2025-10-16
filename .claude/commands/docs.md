@@ -147,7 +147,7 @@ For each issue found:
 - Suggest a fix (e.g., "Add `just deploy` command or update docs to reference correct command")
 - Indicate priority (high/medium/low)
 
-**Key consistency checks:**
+Key consistency checks:
 
 - All documented commands exist and work
 - File paths in examples point to real files

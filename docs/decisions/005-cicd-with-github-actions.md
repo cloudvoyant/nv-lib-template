@@ -1,8 +1,8 @@
 # ADR-005: CI/CD with GitHub Actions
 
-**Status:** Accepted
+Status: Accepted
 
-**Date:** 2024-10-10
+Date: 2024-10-10
 
 ## Context
 
@@ -12,8 +12,8 @@ Need a CI/CD system that automates testing, releases, and publishing while suppo
 
 Use GitHub Actions for all CI/CD automation with a two-workflow approach:
 
-1. **`ci.yml`** - Tests and builds on pull requests
-2. **`release.yml`** - Creates releases and publishes on merge to main
+1. `ci.yml` - Tests and builds on pull requests
+2. `release.yml` - Creates releases and publishes on merge to main
 
 Follow trunk-based development: test on PR, release on merge to main.
 
@@ -21,12 +21,12 @@ Follow trunk-based development: test on PR, release on merge to main.
 
 ### GitLab CI
 
-- **Pros:** Integrated with GitLab, good features
-- **Cons:** Requires GitLab, not ideal for GitHub-hosted projects
+- Pros: Integrated with GitLab, good features
+- Cons: Requires GitLab, not ideal for GitHub-hosted projects
 
 ## Rationale
 
-**Why GitHub Actions:**
+Why GitHub Actions:
 
 - Native GitHub integration - no external services
 - Free for public repos, generous free tier for private
@@ -35,7 +35,7 @@ Follow trunk-based development: test on PR, release on merge to main.
 - Good marketplace of reusable actions
 - Familiar to GitHub users
 
-**Why two workflows (ci.yml + release.yml):**
+Why two workflows (ci.yml + release.yml):
 
 - Clear separation of concerns - testing vs releasing
 - `ci.yml` runs on PRs to catch issues early
@@ -43,7 +43,7 @@ Follow trunk-based development: test on PR, release on merge to main.
 - Easier to understand and maintain than one large workflow
 - Can be extended independently
 
-**Why trunk-based development:**
+Why trunk-based development:
 
 - Simpler git workflow - no release branches needed
 - Continuous delivery - every merge can be a release
@@ -51,7 +51,7 @@ Follow trunk-based development: test on PR, release on merge to main.
 - Reduces merge conflicts and integration issues
 - Encourages small, frequent changes
 
-**Key workflow patterns:**
+Key workflow patterns:
 
 - Test on feature branches and PRs (ci.yml)
 - Automatic versioning via semantic-release on merge (release.yml)
@@ -59,7 +59,7 @@ Follow trunk-based development: test on PR, release on merge to main.
 - Uses default GITHUB_TOKEN (no PAT required)
 - Combined release + publish in one workflow (atomic operation)
 
-**Language agnostic design:**
+Language agnostic design:
 
 - Workflows call `just` commands (build, test, publish)
 - Language-specific logic stays in justfile

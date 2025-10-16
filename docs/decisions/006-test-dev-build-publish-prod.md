@@ -1,8 +1,8 @@
 # ADR-013: Test Development Build, Publish Production Build
 
-**Status:** Accepted
+Status: Accepted
 
-**Date:** 2024-10-10
+Date: 2024-10-10
 
 ## Context
 
@@ -15,16 +15,16 @@ Always test the development build (`just build`), create production build (`just
 ## Alternatives Considered
 
 ### Test both dev and prod builds
-- **Pros:** More thorough testing
-- **Cons:** Doubles CI time, production builds usually just add optimizations (minification, etc.)
+- Pros: More thorough testing
+- Cons: Doubles CI time, production builds usually just add optimizations (minification, etc.)
 
 ### Only build production artifacts
-- **Pros:** Single build path
-- **Cons:** Slower development cycle, harder debugging, no fast iteration
+- Pros: Single build path
+- Cons: Slower development cycle, harder debugging, no fast iteration
 
 ### Test production build before publishing
-- **Pros:** Verifies production artifacts
-- **Cons:** Significantly longer CI time, most issues caught in dev build
+- Pros: Verifies production artifacts
+- Cons: Significantly longer CI time, most issues caught in dev build
 
 ## Rationale
 

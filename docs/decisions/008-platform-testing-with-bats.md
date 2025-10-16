@@ -1,8 +1,8 @@
 # ADR-008: Platform Testing with Bats
 
-**Status:** Accepted
+Status: Accepted
 
-**Date:** 2024-10-10
+Date: 2024-10-10
 
 ## Context
 
@@ -16,8 +16,8 @@ Use bats-core (Bash Automated Testing System) for all platform testing.
 
 ### Manual testing only
 
-- **Pros:** No test framework needed
-- **Cons:** Error-prone, time-consuming, not repeatable, no CI/CD integration
+- Pros: No test framework needed
+- Cons: Error-prone, time-consuming, not repeatable, no CI/CD integration
 
 ## Rationale
 

@@ -126,7 +126,7 @@ The template uses `version.txt` as a placeholder. **You should replace this with
 
 ### Node.js (package.json)
 
-**1. Update `.releaserc.json`:**
+1. Update `.releaserc.json`:
 ```json
 {
   "plugins": [
@@ -140,7 +140,7 @@ The template uses `version.txt` as a placeholder. **You should replace this with
 }
 ```
 
-**2. Update `scripts/utils.sh` get_version():**
+2. Update `scripts/utils.sh` get_version():
 ```bash
 get_version() {
     if [ -f "${PROJECT_ROOT}/package.json" ]; then
@@ -151,18 +151,18 @@ get_version() {
 }
 ```
 
-**3. Remove `version.txt`**
+3. Remove `version.txt`
 
 ### Python (pyproject.toml)
 
-**1. Update `.releaserc.json` prepareCmd:**
+1. Update `.releaserc.json` prepareCmd:
 ```json
 {
   "prepareCmd": "sed -i 's/^version = .*/version = \"${nextRelease.version}\"/' pyproject.toml"
 }
 ```
 
-**2. Update `scripts/utils.sh` get_version():**
+2. Update `scripts/utils.sh` get_version():
 ```bash
 get_version() {
     if [ -f "${PROJECT_ROOT}/pyproject.toml" ]; then
@@ -173,7 +173,7 @@ get_version() {
 }
 ```
 
-**3. Update git assets:**
+3. Update git assets:
 ```json
 {
   "assets": ["CHANGELOG.md", "pyproject.toml"]

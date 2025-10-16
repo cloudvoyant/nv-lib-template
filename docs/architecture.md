@@ -141,25 +141,25 @@ Claude commands provide LLM-assisted workflows for complex tasks:
 
 The `.devcontainer/` directory provides VS Code Dev Containers configuration for consistent development environments across teams. It includes:
 
-**Features:**
+Features:
 - `git:1` - Git installed from source (credentials auto-shared by VS Code via SSH agent forwarding)
 - `github-cli:1` - GitHub CLI with automatic authentication
 - `google-cloud-cli:1` - gcloud CLI tools
 - `docker-in-docker:2` - Docker daemon for building containers
 
-**Credential Mounting:**
+Credential Mounting:
 - Claude CLI credentials mounted from `~/.claude` directory
 - Uses cross-platform path resolution: `${localEnv:HOME}${localEnv:USERPROFILE}` expands to HOME on Unix or USERPROFILE on Windows
 - Git/GitHub credentials automatically forwarded via SSH agent (requires `ssh-add` on host)
 - gcloud requires manual `gcloud auth login` inside container (credentials persist via Docker volumes)
 
-**VS Code Extensions:**
+VS Code Extensions:
 - `mkhl.direnv` - direnv support
 - `skellock.just` and `nefrob.vscode-just-syntax` - justfile syntax highlighting
 - `timonwong.shellcheck` and `foxundermoon.shell-format` - Shell script linting and formatting
 - `ms-azuretools.vscode-docker` - Docker support
 
-**Cross-Platform Considerations:**
+Cross-Platform Considerations:
 - Works on macOS, Linux, and Windows (via Docker Desktop or WSL)
 - Credential paths use environment variable fallback pattern for platform compatibility
 - On Windows, if `~/.claude` doesn't exist at `%USERPROFILE%\.claude`, mount will fail gracefully (container starts without Claude credentials)

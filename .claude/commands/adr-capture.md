@@ -2,14 +2,14 @@ Review the current session conversation and capture any significant technical de
 
 ## Instructions
 
-1. **Analyze the conversation** to identify key decisions that should be documented:
+1. Analyze the conversation to identify key decisions that should be documented:
    - Technology choices (tools, frameworks, languages)
    - Architecture changes (structure, patterns, organization)
    - Process changes (workflows, conventions, standards)
    - Design patterns or approaches
    - Trade-offs that were explicitly discussed
 
-2. **For each decision identified:**
+2. For each decision identified:
    - Determine the next available ADR number by reading docs/decisions/README.md
    - Create a new ADR file: `docs/decisions/XXX-title-in-kebab-case.md`
    - Follow the ADR template from .claude/style.md
@@ -22,9 +22,9 @@ Review the current session conversation and capture any significant technical de
      - Alternatives Considered: Options that were discussed but not chosen
      - Rationale: Why this decision was made over alternatives
 
-3. **Update docs/decisions/README.md** to add the new ADR(s) to the index
+3. Update docs/decisions/README.md to add the new ADR(s) to the index
 
-4. **Present a summary** of what decisions were captured and where
+4. Present a summary of what decisions were captured and where
 
 ## Guidelines
 

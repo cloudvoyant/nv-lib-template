@@ -1,8 +1,8 @@
 # ADR-013: Scripts Over Actions/Plugins
 
-**Status:** Accepted
+Status: Accepted
 
-**Date:** 2025-10-12
+Date: 2025-10-12
 
 ## Context
 
@@ -16,7 +16,7 @@ We needed to decide: should we use marketplace actions or custom scripts?
 
 ## Decision
 
-Use **custom scripts over marketplace actions** for all core functionality:
+Use custom scripts over marketplace actions for all core functionality:
 
 - Setup: `bash scripts/setup.sh --ci`
 - Testing: `just test`
@@ -25,12 +25,12 @@ Use **custom scripts over marketplace actions** for all core functionality:
 - Authentication: `just registry-login --ci`
 - Publishing: `just publish`
 
-**Only use official GitHub actions** for GitHub-specific operations:
+Only use official GitHub actions for GitHub-specific operations:
 - ✅ `actions/checkout@v4` - Repository checkout
 - ✅ `actions/upload-artifact@v4` - Artifact storage
 - ✅ `softprops/action-gh-release@v1` - GitHub release creation
 
-**Avoid third-party marketplace actions** for:
+Avoid third-party marketplace actions for:
 - ❌ Language runtime setup (actions/setup-node, actions/setup-python)
 - ❌ Registry authentication (docker/login-action, google-github-actions/auth)
 - ❌ Test runners (language-specific test actions)
@@ -60,30 +60,30 @@ Use **custom scripts over marketplace actions** for all core functionality:
       @semantic-release/git
 ```
 
-**Pros:**
+Pros:
 - Less code to maintain
 - Pre-tested implementations
 - Common patterns
 - Auto-updates through Dependabot
 
-**Cons:**
-- **Not language-agnostic** - Need different actions for Node.js, Python, Go, etc.
-- **Not testable locally** - Can't test GitHub Actions locally
-- **Third-party dependency risk** - Actions can be abandoned, break, or change APIs
-- **CI-only** - Logic only works in GitHub Actions, not locally
-- **Version lock-in** - Must track action versions across projects
-- **Black box** - Hard to debug when things go wrong
-- **Less portable** - Can't easily migrate to GitLab CI, CircleCI, etc.
+Cons:
+- Not language-agnostic - Need different actions for Node.js, Python, Go, etc.
+- Not testable locally - Can't test GitHub Actions locally
+- Third-party dependency risk - Actions can be abandoned, break, or change APIs
+- CI-only - Logic only works in GitHub Actions, not locally
+- Version lock-in - Must track action versions across projects
+- Black box - Hard to debug when things go wrong
+- Less portable - Can't easily migrate to GitLab CI, CircleCI, etc.
 
 ### Mix of actions and scripts
 
 Use actions for some things, scripts for others.
 
-**Pros:**
+Pros:
 - Pragmatic approach
 - Use actions where they excel
 
-**Cons:**
+Cons:
 - Inconsistent patterns
 - Harder to understand which approach to use when
 - Split brain between two systems
@@ -93,11 +93,11 @@ Use actions for some things, scripts for others.
 
 Don't even use `actions/checkout`.
 
-**Pros:**
+Pros:
 - Ultimate portability
 - Complete control
 
-**Cons:**
+Cons:
 - Reinventing wheels for GitHub-specific operations
 - actions/checkout handles submodules, LFS, etc. reliably
 - Not worth the maintenance burden
@@ -106,14 +106,14 @@ Don't even use `actions/checkout`.
 
 ### Language-agnostic platform
 
-The platform must work for **any language** - Node.js, Python, Go, Rust, Java, etc.
+The platform must work for any language - Node.js, Python, Go, Rust, Java, etc.
 
-Marketplace actions are **language-specific**:
+Marketplace actions are language-specific:
 - `actions/setup-node` - Only for Node.js
 - `actions/setup-python` - Only for Python
 - `aws-actions/amazon-ecr-login` - Only for AWS ECR
 
-Custom scripts work for **all languages**:
+Custom scripts work for all languages:
 ```bash
 # Works for any language
 just build    # Calls your language's build command
@@ -123,7 +123,7 @@ just publish  # Calls your language's publish command
 
 ### Local testability
 
-**Scripts are testable locally:**
+Scripts are testable locally:
 ```bash
 # Test the entire pipeline locally
 just test
@@ -131,33 +131,33 @@ just build
 just upversion      # Dry-run by default (only creates tags in CI)
 ```
 
-**Actions only work in CI:**
+Actions only work in CI:
 - Can't test GitHub Actions locally without simulators
 - Slows down feedback loop
 - Harder to debug issues
 
 ### Portability
 
-**Scripts work on any CI platform:**
+Scripts work on any CI platform:
 - GitHub Actions ✅
 - GitLab CI ✅
 - CircleCI ✅
 - Jenkins ✅
 - Local machine ✅
 
-**Actions only work on GitHub:**
+Actions only work on GitHub:
 - Locked into GitHub Actions
 - Can't migrate to other CI platforms without rewriting
 
 ### Reliability and maintenance
 
-**Custom scripts:**
+Custom scripts:
 - We control the implementation
 - Can fix bugs immediately
 - No external dependencies to break
 - Version controlled with the platform
 
-**Marketplace actions:**
+Marketplace actions:
 - Third-party code we don't control
 - Authors can abandon projects (see left-pad incident)
 - Breaking changes in action updates
@@ -165,7 +165,7 @@ just upversion      # Dry-run by default (only creates tags in CI)
 
 ### Consistency
 
-**One way to do things:**
+One way to do things:
 ```bash
 # Same commands everywhere
 just test    # Works locally and in CI
@@ -173,7 +173,7 @@ just build   # Works locally and in CI
 just publish # Works locally and in CI
 ```
 
-**vs. Multiple ways:**
+vs. Multiple ways:
 ```bash
 # Locally
 npm test
@@ -184,12 +184,12 @@ npm test
 
 ### Debuggability
 
-**Scripts are transparent:**
+Scripts are transparent:
 - Read the bash script to see exactly what happens
 - Add debug logging
 - Test with `set -x` to see every command
 
-**Actions are black boxes:**
+Actions are black boxes:
 - Implementation hidden in action repository
 - Must read action source code elsewhere
 - Harder to debug failures
@@ -198,39 +198,39 @@ npm test
 
 ### Positive
 
-- **Language-agnostic** - Works for any programming language
-- **Locally testable** - Full pipeline runs on developer machines
-- **Portable** - Can migrate to any CI platform
-- **Reliable** - No third-party dependencies to break
-- **Debuggable** - All logic is in visible bash scripts
-- **Consistent** - Same commands locally and in CI
-- **Educational** - Developers learn the actual tools, not wrappers
+- Language-agnostic - Works for any programming language
+- Locally testable - Full pipeline runs on developer machines
+- Portable - Can migrate to any CI platform
+- Reliable - No third-party dependencies to break
+- Debuggable - All logic is in visible bash scripts
+- Consistent - Same commands locally and in CI
+- Educational - Developers learn the actual tools, not wrappers
 
 ### Negative
 
-- **More code to maintain** - We own the implementation
-- **No auto-updates** - Must manually update tool installations
-- **Requires bash knowledge** - Team must understand bash scripting
-- **Longer initial setup** - Must write setup scripts
+- More code to maintain - We own the implementation
+- No auto-updates - Must manually update tool installations
+- Requires bash knowledge - Team must understand bash scripting
+- Longer initial setup - Must write setup scripts
 
 ### Edge Cases
 
 We still use official GitHub actions when they provide significant value:
 
-1. **actions/checkout@v4** - Handles complex checkout scenarios (submodules, LFS, shallow clones)
-2. **actions/upload-artifact@v4** - GitHub-specific artifact storage
-3. **softprops/action-gh-release@v1** - GitHub release API integration
+1. actions/checkout@v4 - Handles complex checkout scenarios (submodules, LFS, shallow clones)
+2. actions/upload-artifact@v4 - GitHub-specific artifact storage
+3. softprops/action-gh-release@v1 - GitHub release API integration
 
-These are **GitHub-specific operations** that would be complex to reimplement in bash.
+These are GitHub-specific operations that would be complex to reimplement in bash.
 
 ### Guidelines
 
-**Use marketplace action when:**
+Use marketplace action when:
 - It's an official GitHub action (`actions/*`)
 - It's for GitHub-specific operations (releases, artifacts)
 - Reimplementing would be significantly complex
 
-**Use custom script when:**
+Use custom script when:
 - It's core functionality (setup, test, build, publish)
 - It needs to work locally
 - It needs to be language-agnostic

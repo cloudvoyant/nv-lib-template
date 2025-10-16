@@ -1,8 +1,8 @@
 # ADR-010: GCP Artifact Registry as Default Publishing Target
 
-**Status:** Accepted
+Status: Accepted
 
-**Date:** 2024-10-10
+Date: 2024-10-10
 
 ## Context
 
@@ -15,16 +15,16 @@ Default `publish` recipe uses GCP Artifact Registry's generic repository type.
 ## Alternatives Considered
 
 ### No default implementation
-- **Pros:** No assumptions, maximum flexibility
-- **Cons:** Users must implement from scratch, no example to follow, harder to get started
+- Pros: No assumptions, maximum flexibility
+- Cons: Users must implement from scratch, no example to follow, harder to get started
 
 ### npm registry
-- **Pros:** Familiar to JavaScript developers
-- **Cons:** Too JavaScript-specific, doesn't work for other languages, not truly language-agnostic
+- Pros: Familiar to JavaScript developers
+- Cons: Too JavaScript-specific, doesn't work for other languages, not truly language-agnostic
 
 ### GitHub Packages
-- **Pros:** Integrated with GitHub
-- **Cons:** Requires PAT for auth, more complex setup, usage limits on free tier
+- Pros: Integrated with GitHub
+- Cons: Requires PAT for auth, more complex setup, usage limits on free tier
 
 ## Rationale
 

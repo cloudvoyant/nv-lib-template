@@ -1,8 +1,8 @@
 # ADR-011: GitHub Template Support via .gitattributes
 
-**Status:** Accepted
+Status: Accepted
 
-**Date:** 2024-10-10
+Date: 2024-10-10
 
 ## Context
 
@@ -15,16 +15,16 @@ Use `.gitattributes` with `export-ignore` to exclude platform development files 
 ## Alternatives Considered
 
 ### Only scaffold.sh for creating new projects
-- **Pros:** One way to do things
-- **Cons:** Misses GitHub's built-in template feature, requires cloning and running script
+- Pros: One way to do things
+- Cons: Misses GitHub's built-in template feature, requires cloning and running script
 
 ### Separate template repository
-- **Pros:** Clean separation
-- **Cons:** Duplication, two repos to maintain, can get out of sync
+- Pros: Clean separation
+- Cons: Duplication, two repos to maintain, can get out of sync
 
 ### Manual file deletion instructions
-- **Pros:** No special setup
-- **Cons:** Error-prone, poor user experience, inconsistent results
+- Pros: No special setup
+- Cons: Error-prone, poor user experience, inconsistent results
 
 ## Rationale
 

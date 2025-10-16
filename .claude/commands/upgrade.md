@@ -41,7 +41,7 @@ fi
 
 Create `.claude/plan.md` with a structured migration plan. I'll help you create this plan with:
 
-**Structure:**
+Structure:
 ```markdown
 # Migration Plan: v<current> → v<target>
 

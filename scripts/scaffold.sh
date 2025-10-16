@@ -9,10 +9,11 @@ Usage:
   bash scripts/scaffold.sh --src /path/to/template --dest /path/to/project
   bash scripts/scaffold.sh --src /path/to/template --dest /path/to/project --non-interactive
   bash scripts/scaffold.sh --src /path/to/template --dest /path/to/project --project myapp
+  bash scripts/scaffold.sh  # Uses current directory for both src and dest
 
 Options:
-  --src PATH           Path to template source directory (required)
-  --dest PATH          Path to destination project directory (required)
+  --src PATH           Path to template source directory (default: project root)
+  --dest PATH          Path to destination project directory (default: project root)
   --non-interactive    Skip prompts, use defaults
   --project NAME       Project name (default: destination directory name)
   --keep-claude        Keep .claude/ directory for AI workflows
@@ -68,8 +69,11 @@ trap cleanup_on_error EXIT
 NON_INTERACTIVE=false
 KEEP_CLAUDE=false
 PROJECT_NAME=""
-SRC_DIR=""
-DEST_DIR=""
+
+# Default to project root directory
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SRC_DIR="$PROJECT_ROOT"
+DEST_DIR="$PROJECT_ROOT"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -101,12 +105,6 @@ while [[ $# -gt 0 ]]; do
 done
 
 # VALIDATION -------------------------------------------------------------------
-if [ -z "$SRC_DIR" ] || [ -z "$DEST_DIR" ]; then
-    log_error "Both --src and --dest are required"
-    echo "Usage: bash scripts/scaffold.sh --src /path/to/template --dest /path/to/project" >&2
-    exit 1
-fi
-
 # Convert to absolute paths
 SRC_DIR=$(cd "$SRC_DIR" 2>/dev/null && pwd) || {
     log_error "Source directory does not exist: $SRC_DIR"

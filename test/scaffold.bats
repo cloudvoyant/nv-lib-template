@@ -43,11 +43,14 @@ teardown() {
     rm -rf "$PROJECT_DIR"
 }
 
-@test "scaffold.sh requires --src and --dest" {
-    run bash ./scripts/scaffold.sh
+@test "scaffold.sh defaults to project root when --src and --dest not provided" {
+    # When run without args, should use current directory as default
+    # We'll run with --non-interactive to avoid prompts
+    run bash ./scripts/scaffold.sh --non-interactive
 
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"--src and --dest are required"* ]]
+    # Should succeed (defaults to current dir for both src and dest)
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Scaffolding complete"* ]]
 }
 
 @test "scaffold.sh validates source directory exists" {
