@@ -140,6 +140,22 @@ git push origin main
 
 CI/CD automatically runs tests, creates a release, and publishes to your configured registry.
 
+### Viewing Hidden Files
+
+Some configuration files are intentionally hidden in VS Code to reduce clutter and help you focus on your code. The template's `.vscode/settings.json` hides files like `.gitignore`, `.github/`, `.vscode/`, `.devcontainer/` and `.editorconfig` while keeping `.claude/` visible.
+
+To view hidden files, modify `.vscode/settings.json`:
+
+```json
+{
+  "files.exclude": {
+    ".gitignore": false, // Change true to false to show
+    ".github": false // Change true to false to show
+    // ... other patterns
+  }
+}
+```
+
 ## Customizing The Template For Your Needs
 
 ### For Your Language
