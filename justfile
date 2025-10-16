@@ -184,7 +184,7 @@ scaffold:
 
 # Run template tests
 [group('template')]
-template-test:
+test-template:
     #!/usr/bin/env bash
     if command -v bats >/dev/null 2>&1; then
         echo -e "{{INFO}}Running template tests...{{NORMAL}}";

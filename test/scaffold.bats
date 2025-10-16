@@ -328,7 +328,7 @@ teardown() {
     run grep -q "^new-migration:" justfile
     [ "$status" -eq 1 ]
 
-    run grep -q "^template-test:" justfile
+    run grep -q "^test-template:" justfile
     [ "$status" -eq 1 ]
 
     # Should NOT have TEMPLATE section
@@ -344,7 +344,7 @@ teardown() {
     [ "$status" -eq 0 ]
 
     # Template development commands (for testing the template itself)
-    run grep -q "template-test:" justfile
+    run grep -q "test-template:" justfile
     [ "$status" -eq 0 ]
 
     # TEMPLATE section (kept in source, removed when scaffolding)

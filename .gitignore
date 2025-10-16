@@ -101,3 +101,4 @@ test-results/
 # Instance-specific development files
 .claude/plan.md
 .claude/todos.md
+.claude/review.md

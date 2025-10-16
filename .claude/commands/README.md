@@ -102,6 +102,22 @@ Usage:
 /commit
 ```
 
+#### `/review`
+
+Perform a comprehensive code review and generate a review report.
+
+- Reviews recent changes, specific files, or entire project
+- Evaluates code quality, best practices, and architecture
+- Generates .claude/review.md with findings and suggestions
+- Presents code snippets and suggestions as diffs
+- Automatically gitignored to avoid repository clutter
+
+Usage:
+
+```
+/review
+```
+
 #### `/plan`
 
 Manage project planning using `.claude/plan.md`.
