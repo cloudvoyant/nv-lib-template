@@ -172,7 +172,7 @@ Hide non-essential files (show only code and documentation):
 just hide
 ```
 
-This hides infrastructure files and shows only: `docs/`, `src/`, `test/`, `.envrc`, `justfile`, and `README.md`.
+This hides infrastructure files and shows only: `docs/`, `src/`, `test/`, `.claude/`, `.envrc`, `justfile`, and `README.md`.
 
 Show all files:
 
@@ -183,6 +183,8 @@ just show
 This reveals all hidden configuration files (`.github/`, `.vscode/`, `.devcontainer/`, `Dockerfile`, `docker-compose.yml`, `scripts/`, etc.).
 
 **Note**: These commands are VS Code-specific and modify `.vscode/settings.json`. If you use a different editor, you'll need to configure file visibility using your editor's native settings.
+
+**Limitation**: Hidden files won't appear in VS Code search results (Cmd+Shift+F) unless you run `just show` first or toggle "Use Exclude Settings" in the search panel.
 
 ## Customizing The Template For Your Needs
 

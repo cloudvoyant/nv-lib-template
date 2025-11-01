@@ -58,7 +58,7 @@ update_file_exclusions() {
                 s/"docker-compose\.yml": [^,]*/"docker-compose.yml": true/
                 s/"justfile": [^,]*/"justfile": false/
                 s/"version\.txt": [^,]*/"version.txt": true/
-                s/"\.claude": [^,]*/"\.claude": true/
+                s/"\.claude": [^,]*/"\.claude": false/
                 s/"scripts": [^,]*/"scripts": true/
                 s/"CONTRIBUTING\.md": [^,]*/"CONTRIBUTING.md": true/
                 s/"CHANGELOG\.md": [^,]*/"CHANGELOG.md": true/
@@ -144,7 +144,7 @@ case "$MODE" in
         log_info "Hiding non-essential files in VS Code..."
         if update_file_exclusions "hide"; then
             log_success "VS Code: Files hidden successfully"
-            log_info "VS Code visible: docs/, src/, test/, .envrc, justfile, README.md"
+            log_info "VS Code visible: docs/, src/, test/, .claude/, .envrc, justfile, README.md"
         else
             log_error "Failed to update VS Code settings"
             exit 1
