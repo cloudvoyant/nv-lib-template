@@ -618,7 +618,8 @@ check_dependencies() {
             npm install -g semantic-release \
                 @semantic-release/changelog \
                 @semantic-release/exec \
-                @semantic-release/git 2>&1 | grep -v "npm WARN" || true
+                @semantic-release/git \
+                conventional-changelog-conventionalcommits 2>&1 | grep -v "npm WARN" || true
 
             log_success "semantic-release plugins installed"
         fi
