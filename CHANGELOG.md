@@ -1,3 +1,9 @@
+## [1.10.3](https://github.com/cloudvoyant/nv-lib-template/compare/v1.10.2...v1.10.3) (2025-11-01)
+
+### Performance Improvements
+
+* optimize CI by removing unnecessary dependencies ([c242fe2](https://github.com/cloudvoyant/nv-lib-template/commit/c242fe200272f6acc00d6cc51c6509fbfaff9c15))
+
 ## [1.10.2](https://github.com/cloudvoyant/nv-lib-template/compare/v1.10.1...v1.10.2) (2025-11-01)
 
 ### Bug Fixes
