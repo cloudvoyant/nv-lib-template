@@ -220,8 +220,8 @@ The `setup.sh` script uses semantic flags to indicate what level of tooling to i
 
 ```bash
 just setup              # Required: bash, just, direnv
-just setup --dev        # + docker, node/npx, gcloud, shellcheck, shfmt
-just setup --ci         # + docker, node/npx, gcloud (minimal)
+just setup --dev        # + docker, node/npx, gcloud, shellcheck, shfmt, claude
+just setup --ci         # + node/npx, gcloud (for release automation)
 just setup --template   # + bats-core (template testing)
 ```
 

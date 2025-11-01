@@ -5,8 +5,8 @@ Installs development dependencies for this platform.
 Usage: setup.sh [OPTIONS]
 
 Options:
-  --dev              Install development tools (direnv, shellcheck, shfmt, docker, node/npx)
-  --ci               Install CI essentials (docker, node/npx)
+  --dev              Install development tools (docker, shellcheck, shfmt, claude)
+  --ci               Install CI essentials (node/npx, gcloud)
   --template         Install template development tools (bats-core)
   --docker-optimize  Optimize for Docker image size (consolidate operations, aggressive cleanup)
 
@@ -26,7 +26,6 @@ Development tools (--dev):
 - claude (Claude CLI)
 
 CI essentials (--ci):
-- docker (containerization)
 - node/npx (for semantic-release)
 - gcloud (Google Cloud SDK)
 
@@ -577,8 +576,8 @@ check_dependencies() {
 
     # OPTIONAL DEPENDENCIES --------------------------------------------------------
 
-    # Check Docker (for --dev or --ci)
-    if [ "$INSTALL_DEV" = true ] || [ "$INSTALL_CI" = true ]; then
+    # Check Docker (for --dev only)
+    if [ "$INSTALL_DEV" = true ]; then
         current=$((current + 1))
         progress_step $current $total "Checking Docker..."
         if command_exists docker; then

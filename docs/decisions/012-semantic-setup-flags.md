@@ -18,9 +18,9 @@ We needed to decide how to structure setup script flags to give users control ov
 
 Use semantic flags that describe the installation context:
 
-- `--dev` - Install development tools (docker, node/npx, gcloud, shellcheck, shfmt)
-- `--ci` - Install CI essentials (docker, node/npx, gcloud)
-- `--platform` - Install platform development tools (bats-core)
+- `--dev` - Install development tools (docker, node/npx, gcloud, shellcheck, shfmt, claude)
+- `--ci` - Install CI essentials (node/npx, gcloud)
+- `--template` - Install template development tools (bats-core)
 
 Flags can be combined: `setup.sh --dev --platform`
 
@@ -106,31 +106,32 @@ Development (`--dev`):
 - gcloud - For testing registry publishing
 - shellcheck - For linting shell scripts
 - shfmt - For formatting shell scripts
+- claude - For AI-assisted development
 
 CI (`--ci`):
-- docker - For containerized builds
-- node/npx - For semantic-release in pipelines
+- node/npx - For semantic-release in release pipelines
 - gcloud - For publishing to GCP Artifact Registry
+- NO docker (not needed for most test runs)
 - NO linters/formatters (not needed in CI)
 
-Platform (`--platform`):
-- bats-core - For running platform tests
-- Used by platform maintainers only
+Template (`--template`):
+- bats-core - For running template tests
+- Used by template maintainers only
 
 ### Combinable for flexibility
 
 Users can combine flags for their specific needs:
 - `setup.sh` - Just core tools for using a scaffolded project
 - `setup.sh --dev` - Full development environment
-- `setup.sh --dev --platform` - Platform development
-- `setup.sh --ci` - Minimal CI installation
+- `setup.sh --dev --template` - Template development
+- `setup.sh --ci` - CI/release automation (node/npx, gcloud only)
 
 ### Clear separation of concerns
 
 - Required - Always installed, no flag needed
 - Development - Optional, for active development
-- CI - Optional, for automated pipelines
-- Platform - Optional, for platform maintenance
+- CI - Optional, for automated release pipelines only
+- Template - Optional, for template maintenance
 
 ## Consequences
 
