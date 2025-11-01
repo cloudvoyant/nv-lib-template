@@ -78,26 +78,25 @@ progress_step() {
 log() {
     local level=$1
     local message=$2
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
 
     case $level in
     "DANGER" | "ERROR")
-        printf "[${timestamp}]: ${DANGER}${message}${NC}\n" >&2
+        printf "${DANGER}${message}${NC}\n" >&2
         ;;
     "SUCCESS")
-        printf "[${timestamp}]: ${SUCCESS}${message}${NC}\n"
+        printf "${SUCCESS}${message}${NC}\n"
         ;;
     "WARN" | "WARNING")
-        printf "[${timestamp}]: ${WARN}${message}${NC}\n"
+        printf "${WARN}${message}${NC}\n"
         ;;
     "INFO")
-        printf "[${timestamp}]: ${INFO}${message}${NC}\n"
+        printf "${INFO}${message}${NC}\n"
         ;;
     "DEBUG")
-        printf "[${timestamp}]: ${DEBUG}${message}${NC}\n"
+        printf "${DEBUG}${message}${NC}\n"
         ;;
     *)
-        printf "[${timestamp}] ${message}\n"
+        printf "${message}\n"
         ;;
     esac
 }

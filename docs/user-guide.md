@@ -162,21 +162,27 @@ git push origin main
 
 CI/CD automatically runs tests, creates a release, and publishes to your configured registry.
 
-### Viewing Hidden Files
+### Viewing Hidden Files (VS Code)
 
-Some configuration files are intentionally hidden in VS Code to reduce clutter and help you focus on your code. The template's `.vscode/settings.json` hides files like `.gitignore`, `.github/`, `.vscode/`, `.devcontainer/` and `.editorconfig` while keeping `.claude/` visible.
+The template provides `just hide` and `just show` commands to toggle file visibility in VS Code, helping you focus on code or see the full project structure as needed.
 
-To view hidden files, modify `.vscode/settings.json`:
+Hide non-essential files (show only code and documentation):
 
-```json
-{
-  "files.exclude": {
-    ".gitignore": false, // Change true to false to show
-    ".github": false // Change true to false to show
-    // ... other patterns
-  }
-}
+```bash
+just hide
 ```
+
+This hides infrastructure files and shows only: `docs/`, `src/`, `test/`, `.envrc`, `justfile`, and `README.md`.
+
+Show all files:
+
+```bash
+just show
+```
+
+This reveals all hidden configuration files (`.github/`, `.vscode/`, `.devcontainer/`, `Dockerfile`, `docker-compose.yml`, `scripts/`, etc.).
+
+**Note**: These commands are VS Code-specific and modify `.vscode/settings.json`. If you use a different editor, you'll need to configure file visibility using your editor's native settings.
 
 ## Customizing The Template For Your Needs
 

@@ -57,6 +57,7 @@ test: build
 # Clean build artifacts
 [group('dev')]
 clean:
+    @rm -rf .nv
     @echo -e "{{WARN}}TODO: Implement clean{{NORMAL}}"
 
 # ==============================================================================
@@ -209,3 +210,17 @@ test-template:
         echo -e "{{ERROR}}bats not installed. Run: just setup --template{{NORMAL}}";
         exit 1;
     fi
+
+# ==============================================================================
+# VS CODE
+# ==============================================================================
+
+# Hide non-essential files in VS Code
+[group('vscode')]
+hide:
+    @bash scripts/toggle-files.sh hide
+
+# Show all files in VS Code
+[group('vscode')]
+show:
+    @bash scripts/toggle-files.sh show
