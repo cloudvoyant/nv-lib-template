@@ -1,3 +1,9 @@
+## [1.10.1](https://github.com/cloudvoyant/nv-lib-template/compare/v1.10.0...v1.10.1) (2025-11-01)
+
+### Bug Fixes
+
+* keep .claude directory visible and document search limitation ([815aabd](https://github.com/cloudvoyant/nv-lib-template/commit/815aabd490cecd54c2d00c242fc1abc71e3c89b4))
+
 ## [1.10.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.9.1...v1.10.0) (2025-11-01)
 
 ### Features
