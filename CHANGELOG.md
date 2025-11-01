@@ -1,3 +1,9 @@
+## [1.10.2](https://github.com/cloudvoyant/nv-lib-template/compare/v1.10.1...v1.10.2) (2025-11-01)
+
+### Bug Fixes
+
+* consolidate CI workflow into single build-and-test job ([6e8e776](https://github.com/cloudvoyant/nv-lib-template/commit/6e8e776af61a5d50a3b7bdaabb6e08743228bfaa))
+
 ## [1.10.1](https://github.com/cloudvoyant/nv-lib-template/compare/v1.10.0...v1.10.1) (2025-11-01)
 
 ### Bug Fixes
