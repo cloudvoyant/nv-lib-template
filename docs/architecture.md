@@ -79,6 +79,8 @@ For template maintainers. Includes testing infrastructure:
 lib/
 ├── .envrc                   # Environment variables
 ├── justfile                 # Commands + TEMPLATE section
+├── Dockerfile               # Docker image definition
+├── docker-compose.yml       # Docker services configuration
 ├── scripts/                 # Bash framework
 │   ├── setup.sh
 │   ├── scaffold.sh
@@ -99,6 +101,8 @@ For end users. Template development files removed:
 myproject/
 ├── .envrc                   # Your project config
 ├── justfile                 # Clean commands (no TEMPLATE section)
+├── Dockerfile               # Docker image definition
+├── docker-compose.yml       # Docker services configuration
 ├── scripts/                 # Bash framework (override as needed)
 ├── src/                     # Your code here
 ├── docs/                    # Your docs
@@ -154,15 +158,44 @@ Claude commands provide LLM-assisted workflows for complex tasks. For complete c
 - `/review` - Performs comprehensive code reviews with detailed reports
 - `/plan` - Manages project planning with spec-driven development
 
+### Component: Dockerfile (Multi-Stage)
+
+The `Dockerfile` uses a multi-stage build to support both minimal runtime environments and full development environments from a single file:
+
+**Base Stage** (`target: base`):
+- Used by docker-compose for `just docker-run` and `just docker-test`
+- Installs only essential dependencies: bash, just, direnv
+- Fast build time (~1-2 minutes)
+- Minimal image size for quick iteration
+
+**Dev Stage** (`target: dev`):
+- Used by VS Code DevContainers
+- Builds on top of base stage
+- Adds development tools: docker, node/npx, gcloud, shellcheck, shfmt, claude
+- Adds template testing tools: bats-core
+- Slower build (~10 minutes), but cached after first build
+
+Configuration:
+- `docker-compose.yml` services specify `target: base` for fast builds
+- `.devcontainer/devcontainer.json` specifies `target: dev` for full environment
+- Both share the same base layers, maximizing Docker layer cache efficiency
+
+### Component: docker-compose.yml
+
+Provides containerized services for running and testing without installing dependencies locally:
+
+- `runner` service: Executes `just run` in isolated container
+- `tester` service: Executes `just test` in isolated container
+- Both use `target: base` for minimal, fast builds
+- Mount project directory to `/workspace` for live code updates
+
 ### Component: .devcontainer/
 
-The `.devcontainer/` directory provides VS Code Dev Containers configuration for consistent development environments across teams. It includes:
+The `.devcontainer/` directory provides VS Code Dev Containers configuration for consistent development environments across teams. The devcontainer uses the root-level `Dockerfile` with `target: dev` to build a full development environment.
 
 Features:
 - `git:1` - Git installed from source (credentials auto-shared by VS Code via SSH agent forwarding)
-- `github-cli:1` - GitHub CLI with automatic authentication
-- `google-cloud-cli:1` - gcloud CLI tools
-- `docker-in-docker:2` - Docker daemon for building containers
+- `docker-outside-of-docker:1` - Docker CLI that connects to host's Docker daemon
 
 Credential Mounting:
 - Claude CLI credentials mounted from `~/.claude` directory

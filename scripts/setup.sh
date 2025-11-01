@@ -23,6 +23,7 @@ Development tools (--dev):
 - gcloud (Google Cloud SDK)
 - shellcheck (shell script linter)
 - shfmt (shell script formatter)
+- claude (Claude CLI)
 
 CI essentials (--ci):
 - docker (containerization)
@@ -72,7 +73,7 @@ while [[ $# -gt 0 ]]; do
             echo "  -h, --help    Show this help message"
             echo ""
             echo "Required: bash, just, direnv"
-            echo "Development (--dev): docker, node/npx, gcloud, shellcheck, shfmt"
+            echo "Development (--dev): docker, node/npx, gcloud, shellcheck, shfmt, claude"
             echo "CI (--ci): docker, node/npx, gcloud"
             echo "Template (--template): bats-core"
             exit 0
@@ -471,13 +472,29 @@ install_bats() {
     log_success "bats-core installation completed"
 }
 
+# Install Claude CLI based on platform
+install_claude() {
+    log_info "Installing Claude CLI..."
+
+    # Claude CLI requires Node.js and npm
+    if ! command_exists npm; then
+        log_error "npm is required to install Claude CLI"
+        return 1
+    fi
+
+    # Install Claude CLI globally via npm
+    npm install -g @anthropic-ai/claude-cli 2>&1 | grep -v "npm WARN" || true
+
+    log_success "Claude CLI installation completed"
+}
+
 # Check and install dependencies
 check_dependencies() {
     log_info "Checking dependencies..."
     log_info "Required: bash, just, direnv"
 
     if [ "$INSTALL_DEV" = true ]; then
-        log_info "Development tools: docker, node/npx, gcloud, shellcheck, shfmt (will be installed)"
+        log_info "Development tools: docker, node/npx, gcloud, shellcheck, shfmt, claude (will be installed)"
     fi
     if [ "$INSTALL_CI" = true ]; then
         log_info "CI essentials: docker, node/npx, gcloud (will be installed)"
@@ -501,7 +518,7 @@ check_dependencies() {
         fi
     fi
 
-    local total=8
+    local total=9
     local current=0
     local failed_required=0
 
@@ -651,6 +668,22 @@ check_dependencies() {
                 log_success "shfmt installed successfully"
             else
                 log_warn "Skipping shfmt - install manually from https://github.com/mvdan/sh if needed"
+            fi
+        fi
+    fi
+
+    # Check Claude CLI (for --dev only)
+    if [ "$INSTALL_DEV" = true ]; then
+        current=$((current + 1))
+        progress_step $current $total "Checking Claude CLI..."
+        if command_exists claude; then
+            log_success "Claude CLI is already installed: $(claude --version 2>/dev/null || echo 'version unknown')"
+        else
+            log_warn "Claude CLI not found (AI-powered coding assistant)"
+            if install_claude; then
+                log_success "Claude CLI installed successfully"
+            else
+                log_warn "Skipping Claude CLI - ensure Node.js is installed and try 'npm install -g @anthropic-ai/claude-cli' manually"
             fi
         fi
     fi

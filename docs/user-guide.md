@@ -80,6 +80,28 @@ Note how just runs the necessary dependencies for a task on it's own!
 
 Commit using conventional commits (`feat:`, `fix:`, `docs:`). Merge/push to main and CI/CD will run automatically bumping your project version and publishing a package.
 
+### Using Docker
+
+The template includes Docker support for running tasks in isolated containers without installing dependencies on your host machine.
+
+Prerequisites:
+
+- Docker Desktop or Docker Engine
+
+Available Docker commands:
+
+```bash
+just docker-build    # Build the Docker image
+just docker-run      # Run the project in a container
+just docker-test     # Run tests in a container
+```
+
+The `Dockerfile` and `docker-compose.yml` are configured to install all required dependencies automatically. This is useful for:
+
+- Running tasks without installing tools locally
+- Ensuring consistency across different development machines
+- Testing in a clean environment
+
 ### Using Dev Containers
 
 The template includes a pre-configured devcontainer for consistent cross-platform development environments across your team.

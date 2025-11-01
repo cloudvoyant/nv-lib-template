@@ -26,13 +26,15 @@ detect_project_root() {
         current_dir="$(dirname "$current_dir")"
     done
 
-    echo "ERROR: Could not find project root (.envrc with PROJECT variable not found)" >&2
-    echo "TIP: Run 'just setup' to initialize the project or ensure you're in the project directory" >&2
+    # If we get here, we couldn't find .envrc
+    # This is acceptable in some contexts (e.g., Docker build, CI)
+    # Only error if caller explicitly needs it
     return 1
 }
 
-# Set PROJECT_ROOT
-PROJECT_ROOT="$(detect_project_root)"
+# Set PROJECT_ROOT (optional - may be empty if not in a project directory)
+# This allows scripts to run in contexts like Docker builds where .envrc doesn't exist
+PROJECT_ROOT="$(detect_project_root 2>/dev/null || echo "")"
 
 # COLORS -----------------------------------------------------------------------
 

@@ -90,7 +90,6 @@ To learn more about using this template, read the docs:
 
 ## TODO
 
-- [ ] Docker & docker-compose support
 - [ ] Pre-release publishing
 - [ ] Template docs improvements
 

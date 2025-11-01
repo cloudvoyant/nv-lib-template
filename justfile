@@ -60,6 +60,22 @@ clean:
     @echo -e "{{WARN}}TODO: Implement clean{{NORMAL}}"
 
 # ==============================================================================
+# DOCKER
+# ==============================================================================
+
+[group('docker')]
+docker-build:
+    @COMPOSE_BAKE=true docker compose build
+
+[group('docker')]
+docker-run:
+    @docker compose run --rm runner
+
+[group('docker')]
+docker-test:
+    @docker compose run --rm tester
+
+# ==============================================================================
 # UTILITIES
 # ==============================================================================
 
