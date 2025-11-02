@@ -30,14 +30,24 @@ Create a conventional commit message following this format:
 ```
 
 **Type must be one of:**
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `refactor`: Code refactoring (no functionality change)
-- `test`: Test additions or changes
-- `chore`: Build, CI, or tooling changes
-- `perf`: Performance improvements
-- `style`: Code style/formatting (not docs style)
+- `feat`: New feature → **triggers MINOR version bump** (1.x.0)
+- `fix`: Bug fix → **triggers PATCH version bump** (1.0.x)
+- `docs`: Documentation changes → no version bump (appears in changelog)
+- `refactor`: Code refactoring (no functionality change) → no version bump (appears in changelog)
+- `test`: Test additions or changes → no version bump (appears in changelog)
+- `chore`: Build, CI, or tooling changes → no version bump (hidden from changelog)
+- `perf`: Performance improvements → no version bump (appears in changelog)
+- `style`: Code style/formatting (not docs style) → no version bump (appears in changelog)
+- `feat!` or `fix!`: Breaking change → **triggers MAJOR version bump** (x.0.0)
+
+**Choosing the right type:**
+1. Does it add new functionality users can use? → `feat`
+2. Does it fix broken behavior? → `fix`
+3. Does it change existing behavior (breaking)? → `feat!` or `fix!`
+4. Does it only improve code structure? → `refactor`
+5. Does it only update documentation? → `docs`
+6. Does it only affect tests? → `test`
+7. Does it only affect build/CI? → `chore`
 
 **Rules:**
 - First line max 72 characters
@@ -82,22 +92,56 @@ from the headings because it looks better in code editors.
 ```
 (Casual tone, self-attribution, obvious explanation)
 
-### Step 3: Review with User
+### Step 3: Verify Commit Type and Version Impact
 
-Show the proposed commit message and ask: "Does this commit message look good?"
+**CRITICAL: Before showing the commit message to the user, verify:**
+
+1. **Check if the commit type matches the version bump intention:**
+   - If changes affect user-facing behavior (API, commands, variables) → needs version bump
+   - If only internal refactoring with no user impact → no version bump needed
+
+2. **Common mistakes to avoid:**
+   - Using `refactor` for changes that affect users (should be `feat` or `fix`)
+   - Using `docs` for changes that include code changes (should be `feat` or `refactor`)
+   - Using `feat` for internal-only improvements (should be `refactor` or `chore`)
+
+3. **Explicitly state the version impact when showing the commit message:**
+
+### Step 4: Review with User
+
+Show the proposed commit message and **explicitly mention version impact**:
+
+```
+Proposed commit:
+
+<show commit message>
+
+This will trigger a MINOR version bump (e.g., 1.2.0 → 1.3.0)
+```
+
+Or:
+
+```
+Proposed commit:
+
+<show commit message>
+
+This will NOT trigger a version bump (changelog only)
+```
+
+Ask: "Does this commit message look good?"
 
 Wait for:
-- Approval: Proceed to Step 4
+- Approval: Proceed to Step 5
 - Changes requested: Revise and show again
 - Cancel: Exit without committing
 
-### Step 4: Stage and Commit
+### Step 5: Stage and Commit
 
 Stage all changes and create the commit:
 
 ```bash
-git add -A
-git commit -m "$(cat <<'EOF'
+git add -A && git commit -m "$(cat <<'EOF'
 <type>: <description>
 
 [optional body]
@@ -107,7 +151,7 @@ EOF
 
 Always use HEREDOC format for commit messages to ensure proper formatting.
 
-### Step 5: Confirm
+### Step 6: Confirm
 
 Report success:
 ```

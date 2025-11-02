@@ -16,10 +16,10 @@ This workflow helps you systematically upgrade your project to the latest templa
 Check the template version this project is currently using:
 
 ```bash
-grep NV_PLATFORM_VERSION .envrc
+grep NV_TEMPLATE_VERSION .envrc
 ```
 
-If `NV_PLATFORM_VERSION` doesn't exist in `.envrc`, this project was scaffolded before version tracking was added. Assume an older version and proceed with caution.
+If `NV_TEMPLATE_VERSION` doesn't exist in `.envrc`, this project was scaffolded before version tracking was added. Assume an older version and proceed with caution.
 
 ### 2. Clone Latest Template
 
@@ -95,7 +95,7 @@ For each file with differences, I'll create tasks like:
 [Repeat for each file category]
 
 ### Task N: Update version
-- [ ] Update NV_PLATFORM_VERSION in .envrc to <target>
+- [ ] Update NV_TEMPLATE_VERSION in .envrc to <target>
 
 ## Testing
 - [ ] Run: just test
@@ -154,7 +154,7 @@ After all changes applied:
 
 ```bash
 # Update .envrc with new version
-sed -i.bak 's/^export NV_PLATFORM_VERSION=.*/export NV_PLATFORM_VERSION=<new-version>/' .envrc && rm .envrc.bak
+sed -i.bak 's/^export NV_TEMPLATE_VERSION=.*/export NV_TEMPLATE_VERSION=<new-version>/' .envrc && rm .envrc.bak
 direnv allow
 ```
 
@@ -170,7 +170,7 @@ just test
 ls -la scripts/ .github/workflows/
 
 # Verify .envrc has correct version
-grep NV_PLATFORM_VERSION .envrc
+grep NV_TEMPLATE_VERSION .envrc
 ```
 
 ### 7. Cleanup
@@ -195,15 +195,15 @@ mv .claude/plan.md .claude/migration-complete-$(date +%Y%m%d).md
 
 ## Common Issues
 
-### Missing NV_PLATFORM_VERSION
+### Missing NV_TEMPLATE_VERSION
 
-If `.envrc` doesn't have `NV_PLATFORM_VERSION`, add it:
+If `.envrc` doesn't have `NV_TEMPLATE_VERSION`, add it:
 
 ```bash
 echo '' >> .envrc
-echo '# Nedavellir platform tracking' >> .envrc
-echo 'export NV_PLATFORM=nv-lib-template' >> .envrc
-echo 'export NV_PLATFORM_VERSION=<current-version>' >> .envrc
+echo '# Nedavellir template tracking' >> .envrc
+echo 'export NV_TEMPLATE=nv-lib-template' >> .envrc
+echo 'export NV_TEMPLATE_VERSION=<current-version>' >> .envrc
 ```
 
 ### Conflicting Changes

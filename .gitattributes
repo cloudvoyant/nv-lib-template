@@ -113,16 +113,16 @@ CMakeLists.txt text
 *.sqlite binary
 *.wasm binary
 
-# GitHub Template: Exclude platform-specific files when using "Use this template"
-# These files are for platform development and should not be copied to new projects
+# GitHub Template: Exclude template-specific files when using "Use this template"
+# These files are for template development and should not be copied to new projects
 test/ export-ignore
 docs/migrations/ export-ignore
 docs/decisions/ export-ignore
 CHANGELOG.md export-ignore
 RELEASE_NOTES.md export-ignore
-scripts/platform-install.sh export-ignore
+scripts/template-install.sh export-ignore
 .claude/plan.md export-ignore
 .claude/tasks.md export-ignore
 .claude/migrations/generate-migration-guide.md export-ignore
 .claude/commands/new-migration.md export-ignore
-.claude/commands/validate-platform.md export-ignore
+.claude/commands/validate-template.md export-ignore

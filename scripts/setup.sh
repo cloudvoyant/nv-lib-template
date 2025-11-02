@@ -41,7 +41,7 @@ set -euo pipefail
 
 INSTALL_DEV=false
 INSTALL_CI=false
-INSTALL_PLATFORM=false
+INSTALL_TEMPLATE=false
 DOCKER_OPTIMIZE=false
 
 while [[ $# -gt 0 ]]; do
@@ -55,7 +55,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --template)
-            INSTALL_PLATFORM=true
+            INSTALL_TEMPLATE=true
             shift
             ;;
         --docker-optimize)
@@ -498,10 +498,10 @@ check_dependencies() {
     if [ "$INSTALL_CI" = true ]; then
         log_info "CI essentials: docker, node/npx, gcloud (will be installed)"
     fi
-    if [ "$INSTALL_PLATFORM" = true ]; then
+    if [ "$INSTALL_TEMPLATE" = true ]; then
         log_info "Template development: bats-core (will be installed)"
     fi
-    if [ "$INSTALL_DEV" = false ] && [ "$INSTALL_CI" = false ] && [ "$INSTALL_PLATFORM" = false ]; then
+    if [ "$INSTALL_DEV" = false ] && [ "$INSTALL_CI" = false ] && [ "$INSTALL_TEMPLATE" = false ]; then
         log_info "Optional tools: skipped (use --dev, --ci, or --template flags to install)"
     fi
     echo ""
@@ -689,7 +689,7 @@ check_dependencies() {
     fi
 
     # Check bats-core (for --template only)
-    if [ "$INSTALL_PLATFORM" = true ]; then
+    if [ "$INSTALL_TEMPLATE" = true ]; then
         current=$((current + 1))
         progress_step $current $total "Checking bats-core..."
         if command_exists bats; then

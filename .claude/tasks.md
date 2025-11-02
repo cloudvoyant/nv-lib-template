@@ -11,6 +11,6 @@
 3. Edit `justfile` for commands
 4. Test changes locally
 
-## Test Platform
+## Test Template
 
-1. Run `just platform-test`
+1. Run `just template-test`

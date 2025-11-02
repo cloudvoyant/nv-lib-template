@@ -1,5 +1,17 @@
 # Claude Code Instructions
 
+## Workflow Prompt
+
+When a user requests a non-trivial task (anything requiring multiple steps or significant changes):
+
+**Always ask first:** "Would you like me to follow the spec-driven development workflow? I can create a structured plan in `.claude/plan.md` and work through it systematically."
+
+Options:
+- **Yes**: Use `/plan new` to create a structured plan and follow the workflow defined in `.claude/commands/plan.md`
+- **No**: Proceed directly with implementation (but still create a todo list for tracking)
+
+For trivial single-step tasks, proceed directly without asking.
+
 ## Spec-Driven Development
 
 This project uses a spec-driven approach: plan first, implement second.

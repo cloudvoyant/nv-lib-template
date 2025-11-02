@@ -143,6 +143,7 @@ Implement user authentication system:
 - [ ] Implement password hashing and validation
 - [ ] Create login/logout endpoints
 - [ ] Add JWT token generation and validation
+- [ ] **Run tests - verify Phase 1 complete**
 
 ## Phase 2 - OAuth Integration
 
@@ -150,6 +151,7 @@ Implement user authentication system:
 - [ ] Implement OAuth callback handlers
 - [ ] Link OAuth accounts to user profiles
 - [ ] Handle account merging scenarios
+- [ ] **Run tests - verify Phase 2 complete**
 
 ## Phase 3 - Session Management
 
@@ -157,6 +159,7 @@ Implement user authentication system:
 - [ ] Add session expiration handling
 - [ ] Create session invalidation endpoints
 - [ ] Add "remember me" functionality
+- [ ] **Run tests - verify Phase 3 complete**
 
 ## Phase 4 - Password Recovery
 
@@ -164,6 +167,7 @@ Implement user authentication system:
 - [ ] Implement secure token generation
 - [ ] Send password reset emails
 - [ ] Create password reset confirmation endpoint
+- [ ] **Run tests - verify Phase 4 complete**
 ```
 
 ### Step 6: Review
@@ -370,16 +374,17 @@ For each task in the plan, follow this workflow:
      - [ ] Test OAuth initialization
    ```
 
-4. Test the implementation:
-   - Run relevant tests
+4. **Test the implementation:**
+   - Run relevant tests (`just test`, unit tests, integration tests)
    - Manually verify functionality if needed
    - Ensure no regressions
+   - Fix any test failures before marking task complete
 
 #### 3.3: Mark Task Complete
 
 1. Only mark complete when fully done:
    - All sub-tasks checked
-   - Tests passing
+   - **Tests passing** (critical - no exceptions)
    - Code working as specified
 
 2. Update plan.md:
@@ -393,23 +398,33 @@ For each task in the plan, follow this workflow:
 
 When a phase is complete:
 
-1. Mark phase as complete with ✅:
+1. **CRITICAL: Run tests to validate phase completion:**
+   - Run the project's test suite (`just test`, `just test-template`, or equivalent)
+   - Verify all tests pass before marking phase complete
+   - If tests fail, fix issues before proceeding
+   - **Exception**: For complex refactoring, tests may be allowed to fail temporarily, but:
+     - Document the failure reason in plan.md
+     - Create specific tasks to fix tests in the next phase
+     - State clearly why tests are allowed to remain broken
+
+2. Mark phase as complete with ✅:
    ```markdown
    ## Phase 2 - OAuth Integration ✅
    ```
 
-2. Report phase completion:
+3. Report phase completion:
    ```
    Phase 2 - OAuth Integration complete! ✅
 
    Progress: 2/4 phases complete (50%)
+   Tests: All passing ✅
    ```
 
-3. Wait for user confirmation before starting next phase (if accept edits is disabled):
+4. Wait for user confirmation before starting next phase (if accept edits is disabled):
    - If accept edits is enabled, proceed directly to next phase
    - If accept edits is disabled, ask "Ready to move to Phase 3 - Session Management?" and wait for confirmation
 
-4. Update Insights section if it exists (optional but recommended)
+5. Update Insights section if it exists (optional but recommended)
 
 ### Step 4: Handle Blockers
 

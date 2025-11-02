@@ -14,22 +14,22 @@ setup() {
     export PROJECT_DIR="$ORIGINAL_DIR/.nv/$TEST_NAME_SANITIZED"
     mkdir -p "$PROJECT_DIR"
 
-    # Clone platform repo to project/.nv/$PROJECT (simulating nv CLI behavior)
-    export PLATFORM_CLONE="$PROJECT_DIR/.nv/$PROJECT"
-    mkdir -p "$PLATFORM_CLONE"
+    # Clone template repo to project/.nv/$PROJECT (simulating nv CLI behavior)
+    export TEMPLATE_CLONE="$PROJECT_DIR/.nv/$PROJECT"
+    mkdir -p "$TEMPLATE_CLONE"
 
-    # Copy all files except .git and gitignored directories to platform clone
+    # Copy all files except .git and gitignored directories to template clone
     rsync -a \
         --exclude='.git' \
         --exclude='.nv' \
-        "$ORIGINAL_DIR/" "$PLATFORM_CLONE/"
+        "$ORIGINAL_DIR/" "$TEMPLATE_CLONE/"
 
     # Set up test variables
     export DEST_DIR="$PROJECT_DIR"
-    export SRC_DIR="$PLATFORM_CLONE"
+    export SRC_DIR="$TEMPLATE_CLONE"
 
-    # Change to the platform clone directory (where scaffold will be called from)
-    cd "$PLATFORM_CLONE"
+    # Change to the template clone directory (where scaffold will be called from)
+    cd "$TEMPLATE_CLONE"
 
     # Source .envrc to get VERSION and PROJECT variables for tests
     if [ -f ".envrc" ]; then
@@ -89,7 +89,7 @@ teardown() {
     [[ "$output" == *"project=my-valid_project123"* ]]
 }
 
-@test "updates .envrc with platform tracking variables" {
+@test "updates .envrc with template tracking variables" {
     bash ./scripts/scaffold.sh \
         --src . \
         --dest ../.. \
@@ -100,12 +100,12 @@ teardown() {
     run grep "export PROJECT=testproject" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
 
-    # Adds platform tracking (reads from source .envrc)
-    run grep "NV_PLATFORM=" "$DEST_DIR/.envrc"
+    # Adds template tracking (reads from source .envrc)
+    run grep "NV_TEMPLATE=" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
     [[ "$output" == *"nv-lib-template"* ]]
 
-    run grep "NV_PLATFORM_VERSION=" "$DEST_DIR/.envrc"
+    run grep "NV_TEMPLATE_VERSION=" "$DEST_DIR/.envrc"
     [ "$status" -eq 0 ]
     [[ "$output" == *"$VERSION"* ]]
 
@@ -122,7 +122,7 @@ teardown() {
         --non-interactive \
         --project testproject
 
-    count=$(grep -c "NV_PLATFORM=" "$DEST_DIR/.envrc")
+    count=$(grep -c "NV_TEMPLATE=" "$DEST_DIR/.envrc")
     [ "$count" -eq 1 ]
 }
 
@@ -277,7 +277,7 @@ teardown() {
     [ ! -d "$DEST_DIR/.nv/.scaffold-backup" ]
 }
 
-@test "replaces platform name in all case variants across all files" {
+@test "replaces template name in all case variants across all files" {
     bash ./scripts/scaffold.sh \
         --src . \
         --dest ../.. \

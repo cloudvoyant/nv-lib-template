@@ -1,4 +1,4 @@
-# ADR-008: Platform Testing with Bats
+# ADR-008: Template Testing with Bats
 
 Status: Accepted
 
@@ -6,11 +6,11 @@ Date: 2024-10-10
 
 ## Context
 
-Need to test bash scripts and scaffolding functionality to ensure platform quality.
+Need to test bash scripts and scaffolding functionality to ensure template quality.
 
 ## Decision
 
-Use bats-core (Bash Automated Testing System) for all platform testing.
+Use bats-core (Bash Automated Testing System) for all template testing.
 
 ## Alternatives Considered
 
@@ -27,4 +27,4 @@ Use bats-core (Bash Automated Testing System) for all platform testing.
 - Integrates well with CI/CD pipelines
 - Standard tool for bash testing (widely adopted)
 - Built-in helpers like `run` for capturing output
-- Works well with our platform development workflow
+- Works well with our template development workflow

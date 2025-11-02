@@ -174,7 +174,7 @@ DEFAULT_PROJECT=$(basename "$DEST_DIR")
 
 # INTERACTIVE PROMPTS ----------------------------------------------------------
 if [ "$NON_INTERACTIVE" = false ]; then
-    log_info "Scaffolding new project from $PLATFORM_NAME platform"
+    log_info "Scaffolding new project from $TEMPLATE_NAME platform"
     echo ""
 
     # Prompt for project name
@@ -221,25 +221,25 @@ else
     log_info "Non-interactive mode: project=$PROJECT_NAME"
 fi
 
-# GET PLATFORM NAME AND VERSION -----------------------------------------------
-log_info "Detecting platform name and version..."
+# GET TEMPLATE NAME AND VERSION -----------------------------------------------
+log_info "Detecting template name and version..."
 
 # Use environment variables from sourced .envrc
-PLATFORM_NAME="$PROJECT"
-PLATFORM_VERSION="$VERSION"
+TEMPLATE_NAME="$PROJECT"
+TEMPLATE_VERSION="$VERSION"
 
 # Validate we have the required values
-if [ -z "$PLATFORM_NAME" ]; then
-    log_error "Could not determine platform name (PROJECT not set)"
+if [ -z "$TEMPLATE_NAME" ]; then
+    log_error "Could not determine template name (PROJECT not set)"
     exit 1
 fi
 
-if [ -z "$PLATFORM_VERSION" ]; then
-    log_error "Could not determine platform version (VERSION not set)"
+if [ -z "$TEMPLATE_VERSION" ]; then
+    log_error "Could not determine template version (VERSION not set)"
     exit 1
 fi
 
-log_info "Platform: $PLATFORM_NAME v$PLATFORM_VERSION"
+log_info "Template: $TEMPLATE_NAME v$TEMPLATE_VERSION"
 
 # BACKUP DESTINATION DIRECTORY ------------------------------------------------
 log_info "Creating backup of destination directory..."
@@ -274,19 +274,19 @@ rsync -a \
 
 log_success "Platform files copied"
 
-# REPLACE PLATFORM NAME WITH PROJECT NAME IN ALL VARIANTS ---------------------
-log_info "Replacing platform name with project name..."
+# REPLACE TEMPLATE NAME WITH PROJECT NAME IN ALL VARIANTS ---------------------
+log_info "Replacing template name with project name..."
 
-# Generate all variants of platform name and project name
-PLATFORM_WORDS=$(string_to_words "$PLATFORM_NAME")
+# Generate all variants of template name and project name
+TEMPLATE_WORDS=$(string_to_words "$TEMPLATE_NAME")
 PROJECT_WORDS=$(string_to_words "$PROJECT_NAME")
 
-# Platform name variants
-PLATFORM_SNAKE=$(words_to_snake "$PLATFORM_WORDS")
-PLATFORM_KEBAB=$(words_to_kebab "$PLATFORM_WORDS")
-PLATFORM_PASCAL=$(words_to_pascal "$PLATFORM_WORDS")
-PLATFORM_CAMEL=$(words_to_camel "$PLATFORM_WORDS")
-PLATFORM_FLAT=$(words_to_flat "$PLATFORM_WORDS")
+# Template name variants
+TEMPLATE_SNAKE=$(words_to_snake "$TEMPLATE_WORDS")
+TEMPLATE_KEBAB=$(words_to_kebab "$TEMPLATE_WORDS")
+TEMPLATE_PASCAL=$(words_to_pascal "$TEMPLATE_WORDS")
+TEMPLATE_CAMEL=$(words_to_camel "$TEMPLATE_WORDS")
+TEMPLATE_FLAT=$(words_to_flat "$TEMPLATE_WORDS")
 
 # Project name variants
 PROJECT_SNAKE=$(words_to_snake "$PROJECT_WORDS")
@@ -298,14 +298,14 @@ PROJECT_FLAT=$(words_to_flat "$PROJECT_WORDS")
 # Replace in all text files (excluding binary files and .git)
 find "$DEST_DIR" -type f ! -path "*/.git/*" ! -path "$DEST_DIR/.nv/*" 2>/dev/null | while IFS= read -r file; do
     # Replace all variants (order matters: longer strings first to avoid partial replacements)
-    sed_inplace "s/${PLATFORM_PASCAL}/${PROJECT_PASCAL}/g" "$file" || true
-    sed_inplace "s/${PLATFORM_CAMEL}/${PROJECT_CAMEL}/g" "$file" || true
-    sed_inplace "s/${PLATFORM_SNAKE}/${PROJECT_SNAKE}/g" "$file" || true
-    sed_inplace "s/${PLATFORM_KEBAB}/${PROJECT_KEBAB}/g" "$file" || true
-    sed_inplace "s/${PLATFORM_FLAT}/${PROJECT_FLAT}/g" "$file" || true
+    sed_inplace "s/${TEMPLATE_PASCAL}/${PROJECT_PASCAL}/g" "$file" || true
+    sed_inplace "s/${TEMPLATE_CAMEL}/${PROJECT_CAMEL}/g" "$file" || true
+    sed_inplace "s/${TEMPLATE_SNAKE}/${PROJECT_SNAKE}/g" "$file" || true
+    sed_inplace "s/${TEMPLATE_KEBAB}/${PROJECT_KEBAB}/g" "$file" || true
+    sed_inplace "s/${TEMPLATE_FLAT}/${PROJECT_FLAT}/g" "$file" || true
 done
 
-log_success "Replaced platform name with project name"
+log_success "Replaced template name with project name"
 
 # UPDATE .ENVRC ----------------------------------------------------------------
 log_info "Configuring .envrc..."
@@ -335,16 +335,16 @@ if [ "$CONFIGURE_GCP" = true ]; then
     log_success "GCP registry configured in .envrc"
 fi
 
-# Add platform tracking variables after VERSION line
-if ! grep -q "NV_PLATFORM" "$ENVRC_FILE"; then
-    # Find line with VERSION and add NV_PLATFORM vars after it
-    awk -v platform="$PLATFORM_NAME" -v version="$PLATFORM_VERSION" '
+# Add template tracking variables after VERSION line
+if ! grep -q "NV_TEMPLATE" "$ENVRC_FILE"; then
+    # Find line with VERSION and add NV_TEMPLATE vars after it
+    awk -v template="$TEMPLATE_NAME" -v version="$TEMPLATE_VERSION" '
     /^export VERSION=/ {
         print $0
         print ""
-        print "# Nedavellir platform tracking"
-        print "export NV_PLATFORM=" platform
-        print "export NV_PLATFORM_VERSION=" version
+        print "# Nedavellir template tracking"
+        print "export NV_TEMPLATE=" template
+        print "export NV_TEMPLATE_VERSION=" version
         next
     }
     { print }
@@ -386,8 +386,8 @@ if [ -f "$SRC_DIR/README.template.md" ]; then
 
     # Copy template and substitute variables
     sed "s/{{PROJECT_NAME}}/$PROJECT_NAME/g; \
-         s/{{TEMPLATE_NAME}}/$PLATFORM_NAME/g; \
-         s/{{TEMPLATE_VERSION}}/$PLATFORM_VERSION/g" \
+         s/{{TEMPLATE_NAME}}/$TEMPLATE_NAME/g; \
+         s/{{TEMPLATE_VERSION}}/$TEMPLATE_VERSION/g" \
         "$SRC_DIR/README.template.md" > "$DEST_DIR/README.md"
 
     log_success "Created README.md from template"
@@ -408,7 +408,7 @@ echo ""
 log_success "✓ Scaffolding complete!"
 echo ""
 echo "Project: $PROJECT_NAME"
-echo "Platform: $PLATFORM_NAME v$PLATFORM_VERSION"
+echo "Template: $TEMPLATE_NAME v$TEMPLATE_VERSION"
 echo ""
 log_info "Next steps:"
 echo "  1. Review .envrc for project configuration"

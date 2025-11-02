@@ -9,7 +9,7 @@ Here's what this template gives you off the bat:
 - A language-agnostic self-documenting command interface via `just`. Keep all your project commands organized in one file!
 - Auto-load environment variables and configure shell environment with `direnv` - share project scoped shell configurations and simplify scripting and CLI tool usage without needing to pass around flags and inline environment variables.
 - CI/CD with GitHub Actions - run test on MR commits, tag and release on merges to main.
-- Easy CI/CD customization with platform agnostic bash scripting - No need to get too deep into GitHub Actions for customization. Modify the publish recipe, set GitHub Secrets and you're good to go.
+- Easy CI/CD customization with language-agnostic bash scripting - No need to get too deep into GitHub Actions for customization. Modify the publish recipe, set GitHub Secrets and you're good to go.
 - Trunk based development and automated versioning with conventional commits - semantic-release will handle version bumping for you! Work on feature branches and merge to main for bumps.
 - GCP Artifact Registry publishing (easily modified for other registries)
 - Cross-platform (macOS, Linux, Windows via WSL) - use the setup script to install dependencies, or alternately develop with Dev Containers or run tasks via Docker
@@ -31,7 +31,7 @@ Scaffold a new project:
 
 ```bash
 # Option 1: Nedavellir CLI (automated)
-nv create your-project-name --platform nv-lib-template
+nv create your-project-name --template nv-lib-template
 
 # Option 2: GitHub template + scaffold script
 # Click "Use this template" on GitHub, then:
