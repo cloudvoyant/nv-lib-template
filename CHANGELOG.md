@@ -1,3 +1,9 @@
+## [1.11.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.10.3...v1.11.0) (2025-11-02)
+
+### Features
+
+* rename platform variables to template for clarity ([c86050f](https://github.com/cloudvoyant/nv-lib-template/commit/c86050f4075719c3685413a5646d1f7debc749ea))
+
 ## [1.10.3](https://github.com/cloudvoyant/nv-lib-template/compare/v1.10.2...v1.10.3) (2025-11-01)
 
 ### Performance Improvements
