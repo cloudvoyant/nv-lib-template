@@ -1,3 +1,9 @@
+## [1.13.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.12.0...v1.13.0) (2025-11-02)
+
+### Features
+
+* add dependency caching to CI and release workflows ([8529dcc](https://github.com/cloudvoyant/nv-lib-template/commit/8529dcc74ea69ab132f93de3ee122ecfefd16c2a))
+
 ## [1.12.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.11.0...v1.12.0) (2025-11-02)
 
 ### Features
