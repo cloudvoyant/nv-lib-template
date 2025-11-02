@@ -49,6 +49,15 @@ Create a conventional commit message following this format:
 6. Does it only affect tests? → `test`
 7. Does it only affect build/CI? → `chore`
 
+**Special consideration for template projects:**
+- **Template files are distributed to users** (workflows, configs, scripts, etc.)
+- Changes to template files that improve user experience → `feat`
+- Examples:
+  - Faster CI builds (workflow caching) → `feat` (users benefit)
+  - Better error messages in scripts → `feat` (users benefit)
+  - Internal refactoring of template-only code → `refactor` (users don't see it)
+- If users scaffold projects with these files, improvements are features!
+
 **Rules:**
 - First line max 72 characters
 - Use imperative mood: "add feature" not "added feature" or "adds feature"
