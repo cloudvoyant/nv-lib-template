@@ -1,3 +1,9 @@
+## [1.12.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.11.0...v1.12.0) (2025-11-02)
+
+### Features
+
+* add VS Code settings for team consistency ([7b4e8b8](https://github.com/cloudvoyant/nv-lib-template/commit/7b4e8b8600e79662a87aa3fd9bf08e8efed542e6))
+
 ## [1.11.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.10.3...v1.11.0) (2025-11-02)
 
 ### Features
