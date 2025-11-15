@@ -19,12 +19,10 @@ jobs:
       - name: Cache binaries
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.local/bin
-            ~/.cargo/bin
-          key: ${{ runner.os }}-binaries-${{ hashFiles('scripts/setup.sh') }}
+          path: /usr/local/bin
+          key: ${{ runner.os }}-bin-${{ hashFiles('scripts/setup.sh') }}
           restore-keys: |
-            ${{ runner.os }}-binaries-
+            ${{ runner.os }}-bin-
 
       - name: Cache apt packages
         uses: actions/cache@v4
@@ -46,7 +44,7 @@ jobs:
         uses: extractions/setup-just@v2
 
       - name: Setup environment
-        run: bash scripts/setup.sh
+        run: bash scripts/setup.sh --ci
 
       - name: Run tests
         run: |

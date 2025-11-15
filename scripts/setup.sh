@@ -29,9 +29,12 @@ Development tools (--dev):
 CI essentials (--ci):
 - node/npx (for semantic-release)
 - gcloud (Google Cloud SDK)
+- bats-core (bash testing framework)
+- parallel (parallel test execution)
 
 Template development (--template):
 - bats-core (bash testing framework)
+- parallel (parallel test execution)
 DOCUMENTATION
 
 # IMPORTS ----------------------------------------------------------------------
@@ -613,10 +616,10 @@ check_dependencies() {
         log_info "Development tools: docker, node/npx, gcloud, shellcheck, shfmt, claude (will be installed)"
     fi
     if [ "$INSTALL_CI" = true ]; then
-        log_info "CI essentials: docker, node/npx, gcloud (will be installed)"
+        log_info "CI essentials: node/npx, gcloud, bats-core, parallel (will be installed)"
     fi
     if [ "$INSTALL_TEMPLATE" = true ]; then
-        log_info "Template development: bats-core (will be installed)"
+        log_info "Template development: bats-core, parallel (will be installed)"
     fi
     if [ "$INSTALL_DEV" = false ] && [ "$INSTALL_CI" = false ] && [ "$INSTALL_TEMPLATE" = false ]; then
         log_info "Optional tools: skipped (use --dev, --ci, or --template flags to install)"
@@ -805,8 +808,8 @@ check_dependencies() {
         fi
     fi
 
-    # Check bats-core (for --template only)
-    if [ "$INSTALL_TEMPLATE" = true ]; then
+    # Check bats-core (for --ci or --template)
+    if [ "$INSTALL_CI" = true ] || [ "$INSTALL_TEMPLATE" = true ]; then
         current=$((current + 1))
         progress_step $current "Checking bats-core"
         if command_exists bats; then
@@ -820,7 +823,7 @@ check_dependencies() {
             fi
         fi
 
-        # Check GNU parallel (for --template only)
+        # Check GNU parallel (for --ci or --template)
         current=$((current + 1))
         progress_step $current "Checking GNU parallel"
         if command_exists parallel; then

@@ -24,12 +24,10 @@ jobs:
       - name: Cache binaries
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.local/bin
-            ~/.cargo/bin
-          key: ${{ runner.os }}-binaries-${{ hashFiles('scripts/setup.sh') }}
+          path: /usr/local/bin
+          key: ${{ runner.os }}-bin-${{ hashFiles('scripts/setup.sh') }}
           restore-keys: |
-            ${{ runner.os }}-binaries-
+            ${{ runner.os }}-bin-
 
       - name: Cache apt packages
         uses: actions/cache@v4
