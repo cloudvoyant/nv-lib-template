@@ -94,9 +94,11 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.upversion.outputs.new_release_published == 'true'
-        run: |
-          gh release create "v${{ steps.upversion.outputs.new_release_version }}" \
-            --generate-notes \
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.upversion.outputs.new_release_version }}
+          generate_release_notes: true
+          files: |
             dist/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
