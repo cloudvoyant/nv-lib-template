@@ -1,3 +1,12 @@
+## [1.14.2](https://github.com/cloudvoyant/nv-lib-template/compare/v1.14.1...v1.14.2) (2025-11-15)
+
+### Bug Fixes
+
+* use action-gh-release for proper glob pattern support
+
+Replace gh CLI with softprops/action-gh-release@v1 to properly
+handle dist/**/* glob patterns when creating GitHub releases.
+
 ## [1.14.1](https://github.com/cloudvoyant/nv-lib-template/compare/v1.14.0...v1.14.1) (2025-11-15)
 
 ### Bug Fixes
