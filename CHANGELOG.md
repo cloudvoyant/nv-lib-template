@@ -1,3 +1,12 @@
+## [1.14.1](https://github.com/cloudvoyant/nv-lib-template/compare/v1.14.0...v1.14.1) (2025-11-15)
+
+### Bug Fixes
+
+* add build step before creating GitHub release
+
+Add build-prod step to generate dist artifacts before release
+creation to prevent "no matches found for dist/**/*" error.
+
 ## [1.14.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.13.0...v1.14.0) (2025-11-15)
 
 ### Features
