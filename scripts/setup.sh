@@ -8,9 +8,10 @@ Options:
   --dev              Install development tools (docker, shellcheck, shfmt, claude)
   --ci               Install CI essentials (node/npx, gcloud)
   --template         Install template development tools (bats-core)
+  --starship         Install and configure starship prompt
   --docker-optimize  Optimize for Docker image size (consolidate operations, aggressive cleanup)
 
-Flags can be combined: setup.sh --dev --template --docker-optimize
+Flags can be combined: setup.sh --dev --template --starship --docker-optimize
 
 Required dependencies (always installed):
 - bash (shell)
@@ -42,6 +43,7 @@ set -euo pipefail
 INSTALL_DEV=false
 INSTALL_CI=false
 INSTALL_TEMPLATE=false
+INSTALL_STARSHIP=false
 DOCKER_OPTIMIZE=false
 
 while [[ $# -gt 0 ]]; do
@@ -56,6 +58,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --template)
             INSTALL_TEMPLATE=true
+            shift
+            ;;
+        --starship)
+            INSTALL_STARSHIP=true
             shift
             ;;
         --docker-optimize)
@@ -107,7 +113,7 @@ command_exists() {
 
 # Install bash based on platform
 install_bash() {
-    log_info "Installing Bash..."
+    log_info "Installing Bash"
 
     case $PLATFORM in
     Mac)
@@ -122,7 +128,7 @@ install_bash() {
         if command_exists apk; then
             sudo apk add --no-cache bash
         elif command_exists apt-get; then
-            sudo apt-get install -y bash
+            sudo apt-get install -y --no-install-recommends bash
         elif command_exists yum; then
             sudo yum install -y bash
         elif command_exists pacman; then
@@ -143,14 +149,14 @@ install_bash() {
 
 # Install just based on platform
 install_just() {
-    log_info "Installing just..."
+    log_info "Installing just"
 
     case $PLATFORM in
     Mac)
         if command_exists brew; then
             brew install just
         else
-            log_warn "Homebrew not found. Installing just from binary..."
+            log_warn "Homebrew not found. Installing just from binary"
             curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin
             log_info "Add ~/bin to your PATH if not already present"
         fi
@@ -162,7 +168,7 @@ install_just() {
             # Install from binary for latest version
             curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | sudo bash -s -- --to /usr/local/bin
         else
-            log_warn "Installing just from binary..."
+            log_warn "Installing just from binary"
             curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin
             log_info "Add ~/bin to your PATH if not already present"
         fi
@@ -178,7 +184,7 @@ install_just() {
 
 # Install Docker based on platform
 install_docker() {
-    log_info "Installing Docker..."
+    log_info "Installing Docker"
 
     case $PLATFORM in
     Mac)
@@ -195,7 +201,7 @@ install_docker() {
             sudo rc-update add docker boot 2>/dev/null || true
             sudo service docker start 2>/dev/null || true
         elif command_exists apt-get; then
-            sudo apt-get install -y docker.io docker-compose
+            sudo apt-get install -y --no-install-recommends docker.io docker-compose
             sudo systemctl start docker
             sudo systemctl enable docker
         elif command_exists yum; then
@@ -222,7 +228,7 @@ install_docker() {
 
 # Install direnv based on platform
 install_direnv() {
-    log_info "Installing direnv..."
+    log_info "Installing direnv"
 
     case $PLATFORM in
     Mac)
@@ -236,12 +242,12 @@ install_direnv() {
     Linux)
         # Try binary installation first (recommended by direnv)
         if command_exists curl; then
-            log_info "Installing direnv from binary release..."
+            log_info "Installing direnv from binary release"
             curl -sfL https://direnv.net/install.sh | bash
         elif command_exists apk; then
             sudo apk add --no-cache direnv
         elif command_exists apt-get; then
-            sudo apt-get install -y direnv
+            sudo apt-get install -y --no-install-recommends direnv
         elif command_exists yum; then
             sudo yum install -y direnv
         elif command_exists pacman; then
@@ -263,7 +269,7 @@ install_direnv() {
 
 # Install Node.js and npx based on platform
 install_node() {
-    log_info "Installing Node.js..."
+    log_info "Installing Node.js"
 
     case $PLATFORM in
     Mac)
@@ -278,7 +284,7 @@ install_node() {
         if command_exists apk; then
             sudo apk add --no-cache nodejs npm
         elif command_exists apt-get; then
-            sudo apt-get install -y nodejs npm
+            sudo apt-get install -y --no-install-recommends nodejs npm
         elif command_exists yum; then
             sudo yum install -y nodejs npm
         elif command_exists pacman; then
@@ -299,7 +305,7 @@ install_node() {
 
 # Install gcloud based on platform
 install_gcloud() {
-    log_info "Installing Google Cloud SDK..."
+    log_info "Installing Google Cloud SDK"
 
     case $PLATFORM in
     Mac)
@@ -311,32 +317,49 @@ install_gcloud() {
         fi
         ;;
     Linux)
+        # Detect architecture
+        ARCH=$(uname -m)
+        case "$ARCH" in
+            x86_64)  ARCH_SUFFIX="x86_64" ;;
+            aarch64) ARCH_SUFFIX="arm" ;;
+            arm64)   ARCH_SUFFIX="arm" ;;
+            *)
+                log_error "Unsupported architecture for gcloud: $ARCH"
+                return 1
+                ;;
+        esac
+
         if command_exists apk; then
             # Alpine doesn't have official gcloud package, install from tarball
-            log_info "Installing gcloud from official tarball..."
+            log_info "Installing gcloud from official tarball (${ARCH_SUFFIX})"
             if ! command_exists python3; then
                 sudo apk add --no-cache python3 py3-pip
             fi
-            curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz
-            tar -xf google-cloud-cli-linux-x86_64.tar.gz
+            curl -O "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-${ARCH_SUFFIX}.tar.gz"
+            tar -xf "google-cloud-cli-linux-${ARCH_SUFFIX}.tar.gz"
             sudo ./google-cloud-sdk/install.sh --quiet --install-dir=/usr/local
-            rm -rf google-cloud-sdk google-cloud-cli-linux-x86_64.tar.gz
+            rm -rf google-cloud-sdk "google-cloud-cli-linux-${ARCH_SUFFIX}.tar.gz"
             # Add to PATH
             echo 'export PATH=$PATH:/usr/local/google-cloud-sdk/bin' | sudo tee -a /etc/profile.d/gcloud.sh
         elif command_exists apt-get; then
             # Add gcloud apt repository
             echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 
-            # Import Google Cloud public key
+            # Import Google Cloud public key (modern method, not apt-key)
             if command_exists curl; then
-                curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+                curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
             else
                 log_error "curl is required to install gcloud"
                 return 1
             fi
 
+            # Update package list (unless docker-optimize is set)
+            if [ "$DOCKER_OPTIMIZE" = false ]; then
+                sudo apt-get update
+            fi
+
             # Install gcloud
-            sudo apt-get install -y google-cloud-sdk
+            sudo apt-get install -y --no-install-recommends google-cloud-sdk
         elif command_exists yum; then
             # Add gcloud yum repository
             sudo tee /etc/yum.repos.d/google-cloud-sdk.repo << EOM
@@ -366,7 +389,7 @@ EOM
 
 # Install shellcheck based on platform
 install_shellcheck() {
-    log_info "Installing shellcheck..."
+    log_info "Installing shellcheck"
 
     case $PLATFORM in
     Mac)
@@ -381,7 +404,7 @@ install_shellcheck() {
         if command_exists apk; then
             sudo apk add --no-cache shellcheck
         elif command_exists apt-get; then
-            sudo apt-get install -y shellcheck
+            sudo apt-get install -y --no-install-recommends shellcheck
         elif command_exists yum; then
             sudo yum install -y ShellCheck
         elif command_exists pacman; then
@@ -402,7 +425,7 @@ install_shellcheck() {
 
 # Install shfmt based on platform
 install_shfmt() {
-    log_info "Installing shfmt..."
+    log_info "Installing shfmt"
 
     case $PLATFORM in
     Mac)
@@ -417,7 +440,7 @@ install_shfmt() {
         if command_exists go; then
             go install mvdan.cc/sh/v3/cmd/shfmt@latest
         else
-            log_warn "Go not found. Installing shfmt from binary..."
+            log_warn "Go not found. Installing shfmt from binary"
             ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
             curl -L "https://github.com/mvdan/sh/releases/latest/download/shfmt_v3_linux_${ARCH}" -o /tmp/shfmt
             chmod +x /tmp/shfmt
@@ -435,7 +458,7 @@ install_shfmt() {
 
 # Install bats-core based on platform
 install_bats() {
-    log_info "Installing bats-core..."
+    log_info "Installing bats-core"
 
     case $PLATFORM in
     Mac)
@@ -450,11 +473,11 @@ install_bats() {
         if command_exists apk; then
             sudo apk add --no-cache bats
         elif command_exists apt-get; then
-            sudo apt-get install -y bats
+            sudo apt-get install -y --no-install-recommends bats
         elif command_exists yum; then
             sudo yum install -y bats
         else
-            log_warn "Installing bats-core from source..."
+            log_warn "Installing bats-core from source"
             git clone https://github.com/bats-core/bats-core.git /tmp/bats-core
             cd /tmp/bats-core || return 1
             sudo ./install.sh /usr/local
@@ -471,9 +494,103 @@ install_bats() {
     log_success "bats-core installation completed"
 }
 
+# Install GNU parallel based on platform
+install_parallel() {
+    log_info "Installing GNU parallel"
+
+    case $PLATFORM in
+    Mac)
+        if command_exists brew; then
+            brew install parallel
+        else
+            log_warn "Homebrew not found. Please install GNU parallel manually"
+            return 1
+        fi
+        ;;
+    Linux)
+        if command_exists apk; then
+            sudo apk add --no-cache parallel
+        elif command_exists apt-get; then
+            sudo apt-get install -y --no-install-recommends parallel
+        elif command_exists yum; then
+            sudo yum install -y parallel
+        elif command_exists pacman; then
+            sudo pacman -S parallel
+        else
+            log_warn "No suitable package manager found. Please install GNU parallel manually"
+            return 1
+        fi
+        ;;
+    *)
+        log_warn "Unsupported platform for automatic GNU parallel installation"
+        return 1
+        ;;
+    esac
+
+    log_success "GNU parallel installation completed"
+}
+
+# Install starship based on platform
+install_starship() {
+    log_info "Installing starship"
+
+    case $PLATFORM in
+    Mac)
+        if command_exists brew; then
+            brew install starship
+        else
+            log_warn "Homebrew not found. Installing starship from script"
+            curl -sS https://starship.rs/install.sh | sh -s -- -y
+        fi
+        ;;
+    Linux)
+        log_info "Installing starship from official installer"
+        curl -sS https://starship.rs/install.sh | sh -s -- -y
+        ;;
+    *)
+        log_warn "Unsupported platform for automatic starship installation"
+        return 1
+        ;;
+    esac
+
+    log_success "starship installation completed"
+}
+
+# Configure starship for dev containers
+configure_starship() {
+    log_info "Configuring starship"
+
+    # Create starship config directory
+    mkdir -p ~/.config
+
+    # Create minimal starship configuration
+    cat > ~/.config/starship.toml <<'EOF'
+# Starship configuration for dev containers
+format = """
+[┌───────────────────────────────────────────────────────────>](bold green)
+[│](bold green)$directory$git_branch$git_status
+[└─>](bold green) """
+
+[directory]
+style = "blue bold"
+truncation_length = 4
+truncate_to_repo = false
+
+[git_branch]
+style = "yellow bold"
+format = " on [$symbol$branch]($style)"
+
+[git_status]
+style = "red bold"
+format = '([\[$all_status$ahead_behind\]]($style))'
+EOF
+
+    log_success "starship configuration created"
+}
+
 # Install Claude CLI based on platform
 install_claude() {
-    log_info "Installing Claude CLI..."
+    log_info "Installing Claude CLI"
 
     # Claude CLI requires Node.js and npm
     if ! command_exists npm; then
@@ -489,7 +606,7 @@ install_claude() {
 
 # Check and install dependencies
 check_dependencies() {
-    log_info "Checking dependencies..."
+    log_info "Checking dependencies"
     log_info "Required: bash, just, direnv"
 
     if [ "$INSTALL_DEV" = true ]; then
@@ -507,17 +624,17 @@ check_dependencies() {
     echo ""
 
     # Run package manager update once at the beginning (for Linux systems)
-    if [ "$PLATFORM" = "Linux" ]; then
+    # Skip if --docker-optimize is set (reduces layer size)
+    if [ "$PLATFORM" = "Linux" ] && [ "$DOCKER_OPTIMIZE" = false ]; then
         if command_exists apk; then
-            log_info "Updating package lists..."
+            log_info "Updating package lists"
             sudo apk update
         elif command_exists apt-get; then
-            log_info "Updating package lists..."
+            log_info "Updating package lists"
             sudo apt-get update
         fi
     fi
 
-    local total=9
     local current=0
     local failed_required=0
 
@@ -525,7 +642,7 @@ check_dependencies() {
 
     # Check Bash (REQUIRED)
     current=$((current + 1))
-    progress_step $current $total "Checking Bash (required)..."
+    progress_step $current "Checking Bash (required)"
     if command_exists bash; then
         log_success "Bash is already installed: $(bash --version | head -n1)"
     else
@@ -540,7 +657,7 @@ check_dependencies() {
 
     # Check just (REQUIRED)
     current=$((current + 1))
-    progress_step $current $total "Checking just (required)..."
+    progress_step $current "Checking just (required)"
     if command_exists just; then
         log_success "just is already installed: $(just --version)"
     else
@@ -555,7 +672,7 @@ check_dependencies() {
 
     # Check direnv (REQUIRED)
     current=$((current + 1))
-    progress_step $current $total "Checking direnv (required)..."
+    progress_step $current "Checking direnv (required)"
     if command_exists direnv; then
         log_success "direnv is already installed: $(direnv --version)"
     else
@@ -579,7 +696,7 @@ check_dependencies() {
     # Check Docker (for --dev only)
     if [ "$INSTALL_DEV" = true ]; then
         current=$((current + 1))
-        progress_step $current $total "Checking Docker..."
+        progress_step $current "Checking Docker"
         if command_exists docker; then
             log_success "Docker is already installed: $(docker --version)"
         else
@@ -595,7 +712,7 @@ check_dependencies() {
     # Check Node.js and npx (for --dev or --ci)
     if [ "$INSTALL_DEV" = true ] || [ "$INSTALL_CI" = true ]; then
         current=$((current + 1))
-        progress_step $current $total "Checking Node.js and npx..."
+        progress_step $current "Checking Node.js and npx"
         if command_exists npx; then
             log_success "Node.js and npx are already installed: $(node --version)"
         else
@@ -610,8 +727,8 @@ check_dependencies() {
         # Install semantic-release and required plugins if npx is available
         if command_exists npx; then
             current=$((current + 1))
-            progress_step $current $total "Installing semantic-release plugins..."
-            log_info "Installing semantic-release and plugins..."
+            progress_step $current "Installing semantic-release plugins"
+            log_info "Installing semantic-release and plugins"
 
             # Install globally to avoid needing package.json in every project
             npm install -g semantic-release \
@@ -627,7 +744,7 @@ check_dependencies() {
     # Check gcloud (for --dev or --ci)
     if [ "$INSTALL_DEV" = true ] || [ "$INSTALL_CI" = true ]; then
         current=$((current + 1))
-        progress_step $current $total "Checking Google Cloud SDK..."
+        progress_step $current "Checking Google Cloud SDK"
         if command_exists gcloud; then
             log_success "Google Cloud SDK is already installed: $(gcloud --version | head -n1)"
         else
@@ -643,7 +760,7 @@ check_dependencies() {
     # Check shellcheck (for --dev only)
     if [ "$INSTALL_DEV" = true ]; then
         current=$((current + 1))
-        progress_step $current $total "Checking shellcheck..."
+        progress_step $current "Checking shellcheck"
         if command_exists shellcheck; then
             log_success "shellcheck is already installed: $(shellcheck --version | head -n2 | tail -n1)"
         else
@@ -659,7 +776,7 @@ check_dependencies() {
     # Check shfmt (for --dev only)
     if [ "$INSTALL_DEV" = true ]; then
         current=$((current + 1))
-        progress_step $current $total "Checking shfmt..."
+        progress_step $current "Checking shfmt"
         if command_exists shfmt; then
             log_success "shfmt is already installed: $(shfmt --version)"
         else
@@ -675,7 +792,7 @@ check_dependencies() {
     # Check Claude CLI (for --dev only)
     if [ "$INSTALL_DEV" = true ]; then
         current=$((current + 1))
-        progress_step $current $total "Checking Claude CLI..."
+        progress_step $current "Checking Claude CLI"
         if command_exists claude; then
             log_success "Claude CLI is already installed: $(claude --version 2>/dev/null || echo 'version unknown')"
         else
@@ -691,7 +808,7 @@ check_dependencies() {
     # Check bats-core (for --template only)
     if [ "$INSTALL_TEMPLATE" = true ]; then
         current=$((current + 1))
-        progress_step $current $total "Checking bats-core..."
+        progress_step $current "Checking bats-core"
         if command_exists bats; then
             log_success "bats-core is already installed: $(bats --version)"
         else
@@ -702,12 +819,44 @@ check_dependencies() {
                 log_warn "Skipping bats-core - install manually from https://github.com/bats-core/bats-core if needed"
             fi
         fi
+
+        # Check GNU parallel (for --template only)
+        current=$((current + 1))
+        progress_step $current "Checking GNU parallel"
+        if command_exists parallel; then
+            log_success "GNU parallel is already installed: $(parallel --version | head -n1)"
+        else
+            log_warn "GNU parallel not found (recommended for parallel test execution)"
+            if install_parallel; then
+                log_success "GNU parallel installed successfully"
+            else
+                log_warn "Skipping GNU parallel - tests will run sequentially"
+            fi
+        fi
+    fi
+
+    # Check starship (for --starship only)
+    if [ "$INSTALL_STARSHIP" = true ]; then
+        current=$((current + 1))
+        progress_step $current "Checking starship"
+        if command_exists starship; then
+            log_success "starship is already installed: $(starship --version)"
+        else
+            log_warn "starship not found"
+            if install_starship; then
+                log_success "starship installed successfully"
+                # Configure starship
+                configure_starship
+            else
+                log_warn "Skipping starship - install manually from https://starship.rs if needed"
+            fi
+        fi
     fi
 
     # Allow direnv if installed and .envrc exists and is not already allowed
     if command_exists direnv && [ -f "$(dirname "$0")/../.envrc" ]; then
         if ! direnv status "$(dirname "$0")/.." 2>/dev/null | grep -q "Found RC allowed 0"; then
-            log_info "Running direnv allow..."
+            log_info "Running direnv allow"
             direnv allow "$(dirname "$0")/.." >/dev/null 2>&1
             log_success "direnv allow completed"
         else
@@ -717,7 +866,7 @@ check_dependencies() {
 
     # Cleanup if optimizing for Docker
     if [ "$DOCKER_OPTIMIZE" = true ]; then
-        log_info "Cleaning up package caches..."
+        log_info "Cleaning up package caches"
         if [ "$PLATFORM" = "Linux" ]; then
             if command_exists apk; then
                 sudo rm -rf /var/cache/apk/*

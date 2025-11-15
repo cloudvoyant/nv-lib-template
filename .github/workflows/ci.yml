@@ -16,6 +16,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Cache binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/bin
+            ~/.cargo/bin
+          key: ${{ runner.os }}-binaries-${{ hashFiles('scripts/setup.sh') }}
+          restore-keys: |
+            ${{ runner.os }}-binaries-
+
       - name: Cache apt packages
         uses: actions/cache@v4
         with:
@@ -32,13 +42,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-
 
+      - name: Setup just
+        uses: extractions/setup-just@v2
+
       - name: Setup environment
         run: bash scripts/setup.sh
 
-      - name: Build and test
+      - name: Run tests
         run: |
           source .envrc
           just test
+
+      - name: Run template tests
+        run: |
+          source .envrc
+          just test-template
+
+      - name: Check formatting
+        run: |
+          source .envrc
+          just format-check
+
+      - name: Run linting
+        run: |
+          source .envrc
+          just lint
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

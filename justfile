@@ -8,7 +8,7 @@ bash        := require("bash")
 direnv      := require("direnv")
 
 # Environment variables available for all scripts
-export _PROJECT                 := `source .envrc && echo $PROJECT`
+export PROJECT                  := `source .envrc && echo $PROJECT`
 export VERSION                  := `source .envrc && echo $VERSION`
 export GCP_REGISTRY_PROJECT_ID  := `source .envrc && echo $GCP_REGISTRY_PROJECT_ID`
 export GCP_REGISTRY_REGION      := `source .envrc && echo $GCP_REGISTRY_REGION`
@@ -28,11 +28,6 @@ NORMAL      := '\033[0m'
 # Default recipe (show help)
 _default:
     @just --list --unsorted
-
-# Load environment
-[group('dev')]
-load:
-    @direnv allow
 
 # Install dependencies
 [group('dev')]
@@ -110,7 +105,7 @@ lint-fix *PATHS:
 upgrade:
     #!/usr/bin/env bash
     if command -v claude >/dev/null 2>&1; then
-        if grep -q "NV_PLATFORM=" .envrc 2>/dev/null; then
+        if grep -q "NV_TEMPLATE=" .envrc 2>/dev/null; then
             claude /upgrade;
         else
             echo -e "{{ERROR}}This project is not based on a template{{NORMAL}}";
@@ -153,6 +148,10 @@ build-prod:
     @mkdir -p dist
     @echo "$PROJECT $VERSION - Replace with your build artifact" > dist/artifact.txt
     @echo -e "{{SUCCESS}}Production artifact created: dist/artifact.txt{{NORMAL}}"
+    # Cross-platform build examples (uncomment and adapt as needed):
+    # For Go: GOOS=linux GOARCH=amd64 go build -o dist/$PROJECT-linux-amd64
+    # For Rust: cross build --target x86_64-unknown-linux-gnu --release
+    # For Zig: zig build -Dtarget=x86_64-linux -Doptimize=ReleaseSafe
 
 # Get current version
 [group('ci')]
@@ -180,7 +179,7 @@ publish: test build-prod
         source .envrc
     fi
 
-    echo -e "{{INFO}}Publishing package $PROJECT@$VERSION...{{NORMAL}}"
+    echo -e "{{INFO}}Publishing package $PROJECT@$VERSION{{NORMAL}}"
     gcloud artifacts generic upload \
         --project=$GCP_REGISTRY_PROJECT_ID \
         --location=$GCP_REGISTRY_REGION \
@@ -204,8 +203,13 @@ scaffold:
 test-template:
     #!/usr/bin/env bash
     if command -v bats >/dev/null 2>&1; then
-        echo -e "{{INFO}}Running template tests...{{NORMAL}}";
-        bats test/;
+        echo -e "{{INFO}}Running template tests{{NORMAL}}";
+        # Use parallel execution if GNU parallel is available
+        if command -v parallel >/dev/null 2>&1; then
+            find test/ -name "*.bats" -print0 | parallel -0 -j+0 bats {};
+        else
+            bats test/;
+        fi
     else
         echo -e "{{ERROR}}bats not installed. Run: just setup --template{{NORMAL}}";
         exit 1;

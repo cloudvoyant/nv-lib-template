@@ -68,10 +68,9 @@ spinner() {
 # Progress indicator for steps
 progress_step() {
     local current=$1
-    local total=$2
-    local message=$3
+    local message=$2
 
-    printf "${INFO}[%d/%d]${NC} %s\n" "$current" "$total" "$message"
+    printf "${INFO}[%d]${NC} %s\n" "$current" "$message"
 }
 
 # Log function with color support
@@ -183,7 +182,11 @@ get_version() {
 
     # Fallback: try git tags
     if command -v git &>/dev/null; then
-        git fetch --tags 2>/dev/null || true
+        # Only fetch if we have a TTY (interactive session) and not in CI
+        if [ -t 0 ] && [ -z "$CI" ]; then
+            # Fetch with timeout to prevent hanging
+            timeout 5 git fetch --tags 2>/dev/null || true
+        fi
         version=$(git tag -l --sort=-v:refname | head -n1 | sed 's/^v//')
         if [[ -n "$version" ]]; then
             echo "$version"

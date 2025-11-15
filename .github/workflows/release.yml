@@ -21,6 +21,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Cache binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/bin
+            ~/.cargo/bin
+          key: ${{ runner.os }}-binaries-${{ hashFiles('scripts/setup.sh') }}
+          restore-keys: |
+            ${{ runner.os }}-binaries-
+
       - name: Cache apt packages
         uses: actions/cache@v4
         with:
@@ -37,8 +47,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-
 
+      - name: Setup just
+        uses: extractions/setup-just@v2
+
       - name: Setup environment
         run: ./scripts/setup.sh --ci
+
+      - name: Run tests
+        run: |
+          source .envrc
+          just test
+
+      - name: Run template tests
+        run: |
+          source .envrc
+          just test-template
 
       - name: Create new version
         id: upversion
@@ -48,7 +71,10 @@ jobs:
         run: just upversion --ci
 
       - name: Authenticate with registry
-        if: steps.upversion.outputs.new_release_published == 'true'
+        if: |
+          steps.upversion.outputs.new_release_published == 'true' &&
+          secrets.GCP_SA_KEY != '' &&
+          secrets.GCP_REGISTRY_PROJECT_ID != ''
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           GCP_REGISTRY_PROJECT_ID: ${{ secrets.GCP_REGISTRY_PROJECT_ID }}
@@ -57,7 +83,10 @@ jobs:
         run: just registry-login --ci
 
       - name: Publish package
-        if: steps.upversion.outputs.new_release_published == 'true'
+        if: |
+          steps.upversion.outputs.new_release_published == 'true' &&
+          secrets.GCP_SA_KEY != '' &&
+          secrets.GCP_REGISTRY_PROJECT_ID != ''
         env:
           GCP_REGISTRY_PROJECT_ID: ${{ secrets.GCP_REGISTRY_PROJECT_ID }}
           GCP_REGISTRY_REGION: ${{ secrets.GCP_REGISTRY_REGION }}
@@ -66,11 +95,9 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.upversion.outputs.new_release_published == 'true'
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.upversion.outputs.new_release_version }}
-          generate_release_notes: true
-          files: |
-            src/**/*
+        run: |
+          gh release create "v${{ steps.upversion.outputs.new_release_version }}" \
+            --generate-notes \
+            dist/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

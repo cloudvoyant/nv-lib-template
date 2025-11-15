@@ -245,21 +245,25 @@ Read `.claude/plan.md` to understand:
 Create a comprehensive "Insights" section capturing:
 
 1. Progress Summary
+
    - What has been accomplished so far
    - Which phases are complete, in progress, or not started
    - Overall completion percentage
 
 2. Key Decisions Made
+
    - Important choices made during planning or implementation
    - Rationale behind technical decisions
    - Trade-offs considered
 
 3. Context and Findings
+
    - Important discoveries from codebase exploration
    - Dependencies and relationships identified
    - Constraints or limitations discovered
 
 4. Next Steps
+
    - What should be done next when work resumes
    - Current task or phase in progress
    - Any blockers or considerations for continuation
@@ -281,21 +285,25 @@ Last Updated: 2025-10-15
 Progress: Phase 2 in progress (8/16 tasks complete, 50%)
 
 Key Decisions:
+
 - Chose JWT for authentication instead of sessions (better for API-first architecture)
 - Using bcrypt for password hashing (industry standard, well-tested)
 - OAuth providers: Google and GitHub only (most common for our users)
 
 Context:
+
 - Existing user table has email field but needs password_hash column
 - Found reusable token generation utility in src/utils/crypto.ts
 - Session storage will use Redis (already configured in infrastructure)
 
 Next Steps:
+
 - Complete remaining tasks in Phase 2 (OAuth Integration)
 - Test OAuth callback handlers with both providers
 - Move to Phase 3 (Session Management)
 
 Notes:
+
 - Password reset emails require SMTP configuration (env vars in .envrc)
 - Consider rate limiting for login attempts (add to Phase 5?)
 ```
@@ -322,6 +330,7 @@ Read `.claude/plan.md` to understand:
 3. Report where execution will begin
 
 Example:
+
 ```
 Starting execution from Phase 2 - OAuth Integration
 Next task: Configure OAuth providers (Google, GitHub)
@@ -336,8 +345,10 @@ For each task in the plan, follow this workflow:
 1. Review the task and understand what needs to be done
 
 2. **IMPORTANT:** Check if task is complex - if it requires multiple steps:
+
    - Break it down into sub-tasks as nested checkboxes
    - Update plan.md with sub-items:
+
    ```markdown
    - [ ] Configure OAuth providers (Google, GitHub)
      - [ ] Install OAuth library dependencies
@@ -348,15 +359,13 @@ For each task in the plan, follow this workflow:
    ```
 
 3. Create a spec (if task involves code):
+
    - Write a clear specification of what will be built
    - Define inputs, outputs, behavior
    - Identify affected files
    - Consider edge cases and error handling
 
-4. Get approval before implementing (if accept edits is disabled):
-   - Present the spec to the user
-   - If accept edits is enabled, proceed directly to implementation
-   - If accept edits is disabled, ask: "Does this approach look good? Any changes needed?" and wait for confirmation
+4. Start execution.
 
 #### 3.2: Implement the Task
 
@@ -365,6 +374,7 @@ For each task in the plan, follow this workflow:
 2. Make necessary changes to code, configuration, or documentation
 
 3. **CRITICAL:** Update checkboxes immediately as sub-tasks complete:
+
    ```markdown
    - [ ] Configure OAuth providers (Google, GitHub)
      - [x] Install OAuth library dependencies
@@ -383,11 +393,13 @@ For each task in the plan, follow this workflow:
 #### 3.3: Mark Task Complete
 
 1. Only mark complete when fully done:
+
    - All sub-tasks checked
    - **Tests passing** (critical - no exceptions)
    - Code working as specified
 
 2. Update plan.md:
+
    ```markdown
    - [x] Configure OAuth providers (Google, GitHub)
    ```
@@ -399,6 +411,7 @@ For each task in the plan, follow this workflow:
 When a phase is complete:
 
 1. **CRITICAL: Run tests to validate phase completion:**
+
    - Run the project's test suite (`just test`, `just test-template`, or equivalent)
    - Verify all tests pass before marking phase complete
    - If tests fail, fix issues before proceeding
@@ -408,11 +421,13 @@ When a phase is complete:
      - State clearly why tests are allowed to remain broken
 
 2. Mark phase as complete with ✅:
+
    ```markdown
    ## Phase 2 - OAuth Integration ✅
    ```
 
 3. Report phase completion:
+
    ```
    Phase 2 - OAuth Integration complete! ✅
 
@@ -421,6 +436,7 @@ When a phase is complete:
    ```
 
 4. Wait for user confirmation before starting next phase (if accept edits is disabled):
+
    - If accept edits is enabled, proceed directly to next phase
    - If accept edits is disabled, ask "Ready to move to Phase 3 - Session Management?" and wait for confirmation
 
@@ -464,6 +480,7 @@ Read `.claude/plan.md` and verify completion status:
 3. Count total completed vs total tasks
 
 If plan is not fully complete:
+
 - Report incomplete status
 - Ask user if they want to mark it done anyway or continue working
 - Wait for confirmation
@@ -473,6 +490,7 @@ If plan is not fully complete:
 Ask the user: "Would you like to commit the changes from this plan?"
 
 Options:
+
 - Yes - Proceed to create a commit
 - No - Skip to Step 4 (Archive and Reset)
 - Cancel - Exit without changes
@@ -482,12 +500,14 @@ Options:
 If user wants to commit:
 
 1. Check git status to see what changed:
+
    ```bash
    git status
    git diff
    ```
 
 2. Draft a commit message based on the plan objective and completed tasks:
+
    - Use the plan's objective as the basis for the commit message
    - Summarize the key changes from all phases
    - Follow conventional commit format if appropriate
@@ -496,6 +516,7 @@ If user wants to commit:
 3. Show the proposed commit message to the user
 
 4. Ask: "Does this commit message look good?"
+
    - If yes: Create the commit
    - If no: Ask user for preferred message
    - If cancel: Skip to Step 4
@@ -508,6 +529,7 @@ Archive the current plan with completion date:
 
 1. Suggest filename: `.claude/plan-completed-YYYYMMDD.md`
 2. Ask: "Archive the completed plan to this file?"
+
    - If yes: Move plan.md to archive file
    - If no: Ask for preferred filename
    - If skip: Delete plan.md without archiving
@@ -540,6 +562,7 @@ Create a new empty plan template (same as `/plan init` Step 2):
 ### Step 6: Confirm Completion
 
 Report to user:
+
 ```
 Plan marked as complete! ✅
 
@@ -562,17 +585,21 @@ When implementing tasks during `/plan go`:
 6. Keep plan.md current with real-time checkbox updates
 
 Example spec format:
+
 ```markdown
 ### Task: Implement password hashing and validation
 
 Scope: Create utility functions for secure password handling
 
 Files to modify:
+
 - `src/utils/auth.ts` (create new file)
 - `src/types/user.ts` (add password field types)
 
 Implementation:
+
 - Function `hashPassword(password: string): Promise<string>`
+
   - Uses bcrypt with cost factor 12
   - Returns hashed password string
 
@@ -581,11 +608,13 @@ Implementation:
   - Returns true if match, false otherwise
 
 Testing:
+
 - Unit tests for both functions
 - Test with various password lengths
 - Test invalid inputs
 
 Dependencies:
+
 - Install bcrypt: `npm install bcrypt @types/bcrypt`
 ```
 

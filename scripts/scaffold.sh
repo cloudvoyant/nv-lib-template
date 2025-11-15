@@ -42,7 +42,7 @@ BACKUP_DIR=""
 cleanup_on_error() {
     local exit_code=$?
     if [ "$exit_code" -ne 0 ] && [ "$SCAFFOLD_STARTED" = true ]; then
-        log_error "Scaffolding failed. Restoring original directory..."
+        log_error "Scaffolding failed. Restoring original directory"
 
         if [ -n "$BACKUP_DIR" ] && [ -d "$BACKUP_DIR" ]; then
             # Ensure destination and all contents are writable for cleanup
@@ -169,6 +169,28 @@ words_to_flat() {
     echo "$1" | tr -d '\n'
 }
 
+# GET TEMPLATE NAME AND VERSION -----------------------------------------------
+log_info "Detecting template name and version"
+
+# Use environment variables from sourced .envrc
+TEMPLATE_NAME="${PROJECT:-}"
+TEMPLATE_VERSION="${VERSION:-}"
+
+# Validate we have the required values
+if [ -z "$TEMPLATE_NAME" ]; then
+    log_error "Could not determine template name (PROJECT not set in .envrc)"
+    log_error "Please ensure .envrc exists and contains: export PROJECT=<template-name>"
+    exit 1
+fi
+
+if [ -z "$TEMPLATE_VERSION" ]; then
+    log_error "Could not determine template version (VERSION not set in .envrc)"
+    log_error "Please ensure .envrc contains: export VERSION=<version>"
+    exit 1
+fi
+
+log_info "Template: $TEMPLATE_NAME v$TEMPLATE_VERSION"
+
 # DEFAULT PROJECT NAME ---------------------------------------------------------
 DEFAULT_PROJECT=$(basename "$DEST_DIR")
 
@@ -207,11 +229,20 @@ if [ "$NON_INTERACTIVE" = false ]; then
         KEEP_CLAUDE=true
     fi
 
+    # Prompt for install.sh binary distribution script
+    read -p "Create install.sh for binary distribution? (y/N): " configure_install
+    if [[ "$configure_install" =~ ^[Yy]$ ]]; then
+        CONFIGURE_INSTALL=true
+    else
+        CONFIGURE_INSTALL=false
+    fi
+
     echo ""
 else
     # Non-interactive mode: use defaults
     PROJECT_NAME="${PROJECT_NAME:-$DEFAULT_PROJECT}"
     CONFIGURE_GCP=false
+    CONFIGURE_INSTALL=false
 
     if ! validate_project_name "$PROJECT_NAME"; then
         log_error "Invalid project name: $PROJECT_NAME"
@@ -221,28 +252,8 @@ else
     log_info "Non-interactive mode: project=$PROJECT_NAME"
 fi
 
-# GET TEMPLATE NAME AND VERSION -----------------------------------------------
-log_info "Detecting template name and version..."
-
-# Use environment variables from sourced .envrc
-TEMPLATE_NAME="$PROJECT"
-TEMPLATE_VERSION="$VERSION"
-
-# Validate we have the required values
-if [ -z "$TEMPLATE_NAME" ]; then
-    log_error "Could not determine template name (PROJECT not set)"
-    exit 1
-fi
-
-if [ -z "$TEMPLATE_VERSION" ]; then
-    log_error "Could not determine template version (VERSION not set)"
-    exit 1
-fi
-
-log_info "Template: $TEMPLATE_NAME v$TEMPLATE_VERSION"
-
 # BACKUP DESTINATION DIRECTORY ------------------------------------------------
-log_info "Creating backup of destination directory..."
+log_info "Creating backup of destination directory"
 
 BACKUP_DIR="$DEST_DIR/.nv/.scaffold-backup"
 mkdir -p "$BACKUP_DIR"
@@ -258,7 +269,7 @@ SCAFFOLD_STARTED=true
 log_success "Backup created"
 
 # COPY PLATFORM FILES TO DESTINATION -------------------------------------------
-log_info "Copying platform files to destination..."
+log_info "Copying platform files to destination"
 
 # Copy all files from source to destination
 # Exclude: .git, .nv, test/, docs/migrations/, docs/decisions/, CHANGELOG.md, RELEASE_NOTES.md
@@ -275,7 +286,7 @@ rsync -a \
 log_success "Platform files copied"
 
 # REPLACE TEMPLATE NAME WITH PROJECT NAME IN ALL VARIANTS ---------------------
-log_info "Replacing template name with project name..."
+log_info "Replacing template name with project name"
 
 # Generate all variants of template name and project name
 TEMPLATE_WORDS=$(string_to_words "$TEMPLATE_NAME")
@@ -308,7 +319,7 @@ done
 log_success "Replaced template name with project name"
 
 # UPDATE .ENVRC ----------------------------------------------------------------
-log_info "Configuring .envrc..."
+log_info "Configuring .envrc"
 
 ENVRC_TEMPLATE="$SRC_DIR/.envrc.template"
 ENVRC_FILE="$DEST_DIR/.envrc"
@@ -355,23 +366,15 @@ log_success "Created and configured .envrc from template"
 
 # CLEAN UP .CLAUDE/ DIRECTORY --------------------------------------------------
 if [ "$KEEP_CLAUDE" = false ]; then
-    log_info "Cleaning .claude/ directory..."
-
-    # Remove instance-specific files
-    rm -f "$DEST_DIR/.claude/plan.md"
-    rm -f "$DEST_DIR/.claude/tasks.md"
-
-    # Keep user-facing files:
-    # - instructions.md, style.md, workflows.md
-    # - commands: upgrade.md, adapt.md, docs.md, adr-new.md, adr-capture.md
-
-    log_success "Removed template development files from .claude/"
+    log_info "Removing .claude/ directory"
+    rm -rf "$DEST_DIR/.claude"
+    log_success "Removed .claude/ directory"
 else
     log_info "Keeping .claude/ directory"
 fi
 
 # CLEAN UP TEMPLATE FILES ------------------------------------------------------
-log_info "Cleaning template files..."
+log_info "Cleaning template files"
 
 # Remove template section from justfile
 JUSTFILE="$DEST_DIR/justfile"
@@ -380,19 +383,77 @@ if [ -f "$JUSTFILE" ]; then
     sed_inplace '/# TEMPLATE$/,$ {/# TEMPLATE$/d; d;}' "$JUSTFILE"
 fi
 
-# Replace README.md with template
-if [ -f "$SRC_DIR/README.template.md" ]; then
-    log_info "Creating README from template..."
+# Remove --template flag from Dockerfile
+DOCKERFILE="$DEST_DIR/Dockerfile"
+if [ -f "$DOCKERFILE" ]; then
+    # Remove --template flag from setup.sh command
+    sed_inplace 's/--template //g' "$DOCKERFILE"
+fi
 
-    # Copy template and substitute variables
+# PROCESS DOCUMENTATION TEMPLATES ----------------------------------------------
+log_info "Processing documentation templates"
+
+TEMPLATES_PROCESSED=0
+
+# Find and process all *.template.md files
+find "$DEST_DIR" -type f -name "*.template.md" ! -path "*/.git/*" ! -path "$DEST_DIR/.nv/*" 2>/dev/null | while IFS= read -r template_file; do
+    # Get output filename (remove .template extension)
+    output_file="${template_file%.template.md}.md"
+
+    # Substitute variables
     sed "s/{{PROJECT_NAME}}/$PROJECT_NAME/g; \
          s/{{TEMPLATE_NAME}}/$TEMPLATE_NAME/g; \
          s/{{TEMPLATE_VERSION}}/$TEMPLATE_VERSION/g" \
-        "$SRC_DIR/README.template.md" > "$DEST_DIR/README.md"
+        "$template_file" > "$output_file"
 
-    log_success "Created README.md from template"
+    # Remove template file
+    rm "$template_file"
+
+    TEMPLATES_PROCESSED=$((TEMPLATES_PROCESSED + 1))
+done
+
+if [ $TEMPLATES_PROCESSED -gt 0 ]; then
+    log_success "Processed $TEMPLATES_PROCESSED documentation template(s)"
 else
-    log_warning "README.template.md not found, keeping original README.md"
+    log_info "No documentation templates found"
+fi
+
+# PROCESS install.sh TEMPLATE --------------------------------------------------
+log_info "Processing install.sh template"
+
+if [ "$CONFIGURE_INSTALL" = true ]; then
+    # User wants install.sh - process the template
+    if [ -f "$DEST_DIR/install.sh.template" ]; then
+        # Get GitHub org from git remote (or use placeholder)
+        GITHUB_ORG=$(git -C "$DEST_DIR" remote get-url origin 2>/dev/null | sed -n 's|.*github.com[:/]\([^/]*\)/.*|\1|p' || echo "your-github-org")
+
+        # Process install.sh.template
+        sed "s/{{PROJECT_NAME}}/$PROJECT_NAME/g; \
+             s/{{GITHUB_ORG}}/$GITHUB_ORG/g" \
+            "$DEST_DIR/install.sh.template" > "$DEST_DIR/install.sh"
+
+        # Make executable
+        chmod +x "$DEST_DIR/install.sh"
+
+        # Remove template
+        rm "$DEST_DIR/install.sh.template"
+
+        log_success "Created install.sh for binary distribution"
+    else
+        log_warn "install.sh.template not found in destination"
+    fi
+else
+    # User doesn't want install.sh - remove the template
+    if [ -f "$DEST_DIR/install.sh.template" ]; then
+        rm "$DEST_DIR/install.sh.template"
+        log_info "Removed install.sh.template (not needed for this project)"
+    fi
+fi
+
+# Remove README.template.md (should have been processed to README.md)
+if [ -f "$DEST_DIR/README.template.md" ]; then
+    rm "$DEST_DIR/README.template.md"
+    log_info "Removed README.template.md"
 fi
 
 log_success "Removed template development files"

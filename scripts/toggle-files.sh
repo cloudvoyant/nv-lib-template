@@ -141,7 +141,7 @@ fi
 
 case "$MODE" in
     hide)
-        log_info "Hiding non-essential files in VS Code..."
+        log_info "Hiding non-essential files in VS Code"
         if update_file_exclusions "hide"; then
             log_success "VS Code: Files hidden successfully"
             log_info "VS Code visible: docs/, src/, test/, .claude/, .envrc, justfile, README.md"
@@ -151,7 +151,7 @@ case "$MODE" in
         fi
         ;;
     show)
-        log_info "Showing all files in VS Code..."
+        log_info "Showing all files in VS Code"
         if update_file_exclusions "show"; then
             log_success "VS Code: All files are now visible"
         else

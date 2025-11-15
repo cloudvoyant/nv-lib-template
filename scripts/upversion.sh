@@ -46,7 +46,7 @@ set -euo pipefail
 
 # MAIN -------------------------------------------------------------------------
 
-log_info "Running semantic-release..."
+log_info "Running semantic-release"
 
 # Check if npx is available
 if ! command_exists npx; then

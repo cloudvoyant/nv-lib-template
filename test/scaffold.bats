@@ -128,22 +128,18 @@ teardown() {
 
 @test "handles .claude directory with --keep-claude option" {
     mkdir -p "$DEST_DIR/.claude"
-    touch "$DEST_DIR/.claude/plan.md" "$DEST_DIR/.claude/workflows.md" "$DEST_DIR/.claude/instructions.md"
+    touch "$DEST_DIR/.claude/plan.md" "$DEST_DIR/.claude/workflows.md" "$DEST_DIR/.claude/CLAUDE.md"
 
-    # By default, removes platform-specific files but keeps user-facing files
+    # By default (without --keep-claude), removes entire .claude directory
     bash ./scripts/scaffold.sh \
         --src . \
         --dest ../.. \
         --non-interactive \
         --project testproject
 
-    [ ! -f "$DEST_DIR/.claude/plan.md" ]
-    [ -f "$DEST_DIR/.claude/workflows.md" ]
-    [ -f "$DEST_DIR/.claude/instructions.md" ]
+    [ ! -d "$DEST_DIR/.claude" ]
 
-    # With --keep-claude, keeps everything including plan.md
-    touch "$DEST_DIR/.claude/plan.md"  # Restore for next test
-
+    # With --keep-claude, keeps entire .claude directory
     bash ./scripts/scaffold.sh \
         --src . \
         --dest ../.. \
@@ -151,9 +147,10 @@ teardown() {
         --project testproject \
         --keep-claude
 
-    [ -f "$DEST_DIR/.claude/plan.md" ]
+    [ -d "$DEST_DIR/.claude" ]
+    [ -f "$DEST_DIR/.claude/CLAUDE.md" ]
     [ -f "$DEST_DIR/.claude/workflows.md" ]
-    [ -f "$DEST_DIR/.claude/instructions.md" ]
+    [ -f "$DEST_DIR/.claude/style.md" ]
 }
 
 
@@ -350,5 +347,18 @@ teardown() {
     # TEMPLATE section (kept in source, removed when scaffolding)
     run grep -q "# TEMPLATE" justfile
     [ "$status" -eq 0 ]
+}
+
+@test "scaffold.sh processes install.sh.template when --non-interactive (defaults to no install.sh)" {
+    # When run with --non-interactive, install.sh.template should be removed (default: no install.sh)
+    run bash ./scripts/scaffold.sh --src "$SRC_DIR" --dest "$DEST_DIR" --non-interactive --project test-project
+
+    [ "$status" -eq 0 ]
+
+    # Destination should not have install.sh (not requested)
+    [ ! -f "$DEST_DIR/install.sh" ]
+
+    # Destination should not have install.sh.template (removed)
+    [ ! -f "$DEST_DIR/install.sh.template" ]
 }
 

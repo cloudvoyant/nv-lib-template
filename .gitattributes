@@ -121,6 +121,7 @@ docs/decisions/ export-ignore
 CHANGELOG.md export-ignore
 RELEASE_NOTES.md export-ignore
 scripts/template-install.sh export-ignore
+install.sh.template export-ignore
 .claude/plan.md export-ignore
 .claude/tasks.md export-ignore
 .claude/migrations/generate-migration-guide.md export-ignore
