@@ -68,6 +68,12 @@ jobs:
           CI: true
         run: just upversion --ci
 
+      - name: Build production artifacts
+        if: steps.upversion.outputs.new_release_published == 'true'
+        run: |
+          source .envrc
+          just build-prod
+
       - name: Authenticate with registry
         if: steps.upversion.outputs.new_release_published == 'true' && env.GCP_SA_KEY != ''
         env:
