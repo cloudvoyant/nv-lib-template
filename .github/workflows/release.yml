@@ -71,10 +71,7 @@ jobs:
         run: just upversion --ci
 
       - name: Authenticate with registry
-        if: |
-          steps.upversion.outputs.new_release_published == 'true' &&
-          secrets.GCP_SA_KEY != '' &&
-          secrets.GCP_REGISTRY_PROJECT_ID != ''
+        if: steps.upversion.outputs.new_release_published == 'true' && env.GCP_SA_KEY != ''
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           GCP_REGISTRY_PROJECT_ID: ${{ secrets.GCP_REGISTRY_PROJECT_ID }}
@@ -83,11 +80,9 @@ jobs:
         run: just registry-login --ci
 
       - name: Publish package
-        if: |
-          steps.upversion.outputs.new_release_published == 'true' &&
-          secrets.GCP_SA_KEY != '' &&
-          secrets.GCP_REGISTRY_PROJECT_ID != ''
+        if: steps.upversion.outputs.new_release_published == 'true' && env.GCP_SA_KEY != ''
         env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           GCP_REGISTRY_PROJECT_ID: ${{ secrets.GCP_REGISTRY_PROJECT_ID }}
           GCP_REGISTRY_REGION: ${{ secrets.GCP_REGISTRY_REGION }}
           GCP_REGISTRY_NAME: ${{ secrets.GCP_REGISTRY_NAME }}
