@@ -1,3 +1,29 @@
+## [1.14.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.13.0...v1.14.0) (2025-11-15)
+
+### Features
+
+* improve CI performance and setup script organization
+
+- Add dependency caching to CI and release workflows (binaries, npm, apt)
+- Refactor setup.sh with modular flags (--dev, --ci, --template, --docker-optimize)
+- Add template documentation files for scaffolded projects
+- Improve Docker image optimization support
+
+
+### Bug Fixes
+
+* align workflow cache paths and CI dependencies with template
+
+- Update binary cache path to /usr/local/bin for consistency
+- Add bats-core and parallel installation to --ci flag
+- Update setup.sh documentation to reflect CI dependencies
+
+* correct secret checks in release workflow conditionals
+
+Replace invalid secrets.GCP_SA_KEY references with env.GCP_SA_KEY
+to fix GitHub Actions validation errors. GitHub Actions does not
+allow direct secret access in if conditions.
+
 ## [1.13.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.12.0...v1.13.0) (2025-11-02)
 
 ### Features
