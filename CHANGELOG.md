@@ -1,3 +1,20 @@
+## [1.15.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.14.2...v1.15.0) (2025-11-16)
+
+### Features
+
+* migrate slash commands to Claudevoyant plugin
+
+Moves all slash commands (/plan, /commit, /upgrade, etc.) from template
+files to the Claudevoyant plugin for independent versioning and updates.
+
+- Remove command .md files from .claude/commands/ (now in plugin)
+- Add automatic plugin installation to setup.sh --dev
+- Update documentation to reference plugin installation
+- Update tests to verify commands are excluded from template exports
+
+Users benefit from independently updatable commands without requiring
+template upgrades.
+
 ## [1.14.2](https://github.com/cloudvoyant/nv-lib-template/compare/v1.14.1...v1.14.2) (2025-11-15)
 
 ### Bug Fixes
