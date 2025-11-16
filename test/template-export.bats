@@ -49,13 +49,10 @@ teardown() {
     [ -f "$EXTRACT_DIR/scripts/scaffold.sh" ]
     [ -d "$EXTRACT_DIR/.claude" ]
 
-    # User-facing Claude commands should be included
+    # Claude commands directory should contain README with plugin installation info
     [ -f "$EXTRACT_DIR/.claude/commands/README.md" ]
-    [ -f "$EXTRACT_DIR/.claude/commands/upgrade.md" ]
-    [ -f "$EXTRACT_DIR/.claude/commands/adapt.md" ]
-    [ -f "$EXTRACT_DIR/.claude/commands/adr-new.md" ]
-    [ -f "$EXTRACT_DIR/.claude/commands/adr-capture.md" ]
-    [ -f "$EXTRACT_DIR/.claude/commands/docs.md" ]
+    # Individual command files are now provided via the Claudevoyant plugin
+    # and should not be in the template
 
     # User-facing Claude config files should be included
     [ -f "$EXTRACT_DIR/.claude/CLAUDE.md" ]
@@ -90,4 +87,14 @@ teardown() {
     [ ! -f "$EXTRACT_DIR/.claude/migrations/generate-migration-guide.md" ]
     [ ! -f "$EXTRACT_DIR/.claude/commands/new-migration.md" ]
     [ ! -f "$EXTRACT_DIR/.claude/commands/validate-platform.md" ]
+
+    # User-facing command files should be excluded (provided by Claudevoyant plugin)
+    [ ! -f "$EXTRACT_DIR/.claude/commands/upgrade.md" ]
+    [ ! -f "$EXTRACT_DIR/.claude/commands/adapt.md" ]
+    [ ! -f "$EXTRACT_DIR/.claude/commands/commit.md" ]
+    [ ! -f "$EXTRACT_DIR/.claude/commands/plan.md" ]
+    [ ! -f "$EXTRACT_DIR/.claude/commands/review.md" ]
+    [ ! -f "$EXTRACT_DIR/.claude/commands/docs.md" ]
+    [ ! -f "$EXTRACT_DIR/.claude/commands/adr-new.md" ]
+    [ ! -f "$EXTRACT_DIR/.claude/commands/adr-capture.md" ]
 }

@@ -25,6 +25,7 @@ Development tools (--dev):
 - shellcheck (shell script linter)
 - shfmt (shell script formatter)
 - claude (Claude CLI)
+- claudevoyant plugin (slash commands for Claude)
 
 CI essentials (--ci):
 - node/npx (for semantic-release)
@@ -81,7 +82,7 @@ while [[ $# -gt 0 ]]; do
             echo "  -h, --help    Show this help message"
             echo ""
             echo "Required: bash, just, direnv"
-            echo "Development (--dev): docker, node/npx, gcloud, shellcheck, shfmt, claude"
+            echo "Development (--dev): docker, node/npx, gcloud, shellcheck, shfmt, claude, claudevoyant plugin"
             echo "CI (--ci): docker, node/npx, gcloud"
             echo "Template (--template): bats-core"
             exit 0
@@ -607,13 +608,35 @@ install_claude() {
     log_success "Claude CLI installation completed"
 }
 
+# Install Claudevoyant plugin for Claude CLI
+install_claudevoyant_plugin() {
+    log_info "Installing Claudevoyant plugin"
+
+    # Check if Claude CLI is installed
+    if ! command_exists claude; then
+        log_warn "Claude CLI not found - skipping plugin installation"
+        return 1
+    fi
+
+    # Add marketplace if not already added (suppress error if already exists)
+    claude plugin marketplace add cloudvoyant/claudevoyant 2>&1 | grep -v "already installed" || true
+
+    # Install plugin from marketplace
+    if claude plugin install claudevoyant 2>&1 | grep -v "^$"; then
+        log_success "Claudevoyant plugin installed successfully"
+    else
+        log_warn "Failed to install Claudevoyant plugin - you can install it manually with 'claude plugin install claudevoyant'"
+        return 1
+    fi
+}
+
 # Check and install dependencies
 check_dependencies() {
     log_info "Checking dependencies"
     log_info "Required: bash, just, direnv"
 
     if [ "$INSTALL_DEV" = true ]; then
-        log_info "Development tools: docker, node/npx, gcloud, shellcheck, shfmt, claude (will be installed)"
+        log_info "Development tools: docker, node/npx, gcloud, shellcheck, shfmt, claude, claudevoyant plugin (will be installed)"
     fi
     if [ "$INSTALL_CI" = true ]; then
         log_info "CI essentials: node/npx, gcloud, bats-core, parallel (will be installed)"
@@ -804,6 +827,23 @@ check_dependencies() {
                 log_success "Claude CLI installed successfully"
             else
                 log_warn "Skipping Claude CLI - ensure Node.js is installed and try 'npm install -g @anthropic-ai/claude-cli' manually"
+            fi
+        fi
+
+        # Install Claudevoyant plugin if Claude CLI is available
+        if command_exists claude; then
+            current=$((current + 1))
+            progress_step $current "Checking Claudevoyant plugin"
+            # Check if plugin is already installed
+            if claude plugin list 2>/dev/null | grep -q "claudevoyant"; then
+                log_success "Claudevoyant plugin is already installed"
+            else
+                log_info "Installing Claudevoyant plugin for slash commands"
+                if install_claudevoyant_plugin; then
+                    log_success "Claudevoyant plugin installed"
+                else
+                    log_warn "Skipping Claudevoyant plugin - you can install it later with 'claude plugin install claudevoyant'"
+                fi
             fi
         fi
     fi

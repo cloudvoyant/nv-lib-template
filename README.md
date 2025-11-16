@@ -44,7 +44,7 @@ bash scripts/scaffold.sh --project your-project-name
 Install dependencies and adapt the template for your needs:
 
 ```bash
-just setup              # Required: bash, just, direnv
+just setup --dev        # Install all dependencies including Claude CLI and Claudevoyant plugin
 just scaffold           # Scaffold project - apply project name and reset version
 claude /adapt           # Guided customization for your language / package manager
 ```

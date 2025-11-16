@@ -7,7 +7,30 @@ Fork and clone the repository:
 ```bash
 git clone https://github.com/your-username/lib.git
 cd lib
-just setup
+just setup --dev        # Installs Claude CLI and Claudevoyant plugin
+```
+
+### Claudevoyant Plugin
+
+This template uses the **Claudevoyant plugin** for slash commands like `/plan`, `/commit`, `/upgrade`, etc. The plugin is automatically installed when you run `just setup --dev`.
+
+If you need to reinstall the plugin manually, first add the marketplace:
+
+```bash
+claude plugin marketplace add cloudvoyant/claudevoyant
+```
+
+Then install the plugin:
+
+```bash
+claude plugin install claudevoyant
+```
+
+For local plugin development:
+
+```bash
+claude plugin marketplace add ../claudevoyant
+claude plugin install claudevoyant
 ```
 
 ## Development Workflow

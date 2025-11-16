@@ -7,7 +7,7 @@ When a user requests a non-trivial task (anything requiring multiple steps or si
 **Always ask first:** "Would you like me to follow the spec-driven development workflow? I can create a structured plan in `.claude/plan.md` and work through it systematically."
 
 Options:
-- **Yes**: Use `/plan new` to create a structured plan and follow the workflow defined in `.claude/commands/plan.md`
+- **Yes**: Use `/plan new` to create a structured plan and follow the spec-driven workflow
 - **No**: Proceed directly with implementation (but still create a todo list for tracking)
 
 For trivial single-step tasks, proceed directly without asking.
@@ -47,10 +47,10 @@ See `/upgrade` command for the canonical example:
 
 ### When to Create ADRs
 
-For significant architectural changes:
+For significant architectural changes, use `/adr-new` command which will:
 
 1. Create `docs/decisions/NNN-short-title.md`
-2. Follow ADR template in `.claude/style.md`
+2. Follow the ADR template format
 3. Update `docs/decisions/README.md` index
 4. Update `docs/architecture.md` if needed
 
