@@ -88,9 +88,12 @@ teardown() {
     [ ! -f "$EXTRACT_DIR/.claude/commands/new-migration.md" ]
     [ ! -f "$EXTRACT_DIR/.claude/commands/validate-platform.md" ]
 
-    # User-facing command files should be excluded (provided by Claudevoyant plugin)
-    [ ! -f "$EXTRACT_DIR/.claude/commands/upgrade.md" ]
-    [ ! -f "$EXTRACT_DIR/.claude/commands/adapt.md" ]
+    # Template-specific commands should be included
+    [ -f "$EXTRACT_DIR/.claude/commands/upgrade.md" ]
+    [ -f "$EXTRACT_DIR/.claude/commands/adapt.md" ]
+    [ -f "$EXTRACT_DIR/.claude/commands/README.md" ]
+
+    # Plugin-provided commands should not be in template
     [ ! -f "$EXTRACT_DIR/.claude/commands/commit.md" ]
     [ ! -f "$EXTRACT_DIR/.claude/commands/plan.md" ]
     [ ! -f "$EXTRACT_DIR/.claude/commands/review.md" ]

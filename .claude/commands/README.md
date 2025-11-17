@@ -35,31 +35,34 @@ claude plugin install claudevoyant
 
 ## Available Commands
 
-Once installed, you'll have access to these commands:
-
-### Project Management
-
-- `/plan` - Manage project planning using `.claude/plan.md`
-  - `/plan new` - Create a new plan by exploring requirements
-  - `/plan init` - Initialize an empty plan template
-  - `/plan refresh` - Review and update plan status
-  - `/plan pause` - Capture insights from planning session
-  - `/plan go` - Execute the plan with spec-driven development
-  - `/plan done` - Mark plan as complete and optionally commit
+### Template Commands (in this directory)
 
 - `/upgrade` - Migrate project to latest template version
-- `/adapt` - Adapt template to your project's needs
+- `/adapt` - Adapt template to your project's needs (template-only, auto-deletes after use)
 
-### Development Workflow
+### Plugin Commands (from Claudevoyant)
 
-- `/commit` - Create conventional commit with proper formatting
-- `/review` - Perform comprehensive code review
-- `/docs` - Validate documentation completeness
+Once the plugin is installed, you'll have access to these commands:
 
-### Architecture & Decisions
+#### Project Management
 
-- `/adr-new` - Create new Architectural Decision Record
-- `/adr-capture` - Capture decisions from current session as ADRs
+- `/spec:new` - Create a new plan by exploring requirements
+- `/spec:init` - Initialize an empty plan template
+- `/spec:refresh` - Review and update plan status
+- `/spec:pause` - Capture insights from planning session
+- `/spec:go` - Execute the plan with spec-driven development
+- `/spec:done` - Mark plan as complete and optionally commit
+
+#### Development Workflow
+
+- `/dev:commit` - Create conventional commit with proper formatting
+- `/dev:review` - Perform comprehensive code review
+- `/dev:docs` - Validate documentation completeness
+
+#### Architecture & Decisions
+
+- `/adr:new` - Create new Architectural Decision Record
+- `/adr:capture` - Capture decisions from current session as ADRs
 
 ## Documentation
 

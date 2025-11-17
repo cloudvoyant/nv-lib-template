@@ -370,7 +370,18 @@ if [ "$KEEP_CLAUDE" = false ]; then
     rm -rf "$DEST_DIR/.claude"
     log_success "Removed .claude/ directory"
 else
-    log_info "Keeping .claude/ directory"
+    log_info "Configuring .claude/ directory for client repo"
+    # Remove all commands except upgrade.md and README.md
+    find "$DEST_DIR/.claude/commands" -type f -name "*.md" ! -name "upgrade.md" ! -name "README.md" -delete 2>/dev/null || true
+
+    # Update README.md to remove /adapt reference (template-only command)
+    README_FILE="$DEST_DIR/.claude/commands/README.md"
+    if [ -f "$README_FILE" ]; then
+        # Remove the line mentioning /adapt from the Template Commands section
+        sed_inplace '/^- `\/adapt`.*template-only.*$/d' "$README_FILE"
+    fi
+
+    log_success "Configured .claude/ with /upgrade command only"
 fi
 
 # CLEAN UP TEMPLATE FILES ------------------------------------------------------

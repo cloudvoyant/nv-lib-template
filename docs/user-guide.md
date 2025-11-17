@@ -280,20 +280,27 @@ To add custom dependencies during CI setup, extend `scripts/setup.sh` with your 
 
 ## LLM Assistance with Claude
 
-Claude commands provide guided workflows for complex tasks.
+Claude commands provide guided workflows for complex tasks. The template includes two custom commands, while most workflow commands come from the [Claudevoyant plugin](https://github.com/cloudvoyant/claudevoyant) (automatically installed with `just setup --dev`).
 
-### Available Commands
+### Template Commands
 
 ```bash
-claude /adapt                   # Customize template for your language
+claude /adapt                   # Customize template for your language (auto-deletes after use)
 claude /upgrade                 # Migrate to newer template version
-claude /plan new                # Create a new project plan
-claude /plan go                 # Execute the plan with spec-driven development
-claude /plan pause              # Capture insights for resuming work later
-claude /plan refresh            # Update plan status
-claude /adr-new                 # Create architectural decision record
-claude /adr-capture             # Capture decisions from conversation
-claude /docs                    # Validate documentation
+```
+
+### Plugin Commands (from Claudevoyant)
+
+```bash
+claude /spec:new                # Create a new project plan
+claude /spec:go                 # Execute the plan with spec-driven development
+claude /spec:pause              # Capture insights for resuming work later
+claude /spec:refresh            # Update plan status
+claude /adr:new                 # Create architectural decision record
+claude /adr:capture             # Capture decisions from conversation
+claude /dev:docs                    # Validate documentation
+claude /dev:commit                  # Create conventional commit
+claude /dev:review                  # Perform code review
 ```
 
 ### Upgrading Projects

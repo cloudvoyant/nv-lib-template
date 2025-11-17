@@ -362,3 +362,22 @@ teardown() {
     [ ! -f "$DEST_DIR/install.sh.template" ]
 }
 
+@test "scaffold.sh with --keep-claude removes commands except upgrade.md" {
+    # When run with --keep-claude, only upgrade.md and README.md should remain
+    run bash ./scripts/scaffold.sh --src "$SRC_DIR" --dest "$DEST_DIR" --non-interactive --project test-project --keep-claude
+
+    [ "$status" -eq 0 ]
+
+    # Only upgrade.md and README.md should remain
+    [ -f "$DEST_DIR/.claude/commands/upgrade.md" ]
+    [ -f "$DEST_DIR/.claude/commands/README.md" ]
+
+    # adapt.md should be removed (template-only)
+    [ ! -f "$DEST_DIR/.claude/commands/adapt.md" ]
+
+    # Plugin commands should not exist
+    [ ! -f "$DEST_DIR/.claude/commands/plan.md" ]
+    [ ! -f "$DEST_DIR/.claude/commands/commit.md" ]
+    [ ! -f "$DEST_DIR/.claude/commands/review.md" ]
+}
+

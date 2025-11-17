@@ -1,14 +1,13 @@
 # Claude Code Instructions
 
-## Workflow Prompt
+## Workflow Commands
 
-When a user requests a non-trivial task (anything requiring multiple steps or significant changes):
+This template provides two custom commands:
 
-**Always ask first:** "Would you like me to follow the spec-driven development workflow? I can create a structured plan in `.claude/plan.md` and work through it systematically."
+- `/adapt` - Template-only command for adapting to new languages (auto-deletes after use)
+- `/upgrade` - Upgrade to the latest template version
 
-Options:
-- **Yes**: Use `/plan new` to create a structured plan and follow the spec-driven workflow
-- **No**: Proceed directly with implementation (but still create a todo list for tracking)
+All other workflow commands (`/spec:new/go/bg/stop/pause`, `/dev:commit`, `/dev:review`, `/adr:new`, etc.) are provided by the [Claudevoyant plugin](https://github.com/cloudvoyant/claudevoyant). The plugin is automatically configured during scaffolding and provides a comprehensive set of development workflow commands.
 
 For trivial single-step tasks, proceed directly without asking.
 
@@ -18,9 +17,9 @@ This project uses a spec-driven approach: plan first, implement second.
 
 ### Workflow Pattern
 
-See `/upgrade` command for the canonical example:
+Use the Claudevoyant plugin commands for structured development workflows. See `/upgrade` command for the canonical example:
 
-1. Create comprehensive plan in `.claude/plan.md`
+1. Create comprehensive plan in `.claude/plan.md` (using `/spec:new` from plugin)
 2. Work through plan systematically. Add sub-lists of check-boxes as needed for complex tasks.
 3. Mark items complete as you finish
 4. When plan is done, update docs and delete plan
@@ -47,7 +46,7 @@ See `/upgrade` command for the canonical example:
 
 ### When to Create ADRs
 
-For significant architectural changes, use `/adr-new` command which will:
+For significant architectural changes, use the `/adr:new` command from the Claudevoyant plugin which will:
 
 1. Create `docs/decisions/NNN-short-title.md`
 2. Follow the ADR template format

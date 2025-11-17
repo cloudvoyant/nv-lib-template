@@ -63,6 +63,7 @@ publish: test build-prod
 ```
 
 Scripts in `scripts/` provide hooks for overriding CI/CD behavior:
+
 - Modify `scripts/upversion.sh` to change versioning logic
 - Extend `scripts/setup.sh` to add custom dependencies
 - Keep `scripts/scaffold.sh` as-is for template initialization
@@ -148,27 +149,28 @@ The workflows call your just commands rather than duplicating logic, creating a 
 
 ### Component: Claude Commands
 
-Claude commands provide LLM-assisted workflows for complex tasks. For complete command documentation and usage examples, see [.claude/commands/README.md](../.claude/commands/README.md).
+Claude commands provide LLM-assisted workflows for complex tasks.
 
-- `/upgrade` - Migrates projects to newer template versions using a spec-driven approach with comprehensive plans
-- `/adapt` - Customizes the template for your language/framework with examples for Python, Node.js, Go, Docker
-- `/adr-new`, `/adr-capture` - Documents architectural decisions in `docs/decisions/`
-- `/docs` - Validates documentation completeness and consistency
-- `/commit` - Creates conventional commits with proper formatting
-- `/review` - Performs comprehensive code reviews with detailed reports
-- `/plan` - Manages project planning with spec-driven development
+This template provides two custom commands:
+
+- `/adapt` - Template-only command for adapting to new languages (auto-deletes after use)
+- `/upgrade` - Upgrade to the latest template version
+
+All other workflow commands (`/spec:new/go/pause`, `/dev:commit`, `/dev:review`, `/adr:new`, etc.) are provided by the [Claudevoyant plugin](https://github.com/cloudvoyant/claudevoyant). The plugin is automatically configured during scaffolding and provides a comprehensive set of development workflow commands.
 
 ### Component: Dockerfile (Multi-Stage)
 
 The `Dockerfile` uses a multi-stage build to support both minimal runtime environments and full development environments from a single file:
 
 **Base Stage** (`target: base`):
+
 - Used by docker-compose for `just docker-run` and `just docker-test`
 - Installs only essential dependencies: bash, just, direnv
 - Fast build time (~1-2 minutes)
 - Minimal image size for quick iteration
 
 **Dev Stage** (`target: dev`):
+
 - Used by VS Code DevContainers
 - Builds on top of base stage
 - Adds development tools: docker, node/npx, gcloud, shellcheck, shfmt, claude
@@ -176,6 +178,7 @@ The `Dockerfile` uses a multi-stage build to support both minimal runtime enviro
 - Slower build (~10 minutes), but cached after first build
 
 Configuration:
+
 - `docker-compose.yml` services specify `target: base` for fast builds
 - `.devcontainer/devcontainer.json` specifies `target: dev` for full environment
 - Both share the same base layers, maximizing Docker layer cache efficiency
@@ -194,22 +197,26 @@ Provides containerized services for running and testing without installing depen
 The `.devcontainer/` directory provides VS Code Dev Containers configuration for consistent development environments across teams. The devcontainer uses the root-level `Dockerfile` with `target: dev` to build a full development environment.
 
 Features:
+
 - `git:1` - Git installed from source (credentials auto-shared by VS Code via SSH agent forwarding)
 - `docker-outside-of-docker:1` - Docker CLI that connects to host's Docker daemon
 
 Credential Mounting:
+
 - Claude CLI credentials mounted from `~/.claude` directory
 - Uses cross-platform path resolution: `${localEnv:HOME}${localEnv:USERPROFILE}` expands to HOME on Unix or USERPROFILE on Windows
 - Git/GitHub credentials automatically forwarded via SSH agent (requires `ssh-add` on host)
 - gcloud requires manual `gcloud auth login` inside container (credentials persist via Docker volumes)
 
 VS Code Extensions:
+
 - `mkhl.direnv` - direnv support
 - `skellock.just` and `nefrob.vscode-just-syntax` - justfile syntax highlighting
 - `timonwong.shellcheck` and `foxundermoon.shell-format` - Shell script linting and formatting
 - `ms-azuretools.vscode-docker` - Docker support
 
 Cross-Platform Considerations:
+
 - Works on macOS, Linux, and Windows (via Docker Desktop or WSL)
 - Credential paths use environment variable fallback pattern for platform compatibility
 - On Windows, if `~/.claude` doesn't exist at `%USERPROFILE%\.claude`, mount will fail gracefully (container starts without Claude credentials)
@@ -250,10 +257,12 @@ publish: test build-prod
 Configure secrets once at the organization level (Settings → Secrets → Actions). All repositories inherit organization secrets automatically.
 
 For GCP (default):
+
 - `GCP_SA_KEY` - Service account JSON key
 - `GCP_REGISTRY_PROJECT_ID`, `GCP_REGISTRY_REGION`, `GCP_REGISTRY_NAME` - Registry configuration
 
 For other registries (see [user-guide.md](user-guide.md#cicd-secrets) for details):
+
 - npm: `NPM_TOKEN`
 - PyPI: `PYPI_TOKEN`
 - Docker Hub: `DOCKER_USERNAME`, `DOCKER_PASSWORD`
@@ -265,6 +274,7 @@ See comments in `.github/workflows/release.yml` for additional registry options 
 The template works on macOS, Linux, and Windows (via WSL) without requiring users to install platform-specific tools. This broad compatibility reduces team onboarding friction and prevents "works on my machine" issues.
 
 Key compatibility measures:
+
 - Line endings enforced to LF via `.editorconfig` (prevents git diff noise on Windows)
 - `sed_inplace` helper handles differences between macOS and GNU sed (abstracts platform quirks)
 - Bash 3.2+ required (macOS ships with Bash 3.2, avoiding Bash 4+ features ensures compatibility without upgrades)
@@ -281,6 +291,7 @@ All scripts use `set -euo pipefail` for fail-fast behavior, ensuring errors don'
 For user projects, customize `just test` for your language (pytest for Python, npm test for Node.js, go test for Go, cargo test for Rust).
 
 For template development, use bats-core for bash script testing:
+
 ```bash
 just setup --template  # Install bats
 just test-template     # Run template tests
