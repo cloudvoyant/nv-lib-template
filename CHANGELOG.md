@@ -1,3 +1,16 @@
+## [1.16.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.15.0...v1.16.0) (2025-11-17)
+
+### Features
+
+* add template commands and cleanup for plugin migration
+
+* complete plugin migration cleanup and scaffolding updates
+
+Updates template to work with Claudevoyant plugin by removing
+migrated command references, configuring scaffold to copy only
+/upgrade to client repos, and updating all documentation to
+reflect the plugin-based workflow.
+
 ## [1.15.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.14.2...v1.15.0) (2025-11-16)
 
 ### Features
