@@ -29,6 +29,13 @@ starship    = "latest"
 claude      = "latest"
 docker-cli  = "latest"
 
+"npm:semantic-release"                                    = "latest"
+"npm:@semantic-release/changelog"                         = "latest"
+"npm:@semantic-release/exec"                              = "latest"
+"npm:@semantic-release/git"                               = "latest"
+"npm:@semantic-release/github"                            = "latest"
+"npm:conventional-changelog-conventionalcommits"          = "latest"
+
 # =============================================================================
 # CORE DEVELOPMENT
 # =============================================================================
