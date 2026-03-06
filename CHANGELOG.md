@@ -1,3 +1,14 @@
+## [2.0.1](https://github.com/cloudvoyant/nv-lib-template/compare/v2.0.0...v2.0.1) (2026-03-06)
+
+### Bug Fixes
+
+* add env block to Authenticate step so GCP_SA_KEY condition passes
+
+The if condition checks env.GCP_SA_KEY != '' but without an env: block
+the secret is invisible to the expression evaluator, causing the step
+to be skipped while Setup gcloud and Publish (which have the env block)
+still run unauthenticated.
+
 ## [2.0.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.16.0...v2.0.0) (2026-03-06)
 
 ### ⚠ BREAKING CHANGES
