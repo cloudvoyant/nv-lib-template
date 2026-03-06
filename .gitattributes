@@ -127,3 +127,4 @@ install.sh.template export-ignore
 .claude/commands/new-migration.md export-ignore
 .claude/commands/validate-template.md export-ignore
 .mise.local.toml export-ignore
+node_modules/ export-ignore

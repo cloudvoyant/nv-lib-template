@@ -22,6 +22,7 @@ setup() {
     rsync -a \
         --exclude='.git' \
         --exclude='.nv' \
+        --exclude='node_modules' \
         "$ORIGINAL_DIR/" "$TEMPLATE_CLONE/"
 
     # Set up test variables
@@ -228,6 +229,7 @@ teardown() {
     rsync -a \
         --exclude='.git' \
         --exclude='.nv' \
+        --exclude='node_modules' \
         . "$NEW_DEST/"
 
     run bash ./.mise-tasks/scaffold \

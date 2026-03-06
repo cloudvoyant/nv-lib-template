@@ -30,6 +30,7 @@ setup() {
     rsync -a \
         --exclude='.git' \
         --exclude='.nv' \
+        --exclude='node_modules' \
         "$ORIGINAL_DIR/" "$REPO_DIR/"
     cd "$REPO_DIR"
     git init -q
