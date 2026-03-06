@@ -1,3 +1,60 @@
+## [2.0.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.16.0...v2.0.0) (2026-03-06)
+
+### ⚠ BREAKING CHANGES
+
+* replace just, direnv, and scripts/ with mise as
+the single tool manager, task runner, and env loader.
+
+- justfile removed; all tasks now in mise.toml or .mise-tasks/
+- .envrc/.envrc.template removed; env vars declared in mise.toml [env]
+- scripts/ migrated to file-based mise tasks in .mise-tasks/
+- Complex tasks (scaffold, upversion, registry-login, publish,
+
+### Features
+
+* migrate from justfile/direnv/scripts to mise
+
+BREAKING CHANGE: replace just, direnv, and scripts/ with mise as
+the single tool manager, task runner, and env loader.
+
+- justfile removed; all tasks now in mise.toml or .mise-tasks/
+- .envrc/.envrc.template removed; env vars declared in mise.toml [env]
+- scripts/ migrated to file-based mise tasks in .mise-tasks/
+- Complex tasks (scaffold, upversion, registry-login, publish,
+  upgrade) are executable scripts with #MISE description pragmas
+- Internal helpers (utils, toggle-files) hidden with #MISE hide=true
+- Claude plugin install moved from Dockerfile to postCreateCommand
+- CI workflows updated to use mise-action and mise run throughout
+
+
+### Bug Fixes
+
+* exclude node_modules from test rsync and git archive
+
+Local npm install creates node_modules/ in the project root, causing
+test setup rsync to copy it into temp clones (slowing tests) and
+triggering vanished-file warnings when scaffold ran concurrently.
+
+* install npm deps to project root with --prefix
+
+Without a package.json in the project directory, npm install walked up
+and installed into $HOME. Adding --prefix "{{config_root}}" forces
+install into the project root so node_modules/.bin is on PATH via the
+_.path mise env entry.
+
+* install semantic-release plugins via mise npm tools
+
+Replaces the deleted setup.sh npm install step. All plugins
+declared in .releaserc.json are now managed by mise alongside
+other project tools.
+
+* use mise-installed semantic-release instead of npx
+
+npx downloads an isolated copy that cannot find the plugins
+installed by mise. Calling semantic-release directly uses the
+mise-managed binary which shares the global npm prefix with all
+declared npm: tools.
+
 ## [1.16.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.15.0...v1.16.0) (2025-11-17)
 
 ### Features
