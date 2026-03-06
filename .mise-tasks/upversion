@@ -49,9 +49,9 @@ set -euo pipefail
 
 log_info "Running semantic-release"
 
-# Check if npx is available
-if ! command_exists npx; then
-    log_error "npx not found. Install Node.js via mise: mise install"
+# Check if semantic-release is available
+if ! command_exists semantic-release; then
+    log_error "semantic-release not found. Run: mise install"
     exit 1
 fi
 
@@ -61,11 +61,11 @@ CURRENT_VERSION=$(get_version)
 # Run semantic-release
 if [ -n "$CI" ]; then
     log_info "Running in CI mode - will create release and push"
-    npx semantic-release
+    semantic-release
     EXIT_CODE=$?
 else
     log_info "Running in local mode - dry-run only (no tags will be created)"
-    npx semantic-release --dry-run
+    semantic-release --dry-run
     EXIT_CODE=$?
 fi
 

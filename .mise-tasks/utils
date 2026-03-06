@@ -201,13 +201,13 @@ get_version() {
 
 # Get next version from semantic-release (dry-run)
 get_next_version() {
-    if ! command -v npx &>/dev/null; then
-        log_error "npx not found. Install Node.js to use semantic-release."
+    if ! command -v semantic-release &>/dev/null; then
+        log_error "semantic-release not found. Run: mise install"
         return 1
     fi
 
     local next_version
-    next_version=$(npx --yes semantic-release --dry-run 2>/dev/null | grep "The next release version is" | awk '{print $NF}')
+    next_version=$(semantic-release --dry-run 2>/dev/null | grep "The next release version is" | awk '{print $NF}')
 
     if [[ -z "$next_version" ]]; then
         log_warn "Could not determine next version from semantic-release"
