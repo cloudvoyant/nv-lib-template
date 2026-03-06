@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#MISE description="Create new version based on commits (semantic-release)"
 : <<DOCUMENTATION
 Analyzes commits and creates a new version using semantic-release.
 
@@ -41,7 +42,7 @@ Node: Uses @semantic-release/npm by default
 DOCUMENTATION
 
 # IMPORTS ----------------------------------------------------------------------
-source "$(dirname "$0")/utils.sh"
+source "$(dirname "$0")/utils"
 set -euo pipefail
 
 # MAIN -------------------------------------------------------------------------
@@ -50,7 +51,7 @@ log_info "Running semantic-release"
 
 # Check if npx is available
 if ! command_exists npx; then
-    log_error "npx not found. Install Node.js: just setup --ci"
+    log_error "npx not found. Install Node.js via mise: mise install"
     exit 1
 fi
 

@@ -16,12 +16,28 @@ setup() {
     export TEST_DIR="$(mktemp -d)"
     export ARCHIVE_FILE="$TEST_DIR/template.tar"
     export EXTRACT_DIR="$TEST_DIR/extracted"
+    export REPO_DIR="$TEST_DIR/repo"
 
     # Must be in a git repo for git archive to work
     # The test assumes we're running from the platform repo itself
     if [ ! -d ".git" ]; then
         skip "Must run from git repository root"
     fi
+
+    # Create a temporary git repo with current working tree state
+    # This allows testing against the current (uncommitted) state
+    mkdir -p "$REPO_DIR"
+    rsync -a \
+        --exclude='.git' \
+        --exclude='.nv' \
+        "$ORIGINAL_DIR/" "$REPO_DIR/"
+    cd "$REPO_DIR"
+    git init -q
+    git config user.email "test@test.com"
+    git config user.name "Test"
+    git add -A
+    git commit -q -m "test snapshot"
+    cd "$ORIGINAL_DIR"
 }
 
 teardown() {
@@ -31,22 +47,21 @@ teardown() {
 }
 
 @test "git archive command works" {
-    run git archive --format=tar --output="$ARCHIVE_FILE" HEAD
+    run git -C "$REPO_DIR" archive --format=tar --output="$ARCHIVE_FILE" HEAD
 
     [ "$status" -eq 0 ]
     [ -f "$ARCHIVE_FILE" ]
 }
 
 @test "archive includes all required files and directories" {
-    git archive --format=tar --output="$ARCHIVE_FILE" HEAD
+    git -C "$REPO_DIR" archive --format=tar --output="$ARCHIVE_FILE" HEAD
     mkdir -p "$EXTRACT_DIR"
     tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
 
     # Verify essential platform files are present
     [ -f "$EXTRACT_DIR/README.md" ]
-    [ -f "$EXTRACT_DIR/.envrc.template" ]
-    [ -f "$EXTRACT_DIR/justfile" ]
-    [ -f "$EXTRACT_DIR/scripts/scaffold.sh" ]
+    [ -f "$EXTRACT_DIR/mise.toml" ]
+    [ -f "$EXTRACT_DIR/.mise-tasks/scaffold" ]
     [ -d "$EXTRACT_DIR/.claude" ]
 
     # Claude commands directory should contain README with plugin installation info
@@ -63,14 +78,14 @@ teardown() {
     [ -d "$EXTRACT_DIR/docs" ]
     [ ! -d "$EXTRACT_DIR/docs/migrations" ]
 
-    # scripts/ should exist with scaffold.sh but not platform-install.sh
-    [ -d "$EXTRACT_DIR/scripts" ]
-    [ -f "$EXTRACT_DIR/scripts/scaffold.sh" ]
+    # .mise-tasks/ should exist with scaffold but not platform-install.sh
+    [ -d "$EXTRACT_DIR/.mise-tasks" ]
+    [ -f "$EXTRACT_DIR/.mise-tasks/scaffold" ]
     [ ! -f "$EXTRACT_DIR/scripts/platform-install.sh" ]
 }
 
 @test "validates all platform-specific files are excluded in one archive" {
-    git archive --format=tar --output="$ARCHIVE_FILE" HEAD
+    git -C "$REPO_DIR" archive --format=tar --output="$ARCHIVE_FILE" HEAD
     mkdir -p "$EXTRACT_DIR"
     tar -xf "$ARCHIVE_FILE" -C "$EXTRACT_DIR"
 
@@ -80,6 +95,11 @@ teardown() {
     [ ! -f "$EXTRACT_DIR/CHANGELOG.md" ]
     [ ! -f "$EXTRACT_DIR/RELEASE_NOTES.md" ]
     [ ! -f "$EXTRACT_DIR/scripts/platform-install.sh" ]
+    [ ! -f "$EXTRACT_DIR/.envrc" ]
+    [ ! -f "$EXTRACT_DIR/.envrc.template" ]
+
+    # mise.toml SHOULD be in archive
+    [ -f "$EXTRACT_DIR/mise.toml" ]
 
     # Platform-specific Claude files should be excluded
     [ ! -f "$EXTRACT_DIR/.claude/plan.md" ]

@@ -12,7 +12,7 @@
     ".nv": true,
     "Dockerfile": true,
     "docker-compose.yml": true,
-    "justfile": false,
+    "mise.toml": false,
     "version.txt": true,
     ".dockerignore": true,
     "scripts": true,
@@ -30,7 +30,7 @@
   // File associations
   "files.associations": {
     "*.bats": "shellscript",
-    ".envrc": "shellscript",
+    "*.toml": "toml",
     "*.md": "markdown"
   },
 

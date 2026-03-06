@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#MISE description="Scaffold a new project from this template"
 : <<DOCUMENTATION
 Scaffolds a new project from this platform
 
@@ -20,19 +21,24 @@ Options:
 DOCUMENTATION
 
 # IMPORTS ----------------------------------------------------------------------
-source "$(dirname "$0")/utils.sh"
+source "$(dirname "$0")/utils"
 set -euo pipefail
 
-# Unset PROJECT and VERSION to force fresh read from .envrc
+# Load template name and version from mise.toml / version.txt
 unset PROJECT VERSION
 
-# Source .envrc to get PROJECT and VERSION
-if [ -f ".envrc" ]; then
-    source ".envrc"
+if command -v mise >/dev/null 2>&1; then
+    eval "$(mise env -s bash 2>/dev/null)" || true
 fi
+# Fallback: parse mise.toml directly for PROJECT
+if [ -z "${PROJECT:-}" ] && [ -f "mise.toml" ]; then
+    PROJECT=$(grep '^PROJECT' mise.toml | head -1 | sed 's/PROJECT *= *"\(.*\)"/\1/')
+fi
+# VERSION from version.txt
+VERSION=$(cat version.txt 2>/dev/null | tr -d '[:space:]' || echo "0.1.0")
 
 # CONFIGURATION ----------------------------------------------------------------
-# Platform name will be read from source .envrc PROJECT variable
+# Platform name will be read from source mise.toml PROJECT variable
 
 # Track if we've started making changes (for cleanup on error)
 SCAFFOLD_STARTED=false
@@ -178,14 +184,14 @@ TEMPLATE_VERSION="${VERSION:-}"
 
 # Validate we have the required values
 if [ -z "$TEMPLATE_NAME" ]; then
-    log_error "Could not determine template name (PROJECT not set in .envrc)"
-    log_error "Please ensure .envrc exists and contains: export PROJECT=<template-name>"
+    log_error "Could not determine template name (PROJECT not set in mise.toml)"
+    log_error "Please ensure mise.toml exists and contains: PROJECT = \"<template-name>\""
     exit 1
 fi
 
 if [ -z "$TEMPLATE_VERSION" ]; then
-    log_error "Could not determine template version (VERSION not set in .envrc)"
-    log_error "Please ensure .envrc contains: export VERSION=<version>"
+    log_error "Could not determine template version (VERSION not found)"
+    log_error "Please ensure version.txt exists with a version number"
     exit 1
 fi
 
@@ -318,51 +324,41 @@ done
 
 log_success "Replaced template name with project name"
 
-# UPDATE .ENVRC ----------------------------------------------------------------
-log_info "Configuring .envrc"
+# UPDATE mise.toml ------------------------------------------------------------
+log_info "Configuring mise.toml"
 
-ENVRC_TEMPLATE="$SRC_DIR/.envrc.template"
-ENVRC_FILE="$DEST_DIR/.envrc"
+MISE_TOML="$DEST_DIR/mise.toml"
 
-if [ ! -f "$ENVRC_TEMPLATE" ]; then
-    log_error ".envrc.template not found in source directory"
+if [ ! -f "$MISE_TOML" ]; then
+    log_error "mise.toml not found in destination directory"
     exit 1
 fi
-
-# Copy template to destination
-cp "$ENVRC_TEMPLATE" "$ENVRC_FILE"
 
 # Create version.txt with initial version
 echo "0.1.0" > "$DEST_DIR/version.txt"
 
-# Update PROJECT name
-sed_inplace "s/__PROJECT_NAME__/$PROJECT_NAME/" "$ENVRC_FILE"
-
-# Configure GCP if requested
+# Configure GCP if requested (PROJECT name already replaced by bulk substitution above)
 if [ "$CONFIGURE_GCP" = true ]; then
-    sed_inplace "s/export GCP_REGISTRY_PROJECT_ID=.*/export GCP_REGISTRY_PROJECT_ID=$gcp_project_id/" "$ENVRC_FILE"
-    sed_inplace "s/export GCP_REGISTRY_REGION=.*/export GCP_REGISTRY_REGION=$gcp_region/" "$ENVRC_FILE"
-    sed_inplace "s/export GCP_REGISTRY_NAME=.*/export GCP_REGISTRY_NAME=$gcp_repository/" "$ENVRC_FILE"
-    log_success "GCP registry configured in .envrc"
+    sed_inplace "s/GCP_REGISTRY_PROJECT_ID *= *\"[^\"]*\"/GCP_REGISTRY_PROJECT_ID = \"$gcp_project_id\"/" "$MISE_TOML"
+    sed_inplace "s/GCP_REGISTRY_REGION *= *\"[^\"]*\"/GCP_REGISTRY_REGION = \"$gcp_region\"/" "$MISE_TOML"
+    sed_inplace "s/GCP_REGISTRY_NAME *= *\"[^\"]*\"/GCP_REGISTRY_NAME = \"$gcp_repository\"/" "$MISE_TOML"
+    log_success "GCP registry configured in mise.toml"
 fi
 
-# Add template tracking variables after VERSION line
-if ! grep -q "NV_TEMPLATE" "$ENVRC_FILE"; then
-    # Find line with VERSION and add NV_TEMPLATE vars after it
+# Add NV_TEMPLATE tracking vars to [env] section if not already present
+if ! grep -q '^NV_TEMPLATE' "$MISE_TOML"; then
     awk -v template="$TEMPLATE_NAME" -v version="$TEMPLATE_VERSION" '
-    /^export VERSION=/ {
+    /^GCP_REGISTRY_NAME/ {
         print $0
-        print ""
-        print "# Nedavellir template tracking"
-        print "export NV_TEMPLATE=" template
-        print "export NV_TEMPLATE_VERSION=" version
+        print "NV_TEMPLATE         = \"" template "\""
+        print "NV_TEMPLATE_VERSION = \"" version "\""
         next
     }
     { print }
-    ' "$ENVRC_FILE" > "$ENVRC_FILE.tmp" && mv "$ENVRC_FILE.tmp" "$ENVRC_FILE"
+    ' "$MISE_TOML" > "$MISE_TOML.tmp" && mv "$MISE_TOML.tmp" "$MISE_TOML"
 fi
 
-log_success "Created and configured .envrc from template"
+log_success "Configured mise.toml"
 
 # CLEAN UP .CLAUDE/ DIRECTORY --------------------------------------------------
 if [ "$KEEP_CLAUDE" = false ]; then
@@ -387,19 +383,13 @@ fi
 # CLEAN UP TEMPLATE FILES ------------------------------------------------------
 log_info "Cleaning template files"
 
-# Remove template section from justfile
-JUSTFILE="$DEST_DIR/justfile"
-if [ -f "$JUSTFILE" ]; then
+# Remove template section from mise.toml
+MISE_TOML="$DEST_DIR/mise.toml"
+if [ -f "$MISE_TOML" ]; then
     # Remove everything from "# TEMPLATE" comment to end of file
-    sed_inplace '/# TEMPLATE$/,$ {/# TEMPLATE$/d; d;}' "$JUSTFILE"
+    sed_inplace '/^# TEMPLATE$/,$ {/^# TEMPLATE$/d; d;}' "$MISE_TOML"
 fi
 
-# Remove --template flag from Dockerfile
-DOCKERFILE="$DEST_DIR/Dockerfile"
-if [ -f "$DOCKERFILE" ]; then
-    # Remove --template flag from setup.sh command
-    sed_inplace 's/--template //g' "$DOCKERFILE"
-fi
 
 # PROCESS DOCUMENTATION TEMPLATES ----------------------------------------------
 log_info "Processing documentation templates"
@@ -483,11 +473,13 @@ echo "Project: $PROJECT_NAME"
 echo "Template: $TEMPLATE_NAME v$TEMPLATE_VERSION"
 echo ""
 log_info "Next steps:"
-echo "  1. Review .envrc for project configuration"
-echo "  2. Edit justfile to implement build/test/publish recipes"
-echo "  3. Add your source code to src/"
-echo "  4. Configure GitHub organization secrets (see docs/user-guide.md)"
-echo "  5. Initialize git and commit: git init && git add . && git commit -m 'Initial commit'"
+echo "  1. Review mise.toml for project configuration (env vars and tasks)"
+echo "  2. Edit mise.toml tasks to implement build/test/publish for your language"
+echo "  3. Run 'mise install' to install required tools"
+echo "  4. Use 'mise run <task>' or 'mise tasks' to see available commands"
+echo "  5. Add your source code to src/"
+echo "  6. Configure GitHub organization secrets (see docs/user-guide.md)"
+echo "  7. Initialize git and commit: git init && git add . && git commit -m 'Initial commit'"
 echo ""
 
 # Mark successful completion (prevents cleanup on exit)

@@ -2,7 +2,7 @@
 
 ## Overview
 
-`nv-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. Customize for any language by editing `justfile` recipes.
+`nv-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. Customize for any language by editing `mise.toml` tasks.
 
 GCP-forward by default (uses GCP Artifact Registry), but easily modified for npm, PyPI, Docker Hub, etc.
 
@@ -11,23 +11,24 @@ GCP-forward by default (uses GCP Artifact Registry), but easily modified for npm
 The template follows a simple flow:
 
 ```
-┌────────┐    ┌──────┐    ┌─────────┐    ┌────────────────┐
-│ direnv │ -> │ just │ -> │ scripts │ -> │ GitHub Actions │
-└────────┘    └───┬──┘    └─────────┘    └────────────────┘
-                  │
-                  v
-            ┌───────────┐
-            │  Claude   │
-            │ (optional)│
-            └───────────┘
+┌──────┐    ┌──────────────┐    ┌────────────────┐
+│ mise │ -> │ mise tasks   │ -> │ GitHub Actions │
+│ env  │    │ (.mise-tasks)│    └────────────────┘
+└──────┘    └──────────────┘
+              │
+              v
+         ┌───────────┐
+         │  Claude   │
+         │ (optional)│
+         └───────────┘
 ```
 
-When you run a command like `just build`, here's what happens:
+When you run `mise run build`, here's what happens:
 
-1. direnv automatically loads `.envrc` to populate your environment with PROJECT, VERSION, and registry configuration
-2. just executes the command you specified (`just build`, `just test`, `just publish`) using recipes defined in the `justfile`
-3. The justfile recipes call bash scripts in `scripts/` for language-agnostic automation (`setup.sh`, `scaffold.sh`, `upversion.sh`) that you can override or extend
-4. GitHub Actions workflows trigger on PRs and merges, calling your just commands to run tests and publish releases
+1. mise loads `mise.toml` from project root, populating environment with PROJECT, VERSION, and registry configuration
+2. mise executes the task you specified (`mise run build`, `mise run test`, `mise run publish`)
+3. Complex tasks are implemented as file-based scripts in `.mise-tasks/` (`scaffold`, `upversion`, `registry-login`, etc.)
+4. GitHub Actions workflows trigger on PRs and merges, calling `mise run` commands
 5. Claude commands provide optional LLM assistance for complex workflows like template migrations, project adaptations, and documenting architectural decisions
 
 ## Design / Basic Usage
@@ -36,39 +37,40 @@ When you run a command like `just build`, here's what happens:
 
 For detailed setup instructions, see the [User Guide](user-guide.md#quick-start).
 
-After scaffolding a project from this template, run `/adapt` to customize it for your language (Python, Node.js, Go, Docker). Then interact with your project via `just` commands:
+After scaffolding a project from this template, run `/adapt` to customize it for your language (Python, Node.js, Go, Docker). Then interact with your project via `mise run` commands:
 
 ```bash
-just install    # Install project dependencies
-just build      # Build for development
-just test       # Run tests
-just publish    # Build prod + publish to registry
+mise run install    # Install project dependencies
+mise run build      # Build for development
+mise run test       # Run tests
+mise run publish    # Build prod + publish to registry
 ```
 
-To customize CI/CD behavior, edit scripts in the `scripts/` directory rather than modifying workflows directly.
+To customize CI/CD behavior, edit tasks in `.mise-tasks/` rather than modifying workflows directly.
 
 ### Customization Points
 
-The `justfile` is where you define language-specific commands. Replace the TODO placeholders with your language's build/test/publish commands:
+The `mise.toml` is where you define language-specific commands. Replace the TODO placeholders with your language's build/test/publish commands:
 
-```just
-build:
-    npm run build  # or python -m build, go build, cargo build
+```toml
+[tasks.build]
+run = "npm run build"  # or python -m build, go build, cargo build
 
-test: build
-    npm test  # or pytest, go test ./..., cargo test
+[tasks.test]
+depends = ["build"]
+run = "npm test"  # or pytest, go test ./..., cargo test
 
-publish: test build-prod
-    npm publish  # or twine upload, gcloud artifacts upload
+[tasks.publish]
+depends = ["test", "build-prod"]
+run = "npm publish"  # or twine upload, gcloud artifacts upload
 ```
 
-Scripts in `scripts/` provide hooks for overriding CI/CD behavior:
+Tasks in `.mise-tasks/` provide hooks for overriding CI/CD behavior:
 
-- Modify `scripts/upversion.sh` to change versioning logic
-- Extend `scripts/setup.sh` to add custom dependencies
-- Keep `scripts/scaffold.sh` as-is for template initialization
+- Modify `.mise-tasks/upversion` to change versioning logic
+- Keep `.mise-tasks/scaffold` as-is for template initialization
 
-The key principle: customize just recipes and scripts, never edit workflows directly. This separation keeps your CI/CD logic portable and testable locally, while workflows remain stable across template upgrades.
+The key principle: customize mise tasks, never edit workflows directly. This separation keeps your CI/CD logic portable and testable locally, while workflows remain stable across template upgrades.
 
 ## Project Structure
 
@@ -78,14 +80,13 @@ For template maintainers. Includes testing infrastructure:
 
 ```
 lib/
-├── .envrc                   # Environment variables
-├── justfile                 # Commands + TEMPLATE section
+├── mise.toml                # Tasks, tools, and env vars
 ├── Dockerfile               # Docker image definition
 ├── docker-compose.yml       # Docker services configuration
-├── scripts/                 # Bash framework
-│   ├── setup.sh
-│   ├── scaffold.sh
-│   └── upversion.sh
+├── .mise-tasks/             # File-based mise tasks
+│   ├── scaffold             # Project scaffolding
+│   ├── upversion            # Semantic versioning
+│   └── ...                  # Other tasks + internal utils
 ├── src/                     # Sample code
 ├── test/                    # bats tests (for template)
 ├── docs/                    # architecture.md, user-guide.md
@@ -100,11 +101,10 @@ For end users. Template development files removed:
 
 ```
 myproject/
-├── .envrc                   # Your project config
-├── justfile                 # Clean commands (no TEMPLATE section)
+├── mise.toml                # Your project config (no TEMPLATE section)
 ├── Dockerfile               # Docker image definition
 ├── docker-compose.yml       # Docker services configuration
-├── scripts/                 # Bash framework (override as needed)
+├── .mise-tasks/             # Bash tasks (override as needed)
 ├── src/                     # Your code here
 ├── docs/                    # Your docs
 ├── .claude/                 # User-facing commands only
@@ -118,34 +118,46 @@ Key difference: The main README.md documents template architecture and is kept i
 
 This section is for template maintainers and advanced users who need to understand how components work internally.
 
-### Component: justfile
+### Component: mise.toml
 
-The `justfile` serves as the command runner interface, providing a consistent command experience across all projects regardless of language. It uses bash as the shell interpreter and defines color variables (INFO, SUCCESS, WARN, ERROR) for pretty output. The `_load` recipe sources `.envrc` to load environment variables, and all other recipes depend on it to ensure consistent configuration.
+`mise.toml` is the central configuration file serving three roles:
 
-Recipe dependencies create a build chain (`test` depends on `build`, `publish` depends on both `test` and `build-prod`) that enforces quality gates automatically. This prevents common mistakes like publishing untested code, improving developer confidence and reducing production incidents.
+1. **Tool management** (`[tools]`): declares tool versions (node, shellcheck,
+   shfmt). Run `mise install` to install them. GitHub Actions uses `jdx/mise-action`
+   to install mise and run `mise install` automatically.
 
-### Component: scripts/
+2. **Environment** (`[env]`): static env vars (PROJECT, GCP_*) and dynamic
+   VERSION via `{{exec(command='cat version.txt ...')}}`. All tasks automatically
+   have access to these env vars without manual sourcing.
 
-The `scripts/` directory contains language-agnostic bash automation, isolating platform-specific complexity from your project code. This design allows the template to support any language while maintaining consistent workflows.
+3. **Tasks** (`[tasks]`): replace `justfile` recipes. Task names match the old
+   just recipe names exactly. Run tasks with `mise run <task>` or list all with
+   `mise tasks`.
 
-- `setup.sh` - Installs dependencies using semantic flags (`--dev`, `--ci`, `--template`) that clearly communicate intent and avoid installing unnecessary tools in CI environments
-- `scaffold.sh` - Initializes new projects from the template, handling case variant replacements (PascalCase, camelCase, etc.), template cleanup, and backup/restore on failure to ensure safe initialization
-- `upversion.sh` - Wraps semantic-release with a consistent interface (local dry-run mode vs CI mode), enabling developers to preview version bumps before pushing
-- `utils.sh` - Provides shared functions for logging, version reading, and cross-platform compatibility, reducing code duplication and maintenance burden
+Task dependencies are declared with `depends = ["other-task"]`. This enforces
+quality gates automatically (e.g., `publish` requires `test` and `build-prod`).
 
-All scripts use `set -euo pipefail` for fail-fast behavior, catching errors immediately rather than continuing with invalid state.
+### Component: .mise-tasks/
 
-### Component: .envrc
+The `.mise-tasks/` directory contains file-based mise tasks — executable bash scripts that implement complex automation. This keeps `mise.toml` clean while keeping tasks directly runnable via `mise run <task>`.
 
-The `.envrc` file holds environment configuration that direnv loads automatically, eliminating the need to manually export variables or pass flags to commands. This improves DX by making environment consistent across terminal sessions and reducing context-switching friction.
+- `scaffold` - Initializes new projects from the template, handling case variant replacements (PascalCase, camelCase, etc.), template cleanup, and backup/restore on failure to ensure safe initialization
+- `upversion` - Wraps semantic-release with a consistent interface (local dry-run mode vs CI mode), enabling developers to preview version bumps before pushing
+- `registry-login` - Handles GCP authentication for both local (interactive) and CI (service account) modes
+- `publish` - Uploads build artifacts to GCP Artifact Registry
+- `upgrade` - Runs the Claude `/upgrade` command for template migrations
+- `utils` *(internal)* - Shared functions for logging, version reading, and cross-platform compatibility
+- `toggle-files` *(internal)* - VS Code file visibility logic, called by `hide`/`show` tasks
 
-Keep it simple with just `export` statements - no bash logic. This constraint prevents complex logic from hiding in configuration, making projects easier to debug. Secrets belong in GitHub Secrets, not `.envrc`, following security best practices. Each project commits its own `.envrc` file for reproducibility. The `.envrc.template` file provides a starting point for scaffolded projects with placeholders that `scaffold.sh` replaces.
+All tasks use `set -euo pipefail` for fail-fast behavior, catching errors immediately rather than continuing with invalid state.
 
 ### Component: GitHub Actions
 
-Two workflows handle CI/CD with minimal configuration: `ci.yml` runs `just build` and `just test` on pull requests, while `release.yml` runs semantic-release on main branch and then `just publish` if a new version was created.
+Two workflows handle CI/CD with minimal configuration: `ci.yml` runs `mise run test` and `mise run test-template` on pull requests, while `release.yml` runs semantic-release on main branch and then `mise run publish` if a new version was created.
 
-The workflows call your just commands rather than duplicating logic, creating a single source of truth. This design means you can test CI behavior locally (`just test` runs the same way everywhere), debug faster, and upgrade workflows without touching project-specific logic. Customization happens in familiar territory (bash scripts and just recipes) rather than GitHub Actions YAML.
+The workflows use `jdx/mise-action@v2` to install mise and all tools declared in `mise.toml`. The release workflow uses `google-github-actions/auth@v2` + `setup-gcloud@v2` for GCP authentication.
+
+The workflows call your mise tasks rather than duplicating logic, creating a single source of truth. Customization happens in familiar territory (bash scripts and mise tasks) rather than GitHub Actions YAML.
 
 ### Component: Claude Commands
 
@@ -164,8 +176,8 @@ The `Dockerfile` uses a multi-stage build to support both minimal runtime enviro
 
 **Base Stage** (`target: base`):
 
-- Used by docker-compose for `just docker-run` and `just docker-test`
-- Installs only essential dependencies: bash, just, direnv
+- Used by docker-compose for `mise run docker-run` and `mise run docker-test`
+- Installs mise globally and pre-installs tools from `mise.toml`
 - Fast build time (~1-2 minutes)
 - Minimal image size for quick iteration
 
@@ -173,8 +185,7 @@ The `Dockerfile` uses a multi-stage build to support both minimal runtime enviro
 
 - Used by VS Code DevContainers
 - Builds on top of base stage
-- Adds development tools: docker, node/npx, gcloud, shellcheck, shfmt, claude
-- Adds template testing tools: bats-core
+- Adds development tools: claudevoyant plugin, starship config (binaries already in base via mise)
 - Slower build (~10 minutes), but cached after first build
 
 Configuration:
@@ -187,8 +198,8 @@ Configuration:
 
 Provides containerized services for running and testing without installing dependencies locally:
 
-- `runner` service: Executes `just run` in isolated container
-- `tester` service: Executes `just test` in isolated container
+- `runner` service: Executes `mise run run` in isolated container
+- `tester` service: Executes `mise run test` in isolated container
 - Both use `target: base` for minimal, fast builds
 - Mount project directory to `/workspace` for live code updates
 
@@ -210,8 +221,6 @@ Credential Mounting:
 
 VS Code Extensions:
 
-- `mkhl.direnv` - direnv support
-- `skellock.just` and `nefrob.vscode-just-syntax` - justfile syntax highlighting
 - `timonwong.shellcheck` and `foxundermoon.shell-format` - Shell script linting and formatting
 - `ms-azuretools.vscode-docker` - Docker support
 
@@ -221,35 +230,34 @@ Cross-Platform Considerations:
 - Credential paths use environment variable fallback pattern for platform compatibility
 - On Windows, if `~/.claude` doesn't exist at `%USERPROFILE%\.claude`, mount will fail gracefully (container starts without Claude credentials)
 
-### Setup Flags
+### Tool Installation
 
-The `setup.sh` script uses semantic flags to indicate what level of tooling to install (also documented in [User Guide](user-guide.md#getting-started)):
+All binary tools are declared in `mise.toml [tools]` and installed with a single `mise install`:
 
 ```bash
-just setup              # Required: bash, just, direnv
-just setup --dev        # + docker, node/npx, gcloud, shellcheck, shfmt, claude
-just setup --ci         # + node/npx, gcloud (for release automation)
-just setup --template   # + bats-core (template testing)
+mise install                        # node, shellcheck, shfmt, bats, taplo, gcloud, starship, claude, docker-cli
+mise run install-claude-plugins     # claudevoyant plugin (Claude CLI plugin, not a binary)
 ```
-
-This approach makes dependencies explicit and context-aware. Developers get linting and formatting tools (`--dev`), CI environments install only what's needed for builds (`--ci`), and template maintainers get testing frameworks (`--template`). This reduces CI build times, prevents tool version conflicts, and makes onboarding clearer ("run `just setup --dev` to get started").
 
 ### Publishing
 
-The template defaults to GCP Artifact Registry but is easily customized for other registries. Just edit the `publish` recipe:
+The template defaults to GCP Artifact Registry but is easily customized for other registries. Just edit the `publish` task in `mise.toml`:
 
-```just
+```toml
 # npm
-publish: test build-prod
-    npm publish
+[tasks.publish]
+depends = ["test", "build-prod"]
+run = "npm publish"
 
 # PyPI
-publish: test build-prod
-    twine upload dist/*
+[tasks.publish]
+depends = ["test", "build-prod"]
+run = "twine upload dist/*"
 
 # Docker
-publish: test build-prod
-    docker push myimage:{{VERSION}}
+[tasks.publish]
+depends = ["test", "build-prod"]
+run = "docker push myimage:$VERSION"
 ```
 
 ### CI/CD Secrets
@@ -282,27 +290,25 @@ Key compatibility measures:
 
 ### Security
 
-Secrets belong in GitHub Secrets, never in `.envrc` or committed code, following the principle of separating configuration from credentials. The `.gitignore` includes comprehensive patterns for keys, certificates, credentials, and .env files to prevent accidental commits.
+Secrets belong in GitHub Secrets, never in `mise.toml` or committed code, following the principle of separating configuration from credentials. The `.gitignore` includes comprehensive patterns for keys, certificates, credentials, and .env files to prevent accidental commits.
 
 All scripts use `set -euo pipefail` for fail-fast behavior, ensuring errors don't silently propagate. Error traps handle cleanup on failure, preventing partial state. Lock files prevent concurrent script execution, avoiding race conditions during critical operations like scaffolding or version bumping.
 
 ### Testing
 
-For user projects, customize `just test` for your language (pytest for Python, npm test for Node.js, go test for Go, cargo test for Rust).
+For user projects, customize `mise run test` for your language (pytest for Python, npm test for Node.js, go test for Go, cargo test for Rust).
 
 For template development, use bats-core for bash script testing:
 
 ```bash
-just setup --template  # Install bats
-just test-template     # Run template tests
+mise run test-template         # Run template tests
 ```
 
-Tests cover scaffold.sh validation, .envrc handling, case variant replacements, and template file cleanup.
+Tests cover scaffold.sh validation, mise.toml handling, case variant replacements, and template file cleanup.
 
 ## References
 
-- [just command runner](https://github.com/casey/just)
-- [direnv environment management](https://direnv.net/)
+- [mise - the dev tool manager](https://mise.jdx.dev/)
 - [semantic-release](https://semantic-release.gitbook.io/)
 - [bats-core bash testing](https://bats-core.readthedocs.io/)
 - [Google Shell Style Guide](https://google.github.io/styleguide/shellguide.html)

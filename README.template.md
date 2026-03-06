@@ -11,10 +11,9 @@
 ```
 .
 ├── docs/          # Documentation
-├── scripts/       # Utility scripts and CI/CD hooks
+├── .mise-tasks/   # Mise tasks and CI/CD hooks
 └── .../           # [ SPECIFY PROJECT SPECIFIC DIRS ]
-└── justfile       # Build recipes
-└── .envrc         # Key env vars and shell config
+└── mise.toml      # Tool versions, tasks, and env vars
 └── version.txt    # Project version
 └── ...            # [ SPECIFY PROJECT SPECIFIC FILES ]
 ```
@@ -22,43 +21,38 @@
 ## Prerequisites
 
 - bash 3.2+
-- just
+- [mise](https://mise.jdx.dev/)
 - [List other required tools and dependencies]
 
 ## Setup
 
-Run `just setup` or `./scripts/setup.sh` to install remaining dependencies (just, direnv).
+```bash
+# Install mise (if not already installed)
+curl https://mise.jdx.dev/install.sh | sh
 
-Optional: `just setup --dev` for development tools, `just setup --template` for template testing.
+# Install project tools
+mise install
+
+```
+
 
 ## Quick Start
 
-Type `just` to see all the tasks at your disposal:
+Type `mise tasks` to see all the tasks at your disposal:
 
 ```bash
-❯ just
-Available recipes:
-    [dev]
-    load                 # Load environment
-    install              # Install dependencies
-    build                # Build the project
-    run                  # Run project locally
-    test                 # Run tests
-    clean                # Clean build artifacts
-
-[ OUTPUT TRUNCATED ]
+mise tasks
 ```
 
-Build run and test with `just`.
+Build, run and test with `mise run`:
 
 ```bash
-❯ just run
+mise run run
 
-❯ just test
-
+mise run test
 ```
 
-Just runs the necessary dependencies for a task on it's own!
+Mise runs the necessary task dependencies automatically!
 
 ## Publishing
 
@@ -85,7 +79,7 @@ To publish manually:
 
 ```bash
 # Ensure you're on main branch with clean working directory
-just publish
+mise run publish
 ```
 
 This will publish a pre-release package version.
@@ -94,25 +88,28 @@ This will publish a pre-release package version.
 
 Publishing to artifact registries is optional. This project defaults to GCP Artifact Registry but can be configured for npm, PyPI, Docker Hub, etc.
 
-Configure in `.envrc`:
+Configure in `mise.toml` `[env]` section:
 
 - **GCP Artifact Registry** (default): Set `GCP_REGISTRY_PROJECT_ID`, `GCP_REGISTRY_REGION`, `GCP_REGISTRY_NAME`
-- **Other registries**: Update the `publish` recipe in `justfile` and add registry-specific variables to `.envrc`
+- **Other registries**: Update the `publish` task in `mise.toml` and add registry-specific variables to `[env]`
 
 Examples:
 
-```just
+```toml
 # npm
-publish: test build-prod
-    npm publish
+[tasks.publish]
+depends = ["test", "build-prod"]
+run = "npm publish"
 
 # PyPI
-publish: test build-prod
-    twine upload dist/*
+[tasks.publish]
+depends = ["test", "build-prod"]
+run = "twine upload dist/*"
 
 # Docker
-publish: test build-prod
-    docker push myimage:{{VERSION}}
+[tasks.publish]
+depends = ["test", "build-prod"]
+run = "docker push myimage:$VERSION"
 ```
 
 See the [{{TEMPLATE_NAME}} User Guide](https://github.com/your-org/{{TEMPLATE_NAME}}/blob/main/docs/user-guide.md) for detailed configuration instructions.
@@ -126,8 +123,7 @@ To learn more about using this template, read the docs:
 
 ## References
 
-- [just command runner](https://github.com/casey/just)
-- [direnv environment management](https://direnv.net/)
+- [mise - the dev tool manager](https://mise.jdx.dev/)
 - [semantic-release](https://semantic-release.gitbook.io/)
 - [bats-core bash testing](https://bats-core.readthedocs.io/)
 - [Google Shell Style Guide](https://google.github.io/styleguide/shellguide.html)

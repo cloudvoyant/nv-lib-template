@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# Tests for scripts/scaffold.sh
+# Tests for .mise-tasks/scaffold
 #
 # Install bats: brew install bats-core
 # Run: bats test/scaffold.bats
@@ -31,9 +31,15 @@ setup() {
     # Change to the template clone directory (where scaffold will be called from)
     cd "$TEMPLATE_CLONE"
 
-    # Source .envrc to get VERSION and PROJECT variables for tests
-    if [ -f ".envrc" ]; then
-        source ".envrc"
+    # Get VERSION from version.txt
+    if [ -f "version.txt" ]; then
+        VERSION=$(cat version.txt | tr -d '[:space:]')
+        export VERSION
+    fi
+    # Get PROJECT from mise.toml
+    if [ -f "mise.toml" ]; then
+        PROJECT=$(grep '^PROJECT' mise.toml | head -1 | sed 's/PROJECT *= *"\(.*\)"/\1/')
+        export PROJECT
     fi
 }
 
@@ -46,7 +52,7 @@ teardown() {
 @test "scaffold.sh defaults to project root when --src and --dest not provided" {
     # When run without args, should use current directory as default
     # We'll run with --non-interactive to avoid prompts
-    run bash ./scripts/scaffold.sh --non-interactive
+    run bash ./.mise-tasks/scaffold --non-interactive
 
     # Should succeed (defaults to current dir for both src and dest)
     [ "$status" -eq 0 ]
@@ -54,14 +60,14 @@ teardown() {
 }
 
 @test "scaffold.sh validates source directory exists" {
-    run bash ./scripts/scaffold.sh --src /nonexistent --dest ../..
+    run bash ./.mise-tasks/scaffold --src /nonexistent --dest ../..
 
     [ "$status" -eq 1 ]
     [[ "$output" == *"Source directory does not exist"* ]]
 }
 
 @test "scaffold.sh validates destination directory exists" {
-    run bash ./scripts/scaffold.sh --src . --dest /nonexistent
+    run bash ./.mise-tasks/scaffold --src . --dest /nonexistent
 
     [ "$status" -eq 1 ]
     [[ "$output" == *"Destination directory does not exist"* ]]
@@ -69,7 +75,7 @@ teardown() {
 
 @test "validates project name in non-interactive mode" {
     # Rejects invalid characters (spaces)
-    run bash ./scripts/scaffold.sh \
+    run bash ./.mise-tasks/scaffold \
         --src . \
         --dest ../.. \
         --non-interactive \
@@ -79,7 +85,7 @@ teardown() {
     [[ "$output" == *"Invalid project name"* ]]
 
     # Accepts valid characters
-    run bash ./scripts/scaffold.sh \
+    run bash ./.mise-tasks/scaffold \
         --src . \
         --dest ../.. \
         --non-interactive \
@@ -89,23 +95,23 @@ teardown() {
     [[ "$output" == *"project=my-valid_project123"* ]]
 }
 
-@test "updates .envrc with template tracking variables" {
-    bash ./scripts/scaffold.sh \
+@test "updates mise.toml with template tracking variables" {
+    bash ./.mise-tasks/scaffold \
         --src . \
         --dest ../.. \
         --non-interactive \
         --project testproject
 
     # Sets project name
-    run grep "export PROJECT=testproject" "$DEST_DIR/.envrc"
+    run grep 'PROJECT.*=.*"testproject"' "$DEST_DIR/mise.toml"
     [ "$status" -eq 0 ]
 
-    # Adds template tracking (reads from source .envrc)
-    run grep "NV_TEMPLATE=" "$DEST_DIR/.envrc"
+    # Adds template tracking (reads from source mise.toml)
+    run grep 'NV_TEMPLATE' "$DEST_DIR/mise.toml"
     [ "$status" -eq 0 ]
     [[ "$output" == *"nv-lib-template"* ]]
 
-    run grep "NV_TEMPLATE_VERSION=" "$DEST_DIR/.envrc"
+    run grep 'NV_TEMPLATE_VERSION' "$DEST_DIR/mise.toml"
     [ "$status" -eq 0 ]
     [[ "$output" == *"$VERSION"* ]]
 
@@ -116,14 +122,14 @@ teardown() {
     [[ "$output" == "0.1.0" ]]
 
     # No duplicates on second run
-    bash ./scripts/scaffold.sh \
+    bash ./.mise-tasks/scaffold \
         --src . \
         --dest ../.. \
         --non-interactive \
         --project testproject
 
-    count=$(grep -c "NV_TEMPLATE=" "$DEST_DIR/.envrc")
-    [ "$count" -eq 1 ]
+    count=$(grep -c "^NV_TEMPLATE" "$DEST_DIR/mise.toml")
+    [ "$count" -eq 2 ]
 }
 
 @test "handles .claude directory with --keep-claude option" {
@@ -131,7 +137,7 @@ teardown() {
     touch "$DEST_DIR/.claude/plan.md" "$DEST_DIR/.claude/workflows.md" "$DEST_DIR/.claude/CLAUDE.md"
 
     # By default (without --keep-claude), removes entire .claude directory
-    bash ./scripts/scaffold.sh \
+    bash ./.mise-tasks/scaffold \
         --src . \
         --dest ../.. \
         --non-interactive \
@@ -140,7 +146,7 @@ teardown() {
     [ ! -d "$DEST_DIR/.claude" ]
 
     # With --keep-claude, keeps entire .claude directory
-    bash ./scripts/scaffold.sh \
+    bash ./.mise-tasks/scaffold \
         --src . \
         --dest ../.. \
         --non-interactive \
@@ -155,7 +161,7 @@ teardown() {
 
 
 @test "removes platform-specific files from destination" {
-    bash ./scripts/scaffold.sh \
+    bash ./.mise-tasks/scaffold \
         --src . \
         --dest ../.. \
         --non-interactive \
@@ -166,16 +172,16 @@ teardown() {
     [ ! -f "$DEST_DIR/CHANGELOG.md" ]
     [ ! -f "$DEST_DIR/RELEASE_NOTES.md" ]
 
-    # Template section should be removed from justfile
-    run grep "# TEMPLATE" "$DEST_DIR/justfile"
+    # Template section should be removed from mise.toml
+    run grep "^# TEMPLATE$" "$DEST_DIR/mise.toml"
     [ "$status" -eq 1 ]
 
-    # setup.sh should exist
-    [ -f "$DEST_DIR/scripts/setup.sh" ]
+    # .envrc should NOT exist in destination
+    [ ! -f "$DEST_DIR/.envrc" ]
 }
 
 @test "replaces README.md with template" {
-    bash ./scripts/scaffold.sh \
+    bash ./.mise-tasks/scaffold \
         --src . \
         --dest ../.. \
         --non-interactive \
@@ -202,7 +208,7 @@ teardown() {
 }
 
 @test "shows success message on completion" {
-    run bash ./scripts/scaffold.sh \
+    run bash ./.mise-tasks/scaffold \
         --src . \
         --dest ../.. \
         --non-interactive \
@@ -224,7 +230,7 @@ teardown() {
         --exclude='.nv' \
         . "$NEW_DEST/"
 
-    run bash ./scripts/scaffold.sh \
+    run bash ./.mise-tasks/scaffold \
         --src . \
         --dest "$NEW_DEST" \
         --non-interactive
@@ -245,7 +251,7 @@ teardown() {
     chmod 000 "$SRC_DIR/README.template.md"
 
     # Try to run scaffold (should fail during README template substitution)
-    run bash ./scripts/scaffold.sh \
+    run bash ./.mise-tasks/scaffold \
         --src . \
         --dest ../.. \
         --non-interactive \
@@ -264,7 +270,7 @@ teardown() {
 }
 
 @test "removes backup directory on success" {
-    bash ./scripts/scaffold.sh \
+    bash ./.mise-tasks/scaffold \
         --src . \
         --dest ../.. \
         --non-interactive \
@@ -275,7 +281,7 @@ teardown() {
 }
 
 @test "replaces template name in all case variants across all files" {
-    bash ./scripts/scaffold.sh \
+    bash ./.mise-tasks/scaffold \
         --src . \
         --dest ../.. \
         --non-interactive \
@@ -299,13 +305,13 @@ teardown() {
     run grep "my_awesome_project" "$DEST_DIR/README.md"
     [ "$status" -eq 0 ]
 
-    # Verify template name no longer appears in .envrc
-    run grep -r "export PROJECT=nv-lib-template" "$DEST_DIR" --exclude-dir=.nv
+    # Verify template name no longer appears in mise.toml PROJECT line
+    run grep -r 'PROJECT.*=.*"nv-lib-template"' "$DEST_DIR" --exclude-dir=.nv
     [ "$status" -eq 1 ]
 }
 
-@test "scaffolded project has correct justfile commands" {
-    bash ./scripts/scaffold.sh \
+@test "scaffolded project has correct mise.toml tasks" {
+    bash ./.mise-tasks/scaffold \
         --src . \
         --dest ../.. \
         --non-interactive \
@@ -313,45 +319,43 @@ teardown() {
 
     cd "$DEST_DIR"
 
-    # Should have upgrade command
-    run grep -q "^upgrade:" justfile
+    # Should have upgrade task as file task
+    [ -f ".mise-tasks/upgrade" ]
+
+    # Upgrade task should call claude /upgrade
+    run grep -q 'claude /upgrade' ".mise-tasks/upgrade"
     [ "$status" -eq 0 ]
 
-    # Upgrade command should call claude /upgrade
-    run bash -c "grep -A 10 '^upgrade:' justfile | grep -q 'claude /upgrade'"
-    [ "$status" -eq 0 ]
-
-    # Should NOT have template development commands
-    run grep -q "^new-migration:" justfile
+    # Should NOT have template development tasks (in TEMPLATE section)
+    run grep -q '^\[tasks.scaffold\]' mise.toml
     [ "$status" -eq 1 ]
 
-    run grep -q "^test-template:" justfile
+    run grep -q '^\[tasks.test-template\]' mise.toml
     [ "$status" -eq 1 ]
 
     # Should NOT have TEMPLATE section
-    run grep -q "# TEMPLATE" justfile
+    run grep -q "^# TEMPLATE$" mise.toml
     [ "$status" -eq 1 ]
 }
 
-@test "template source has development commands" {
+@test "template source has development commands in mise.toml" {
     cd "$SRC_DIR"
 
-    # User-facing commands (in utils group)
-    run grep -q "upgrade:" justfile
-    [ "$status" -eq 0 ]
+    # User-facing tasks (as file tasks)
+    [ -f ".mise-tasks/upgrade" ]
 
-    # Template development commands (for testing the template itself)
-    run grep -q "test-template:" justfile
+    # Template development tasks (for testing the template itself)
+    run grep -q '\[tasks.test-template\]' mise.toml
     [ "$status" -eq 0 ]
 
     # TEMPLATE section (kept in source, removed when scaffolding)
-    run grep -q "# TEMPLATE" justfile
+    run grep -q "^# TEMPLATE$" mise.toml
     [ "$status" -eq 0 ]
 }
 
 @test "scaffold.sh processes install.sh.template when --non-interactive (defaults to no install.sh)" {
     # When run with --non-interactive, install.sh.template should be removed (default: no install.sh)
-    run bash ./scripts/scaffold.sh --src "$SRC_DIR" --dest "$DEST_DIR" --non-interactive --project test-project
+    run bash ./.mise-tasks/scaffold --src "$SRC_DIR" --dest "$DEST_DIR" --non-interactive --project test-project
 
     [ "$status" -eq 0 ]
 
@@ -364,7 +368,7 @@ teardown() {
 
 @test "scaffold.sh with --keep-claude removes commands except upgrade.md" {
     # When run with --keep-claude, only upgrade.md and README.md should remain
-    run bash ./scripts/scaffold.sh --src "$SRC_DIR" --dest "$DEST_DIR" --non-interactive --project test-project --keep-claude
+    run bash ./.mise-tasks/scaffold --src "$SRC_DIR" --dest "$DEST_DIR" --non-interactive --project test-project --keep-claude
 
     [ "$status" -eq 0 ]
 

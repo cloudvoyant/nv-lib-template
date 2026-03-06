@@ -63,7 +63,6 @@ Migrate from nv-ziglib-template v<current> to v<target>
 ### Critical Infrastructure Files
 
 - [ ] justfile - Check for recipe changes
-- [ ] scripts/setup.sh - Check for new dependencies (Zig, ZLS)
 - [ ] scripts/scaffold.sh - Check for improvements
 - [ ] scripts/upversion.sh - Check for versioning updates
 - [ ] scripts/utils.sh - Check for utility function updates

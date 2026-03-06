@@ -1,0 +1,130 @@
+# =============================================================================
+# mise.toml - Project configuration
+# https://mise.jdx.dev/
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Environment
+# -----------------------------------------------------------------------------
+[env]
+PROJECT                 = "nv-lib-template"
+GCP_REGISTRY_PROJECT_ID = "devops-466002"
+GCP_REGISTRY_REGION     = "us-east1"
+GCP_REGISTRY_NAME       = "cloudvoyant-generic-registry"
+VERSION                 = "{{exec(command='cat version.txt 2>/dev/null | tr -d [:space:] || echo 0.1.0')}}"
+MISE_COLOR_THEME        = "catppuccin"
+
+
+# -----------------------------------------------------------------------------
+# Tools
+# -----------------------------------------------------------------------------
+[tools]
+node        = "lts"
+shellcheck  = "latest"
+shfmt       = "latest"
+bats        = "latest"
+python      = "latest"
+gcloud      = "latest"
+starship    = "latest"
+claude      = "latest"
+docker-cli  = "latest"
+
+# =============================================================================
+# CORE DEVELOPMENT
+# =============================================================================
+
+[tasks.install]
+description = "Install dependencies"
+run         = 'echo "TODO: Implement install"'
+
+[tasks.build]
+description = "Build the project"
+run         = 'echo "TODO: Implement build for $PROJECT@$VERSION"'
+
+[tasks.run]
+description = "Run project locally"
+depends     = ["build"]
+run         = 'echo "TODO: Implement run"'
+
+[tasks.test]
+description = "Run tests"
+depends     = ["build"]
+run         = 'echo "TODO: Implement test"'
+
+[tasks."dev:clean"]
+description = "Clean build artifacts"
+run         = """
+rm -rf .nv
+echo "TODO: Implement clean"
+"""
+
+# =============================================================================
+# DOCKER
+# =============================================================================
+
+[tasks.docker-build]
+description = "Build Docker image"
+run         = "COMPOSE_BAKE=true docker compose build"
+
+[tasks.docker-run]
+description = "Run project in Docker"
+run         = "docker compose run --rm runner"
+
+[tasks.docker-test]
+description = "Run tests in Docker"
+run         = "docker compose run --rm tester"
+
+# =============================================================================
+# UTILITIES
+# =============================================================================
+
+[tasks.format]
+description = "Format code"
+run         = 'echo "TODO: Implement formatting"'
+
+[tasks.format-check]
+description = "Check code formatting (CI mode)"
+run         = 'echo "TODO: Implement format checking"'
+
+[tasks.lint]
+description = "Lint code"
+run         = 'echo "TODO: Implement linting"'
+
+[tasks.lint-fix]
+description = "Lint and auto-fix issues"
+run         = 'echo "TODO: Implement lint auto-fixing"'
+
+
+
+# =============================================================================
+# CI/CD
+# =============================================================================
+
+[tasks.build-prod]
+description = "Build for production"
+run         = """
+#!/usr/bin/env bash
+mkdir -p dist
+echo "$PROJECT $VERSION - Replace with your build artifact" > dist/artifact.txt
+echo "Production artifact created: dist/artifact.txt"
+# Cross-platform build examples (uncomment and adapt as needed):
+# For Go: GOOS=linux GOARCH=amd64 go build -o dist/$PROJECT-linux-amd64
+# For Rust: cross build --target x86_64-unknown-linux-gnu --release
+# For Zig: zig build -Dtarget=x86_64-linux -Doptimize=ReleaseSafe
+"""
+
+[tasks.version]
+description = "Get current version"
+run         = "echo $VERSION"
+
+[tasks.version-next]
+description = "Get next version (from semantic-release)"
+run         = "bash -c 'source .mise-tasks/utils && get_next_version'"
+
+# =============================================================================
+# TEMPLATE
+# =============================================================================
+
+[tasks.test-template]
+description = "Run template tests"
+run         = "bats test/"

@@ -32,7 +32,7 @@ I'll create `.claude/plan.md` with phases for:
 
 - [ ] Update justfile build recipe for <language>
 - [ ] Update justfile test recipe for <language>
-- [ ] Add language-specific dependencies to setup.sh
+- [ ] Add language-specific tools to mise.toml [tools]
 - [ ] Update .gitignore for <language>
 
 ## Phase 2: Version Management

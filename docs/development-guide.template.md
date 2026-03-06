@@ -21,14 +21,12 @@ Before you begin, ensure you have the following installed:
    cd {{PROJECT_NAME}}
    ```
 
-2. **Run setup script**:
+2. **Install tools**:
    ```bash
-   bash scripts/setup.sh --dev
+   mise install
    ```
 
-   This installs:
-   - Development tools (docker, gcloud, shellcheck, shfmt)
-   - Node.js and semantic-release
+   This installs all tools declared in `mise.toml` (node, shellcheck, shfmt, gcloud, docker-cli, claude, etc.)
    - Claude CLI (AI coding assistant)
 
 3. **Configure environment**:

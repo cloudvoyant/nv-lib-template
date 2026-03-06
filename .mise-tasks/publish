@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#MISE description="Publish the project"
+#MISE depends=["test", "build-prod"]
+set -euo pipefail
+
+echo "Publishing package $PROJECT@$VERSION"
+gcloud artifacts generic upload \
+    --project=$GCP_REGISTRY_PROJECT_ID \
+    --location=$GCP_REGISTRY_REGION \
+    --repository=$GCP_REGISTRY_NAME \
+    --package=$PROJECT \
+    --version=$VERSION \
+    --source=dist/artifact.txt
+echo "Published."

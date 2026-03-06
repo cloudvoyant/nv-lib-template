@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
+#MISE hide=true
 # Utility functions and variables for scripts
 
 # DETECT PROJECT ROOT ----------------------------------------------------------
-# Find project root by searching for .envrc with PROJECT variable
+# Find project root by searching for mise.toml with PROJECT variable
 detect_project_root() {
     # Try git first
     if git rev-parse --show-toplevel &>/dev/null; then
         local git_root="$(git rev-parse --show-toplevel)"
-        if [ -f "$git_root/.envrc" ]; then
+        if [ -f "$git_root/mise.toml" ]; then
             echo "$git_root"
             return 0
         fi
     fi
 
-    # Fallback: search for .envrc with PROJECT variable
+    # Fallback: search for mise.toml with PROJECT variable
     local current_dir="$PWD"
     while [ "$current_dir" != "/" ]; do
-        if [ -f "$current_dir/.envrc" ]; then
-            # Verify it's the right .envrc by checking for PROJECT variable
-            if grep -q "^export PROJECT=" "$current_dir/.envrc" 2>/dev/null; then
+        if [ -f "$current_dir/mise.toml" ]; then
+            if grep -q '^PROJECT' "$current_dir/mise.toml" 2>/dev/null; then
                 echo "$current_dir"
                 return 0
             fi
@@ -26,7 +26,7 @@ detect_project_root() {
         current_dir="$(dirname "$current_dir")"
     done
 
-    # If we get here, we couldn't find .envrc
+    # If we get here, we couldn't find mise.toml
     # This is acceptable in some contexts (e.g., Docker build, CI)
     # Only error if caller explicitly needs it
     return 1

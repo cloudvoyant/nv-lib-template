@@ -6,10 +6,10 @@
 
 Here's what this template gives you off the bat:
 
-- A language-agnostic self-documenting command interface via `just`. Keep all your project commands organized in one file!
-- Auto-load environment variables and configure shell environment with `direnv` - share project scoped shell configurations and simplify scripting and CLI tool usage without needing to pass around flags and inline environment variables.
+- A language-agnostic self-documenting command interface via `mise` — keep all your project tasks, tool versions, and environment config in one `mise.toml`!
+- Auto-load environment variables with `mise` — project-scoped env vars defined in `mise.toml`, no shell hooks required
 - CI/CD with GitHub Actions - run test on MR commits, tag and release on merges to main.
-- Easy CI/CD customization with language-agnostic bash scripting - No need to get too deep into GitHub Actions for customization. Modify the publish recipe, set GitHub Secrets and you're good to go.
+- Easy CI/CD customization with language-agnostic bash scripting - No need to get too deep into GitHub Actions for customization. Modify the publish task, set GitHub Secrets and you're good to go.
 - Trunk based development and automated versioning with conventional commits - semantic-release will handle version bumping for you! Work on feature branches and merge to main for bumps.
 - GCP Artifact Registry publishing (easily modified for other registries)
 - Cross-platform (macOS, Linux, Windows via WSL) - use the setup script to install dependencies, or alternately develop with Dev Containers or run tasks via Docker
@@ -17,11 +17,9 @@ Here's what this template gives you off the bat:
 ## Requirements
 
 - bash 3.2+
-- [just](https://just.systems/man/en/)
+- [mise](https://mise.jdx.dev/) — manages tools, tasks, and environment
 
-Run `just setup` to install remaining dependencies (just, direnv).
-
-Optional: `just setup --dev` for development tools, `just setup --template` for template testing.
+Run `mise install` to install all tool dependencies declared in `mise.toml`.
 
 ## Getting Started
 
@@ -37,46 +35,46 @@ nv create your-project-name --template nv-lib-template
 # Click "Use this template" on GitHub, then:
 git clone <your-new-repo>
 cd <your-new-repo>
-bash scripts/scaffold.sh --project your-project-name
+bash .mise-tasks/scaffold --project your-project-name
 ```
 
 Install dependencies and adapt the template for your needs:
 
 ```bash
-just setup              # Required: bash, just, direnv
-just scaffold           # Scaffold project - apply project name and reset version
-claude /adapt           # Guided customization for your language / package manager
+# Install mise (if not already installed)
+curl https://mise.jdx.dev/install.sh | sh
+# or: brew install mise
+
+# Install project tools
+mise install
+
+# Optional: install claudevoyant plugin for Claude slash commands
+mise run install-claude-plugins
+
+# Scaffold project for your language
+mise run scaffold
+claude /adapt
 ```
 
-Type `just` to see all the tasks at your disposal:
+Type `mise tasks` to see all the tasks at your disposal:
 
 ```bash
-❯ just
-Available recipes:
-    [dev]
-    load                 # Load environment
-    install              # Install dependencies
-    build                # Build the project
-    run                  # Run project locally
-    test                 # Run tests
-    clean                # Clean build artifacts
-
-[ OUTPUT TRUNCATED ]
+mise tasks
 ```
 
-Build run and test with `just`. The template will show TODO messages in console prior to adapting.
+Build, run and test with `mise run`. The template will show TODO messages in console prior to adapting.
 
 ```bash
-❯ just run
+mise run run
 TODO: Implement build for nv-lib-template@1.9.1
 TODO: Implement run
 
-❯ just test
+mise run test
 TODO: Implement build for nv-lib-template@1.9.1
 TODO: Implement test
 ```
 
-Note how just runs the necessary dependencies for a task on it's own!
+Note how mise runs the necessary task dependencies automatically!
 
 Commit using conventional commits (`feat:`, `fix:`, `docs:`). Merge/push to main and CI/CD will run automatically bumping your project version and publishing a package.
 
@@ -91,9 +89,9 @@ Prerequisites:
 Available Docker commands:
 
 ```bash
-just docker-build    # Build the Docker image
-just docker-run      # Run the project in a container
-just docker-test     # Run tests in a container
+mise run docker-build    # Build the Docker image
+mise run docker-run      # Run the project in a container
+mise run docker-test     # Run tests in a container
 ```
 
 The `Dockerfile` and `docker-compose.yml` are configured to install all required dependencies automatically. This is useful for:
@@ -117,12 +115,12 @@ If you have Docker running and the Dev Container extension installed, then you c
 2. Command Palette (Cmd/Ctrl+Shift+P) → "Dev Containers: Reopen in Container"
 3. Wait for container build (first time only)
 
-VS Code should reopen. In your terminal, you will now find everything you need including `just`, `direnv`, `gcloud` and more:
+VS Code should reopen. In your terminal, you will now find everything you need including `mise`, `gcloud` and more:
 
 - Git, GitHub CLI, and Google Cloud CLI pre-installed
 - Git credentials automatically shared from host via SSH agent forwarding
 - Claude CLI credentials mounted from `~/.claude`
-- All VS Code extensions for shell development (shellcheck, just syntax, etc.)
+- All VS Code extensions for shell development (shellcheck, etc.)
 - Docker-in-Docker support for building containers
 
 Authentication:
@@ -136,11 +134,11 @@ Authentication:
 ### Daily Commands
 
 ```bash
-just install    # Install project dependencies
-just build      # Build for development
-just test       # Run tests
-just run        # Run locally
-just clean      # Clean build artifacts
+mise run install    # Install project dependencies
+mise run build      # Build for development
+mise run test       # Run tests
+mise run run        # Run locally
+mise run clean      # Clean build artifacts
 ```
 
 ### Commit and Release
@@ -164,33 +162,33 @@ CI/CD automatically runs tests, creates a release, and publishes to your configu
 
 ### Viewing Hidden Files (VS Code)
 
-The template provides `just hide` and `just show` commands to toggle file visibility in VS Code, helping you focus on code or see the full project structure as needed.
+The template provides `mise run hide` and `mise run show` commands to toggle file visibility in VS Code, helping you focus on code or see the full project structure as needed.
 
 Hide non-essential files (show only code and documentation):
 
 ```bash
-just hide
+mise run hide
 ```
 
-This hides infrastructure files and shows only: `docs/`, `src/`, `test/`, `.claude/`, `.envrc`, `justfile`, and `README.md`.
+This hides infrastructure files and shows only: `docs/`, `src/`, `test/`, `.claude/`, `mise.toml`, and `README.md`.
 
 Show all files:
 
 ```bash
-just show
+mise run show
 ```
 
 This reveals all hidden configuration files (`.github/`, `.vscode/`, `.devcontainer/`, `Dockerfile`, `docker-compose.yml`, `scripts/`, etc.).
 
 **Note**: These commands are VS Code-specific and modify `.vscode/settings.json`. If you use a different editor, you'll need to configure file visibility using your editor's native settings.
 
-**Limitation**: Hidden files won't appear in VS Code search results (Cmd+Shift+F) unless you run `just show` first or toggle "Use Exclude Settings" in the search panel.
+**Limitation**: Hidden files won't appear in VS Code search results (Cmd+Shift+F) unless you run `mise run show` first or toggle "Use Exclude Settings" in the search panel.
 
 ## Customizing The Template For Your Needs
 
 ### For Your Language
 
-The `justfile` contains TODO placeholders. Run Claude's `/adapt` command for guided customization:
+The `mise.toml` tasks contain TODO placeholders. Run Claude's `/adapt` command for guided customization:
 
 ```bash
 claude /adapt
@@ -198,46 +196,51 @@ claude /adapt
 
 Or manually replace placeholders with your language's commands:
 
-```just
+```toml
 # Node.js example
-install:
-    npm install
+[tasks.install]
+run = "npm install"
 
-build:
-    npm run build
+[tasks.build]
+run = "npm run build"
 
-test: build
-    npm test
+[tasks.test]
+depends = ["build"]
+run = "npm test"
 
-publish: test build-prod
-    npm publish
+[tasks.publish]
+depends = ["test", "build-prod"]
+run = "npm publish"
 ```
 
 ### For Your Registry
 
-The `publish` recipe defaults to GCP Artifact Registry. Edit it for your registry:
+The `publish` task defaults to GCP Artifact Registry. Edit it in `mise.toml` for your registry:
 
-```just
+```toml
 # npm
-publish: test build-prod
-    npm publish
+[tasks.publish]
+depends = ["test", "build-prod"]
+run = "npm publish"
 
 # PyPI
-publish: test build-prod
-    twine upload dist/*
+[tasks.publish]
+depends = ["test", "build-prod"]
+run = "twine upload dist/*"
 
 # Docker
-publish: test build-prod
-    docker push myimage:{{VERSION}}
+[tasks.publish]
+depends = ["test", "build-prod"]
+run = "docker push myimage:$VERSION"
 ```
 
-Configure your `.envrc` accordingly:
+Configure your `mise.toml` `[env]` section accordingly:
 
-```bash
+```toml
 # GCP (default)
-export GCP_REGISTRY_PROJECT_ID="my-project"
-export GCP_REGISTRY_REGION="us-east1"
-export GCP_REGISTRY_NAME="my-registry"
+GCP_REGISTRY_PROJECT_ID = "my-project"
+GCP_REGISTRY_REGION     = "us-east1"
+GCP_REGISTRY_NAME       = "my-registry"
 
 # Or use registry-specific variables for npm, PyPI, etc.
 ```
@@ -263,24 +266,19 @@ All projects automatically inherit organization secrets.
 
 ### Customizing Behavior
 
-Scripts in `scripts/` provide hooks for overriding CI/CD behavior:
+Tasks in `.mise-tasks/` provide hooks for overriding CI/CD behavior:
 
-- `scripts/upversion.sh` - Modify versioning logic here
-- `scripts/setup.sh` - Add custom dependencies here
+- `.mise-tasks/upversion` - Modify versioning logic here
 
-Edit these scripts to change how CI/CD runs, but avoid editing `.github/workflows/` directly.
+Edit these tasks to change how CI/CD runs, but avoid editing `.github/workflows/` directly.
 
 ### Example: Custom Versioning
 
-To change how versions are calculated, edit `scripts/upversion.sh` or modify `.releaserc.json` to add semantic-release plugins.
-
-### Example: Additional Setup Steps
-
-To add custom dependencies during CI setup, extend `scripts/setup.sh` with your logic.
+To change how versions are calculated, edit `.mise-tasks/upversion` or modify `.releaserc.json` to add semantic-release plugins.
 
 ## LLM Assistance with Claude
 
-Claude commands provide guided workflows for complex tasks. The template includes two custom commands, while most workflow commands come from the [Claudevoyant plugin](https://github.com/cloudvoyant/claudevoyant) (automatically installed with `just setup --dev`).
+Claude commands provide guided workflows for complex tasks. The template includes two custom commands, while most workflow commands come from the [Claudevoyant plugin](https://github.com/cloudvoyant/claudevoyant) (installed via `mise run install-claude-plugins`).
 
 ### Template Commands
 
@@ -315,29 +313,20 @@ This creates a comprehensive migration plan, compares files, and walks you throu
 
 ## Troubleshooting
 
-### direnv not loading .envrc
+### mise not found
 
-Add to your shell config (~/.bashrc, ~/.zshrc):
-
-```bash
-eval "$(direnv hook bash)"  # or zsh, fish
-```
-
-Reload and allow:
+Install mise:
 
 ```bash
-source ~/.bashrc
-direnv allow
+curl https://mise.jdx.dev/install.sh | sh
+# or: brew install mise
 ```
 
-### just command not found
+### Tasks not seeing environment variables
 
-Install just:
-
-```bash
-brew install just           # macOS
-# Or run: bash scripts/setup.sh
-```
+Run `mise env` to verify variables are set. Ensure `mise.toml` exists in
+the project root. If using `mise activate bash` in your shell, reload your
+shell: `exec bash`.
 
 ### Tests pass locally but fail in CI
 
@@ -367,7 +356,7 @@ Ensure:
 
 ## Next Steps
 
-1. Customize `justfile` for your language
+1. Customize `mise.toml` tasks for your language
 2. Write code in `src/`
 3. Add tests
 4. Configure GitHub organization secrets
