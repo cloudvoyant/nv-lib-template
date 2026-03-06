@@ -27,6 +27,9 @@ jobs:
       - name: Setup mise
         uses: jdx/mise-action@v2
 
+      - name: Install dependencies
+        run: mise run install
+
       - name: Run tests
         run: mise run test
 

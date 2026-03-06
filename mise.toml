@@ -12,7 +12,8 @@ GCP_REGISTRY_PROJECT_ID = "devops-466002"
 GCP_REGISTRY_REGION     = "us-east1"
 GCP_REGISTRY_NAME       = "cloudvoyant-generic-registry"
 VERSION                 = "{{exec(command='cat version.txt 2>/dev/null | tr -d [:space:] || echo 0.1.0')}}"
-MISE_COLOR_THEME        = "catppuccin"
+_.path = ['{{config_root}}/node_modules/.bin']
+BIN_PATH = "{{ config_root }}/node_modules/.bin"
 
 
 # -----------------------------------------------------------------------------
@@ -29,12 +30,6 @@ starship    = "latest"
 claude      = "latest"
 docker-cli  = "latest"
 
-"npm:semantic-release"                                    = "latest"
-"npm:@semantic-release/changelog"                         = "latest"
-"npm:@semantic-release/exec"                              = "latest"
-"npm:@semantic-release/git"                               = "latest"
-"npm:@semantic-release/github"                            = "latest"
-"npm:conventional-changelog-conventionalcommits"          = "latest"
 
 # =============================================================================
 # CORE DEVELOPMENT
@@ -42,7 +37,15 @@ docker-cli  = "latest"
 
 [tasks.install]
 description = "Install dependencies"
-run         = 'echo "TODO: Implement install"'
+run         = """
+npm install --no-save --prefix "{{config_root}}" \
+  semantic-release \
+  @semantic-release/changelog \
+  @semantic-release/exec \
+  @semantic-release/git \
+  @semantic-release/github \
+  conventional-changelog-conventionalcommits
+"""
 
 [tasks.build]
 description = "Build the project"
