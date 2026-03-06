@@ -130,9 +130,8 @@ This section is for template maintainers and advanced users who need to understa
    VERSION via `{{exec(command='cat version.txt ...')}}`. All tasks automatically
    have access to these env vars without manual sourcing.
 
-3. **Tasks** (`[tasks]`): replace `justfile` recipes. Task names match the old
-   just recipe names exactly. Run tasks with `mise run <task>` or list all with
-   `mise tasks`.
+3. **Tasks** (`[tasks]`): runnable commands for build, test, publish, and
+   utilities. Run tasks with `mise run <task>` or list all with `mise tasks`.
 
 Task dependencies are declared with `depends = ["other-task"]`. This enforces
 quality gates automatically (e.g., `publish` requires `test` and `build-prod`).

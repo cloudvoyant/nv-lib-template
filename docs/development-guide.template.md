@@ -9,8 +9,7 @@
 Before you begin, ensure you have the following installed:
 
 - **Git** - Version control
-- **just** - Command runner ([installation](https://github.com/casey/just#installation))
-- **direnv** - Environment management ([installation](https://direnv.net/docs/installation.html))
+- **mise** - Tool and task runner ([installation](https://mise.jdx.dev/getting-started.html))
 - **Docker** - Container runtime (optional, for containerized development)
 
 ### Initial Setup
@@ -24,55 +23,47 @@ Before you begin, ensure you have the following installed:
 2. **Install tools**:
    ```bash
    mise install
+   mise run install
    ```
 
-   This installs all tools declared in `mise.toml` (node, shellcheck, shfmt, gcloud, docker-cli, claude, etc.)
-   - Claude CLI (AI coding assistant)
+   `mise install` installs all tools declared in `mise.toml` (node, shellcheck, shfmt, gcloud, docker-cli, claude, etc.).
+   `mise run install` installs npm dependencies (semantic-release and plugins).
 
-3. **Configure environment**:
+3. **Verify installation**:
    ```bash
-   # Allow direnv to load .envrc
-   direnv allow
-
-   # Verify environment
+   mise --version
+   docker --version  # if installed
    echo $PROJECT
    echo $VERSION
-   ```
-
-4. **Verify installation**:
-   ```bash
-   just --version
-   direnv --version
-   docker --version  # if installed
    ```
 
 ## Development Workflow
 
 ### Commands
 
-Common commands using `just`:
+Common commands using `mise run`:
 
 ```bash
-# List all available commands
-just
+# List all available tasks
+mise tasks
 
 # Build the project
-just build
+mise run build
 
 # Run locally
-just run
+mise run run
 
 # Run tests
-just test
+mise run test
 
 # Format code
-just format
+mise run format
 
 # Lint code
-just lint
+mise run lint
 
 # Clean build artifacts
-just clean
+mise run dev:clean
 ```
 
 ### Making Changes
@@ -89,9 +80,9 @@ just clean
 
 3. **Test your changes**:
    ```bash
-   just test
-   just lint
-   just format-check
+   mise run test
+   mise run lint
+   mise run format-check
    ```
 
 4. **Commit using conventional commits**:
@@ -131,14 +122,11 @@ just clean
 {{PROJECT_NAME}}/
 ├── .github/           # GitHub Actions workflows
 ├── .claude/           # AI assistant configuration
+├── .mise-tasks/       # File-based mise tasks (bash scripts)
 ├── docs/              # Documentation
-├── scripts/           # Build and setup scripts
 ├── src/               # Source code
-├── test/              # Test files
-├── .envrc             # Environment variables
-├── .envrc.template    # Environment template
+├── mise.toml          # Tools, env vars, and task definitions
 ├── Dockerfile         # Container definition
-├── justfile           # Command definitions
 └── README.md          # Project overview
 ```
 
@@ -156,8 +144,8 @@ docker compose build dev
 docker compose run --rm dev bash
 
 # Inside container
-just build
-just test
+mise run build
+mise run test
 ```
 
 ### Using Dev Containers
@@ -175,13 +163,13 @@ If using VS Code:
 
 ```bash
 # Run all tests
-just test
+mise run test
 
 # Run specific test file (TODO: Adjust based on test framework)
-just test path/to/test_file
+mise run test path/to/test_file
 
 # Run with coverage (TODO: Add coverage support)
-just test-coverage
+mise run test-coverage
 ```
 
 ### Writing Tests
@@ -202,11 +190,8 @@ test/
 For template development:
 
 ```bash
-# Install template testing tools
-just setup --template
-
 # Run template tests
-just test-template
+mise run test-template
 ```
 
 ## Code Style
@@ -217,10 +202,10 @@ Code should be formatted before committing:
 
 ```bash
 # Format all files
-just format
+mise run format
 
 # Check formatting without changing files
-just format-check
+mise run format-check
 ```
 
 ### Linting
@@ -229,10 +214,10 @@ Run linters to catch issues:
 
 ```bash
 # Run all linters
-just lint
+mise run lint
 
 # Auto-fix linting issues (if available)
-just lint-fix
+mise run lint-fix
 ```
 
 ### Best Practices
@@ -261,22 +246,12 @@ docker exec -it {{PROJECT_NAME}}-dev bash
 
 ### Common Issues
 
-#### Environment not loading
-
-```bash
-# Check direnv status
-direnv status
-
-# Re-allow direnv
-direnv allow
-```
-
 #### Build failures
 
 ```bash
 # Clean and rebuild
-just clean
-just build
+mise run dev:clean
+mise run build
 ```
 
 ## AI-Assisted Development
@@ -317,10 +292,10 @@ Versions are determined automatically by semantic-release based on commit messag
 
 ```bash
 # Check current version
-just version
+mise run version
 
 # Preview next version (dry-run)
-just next-version
+mise run version-next
 ```
 
 ## Contributing Guidelines

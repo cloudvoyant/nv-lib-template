@@ -25,9 +25,8 @@ This document describes the infrastructure setup, deployment process, and operat
 ### Required Tools
 
 - [Docker](https://docs.docker.com/get-docker/) - Container runtime
-- [just](https://github.com/casey/just) - Command runner
-- [direnv](https://direnv.net/) - Environment variable management
-- [gcloud CLI](https://cloud.google.com/sdk/docs/install) - Google Cloud tools (if using GCP)
+- [mise](https://mise.jdx.dev/) - Tool and task runner
+- [gcloud CLI](https://cloud.google.com/sdk/docs/install) - Google Cloud tools (if using GCP, managed via mise)
 
 ### Cloud Accounts
 
@@ -40,26 +39,16 @@ Configure the following accounts as needed:
 
 ### Local Environment
 
-1. Copy `.envrc.template` to `.envrc`:
-   ```bash
-   cp .envrc.template .envrc
-   ```
+Environment is managed via `mise.toml`. Update the `[env]` section with your configuration:
 
-2. Update `.envrc` with your configuration:
-   ```bash
-   export PROJECT={{PROJECT_NAME}}
-   export VERSION=$(get_version)
+```toml
+[env]
+GCP_REGISTRY_PROJECT_ID = "your-project-id"
+GCP_REGISTRY_REGION     = "us-central1"
+GCP_REGISTRY_NAME       = "your-repository-name"
+```
 
-   # Registry Configuration (if using GCP)
-   export GCP_REGISTRY_PROJECT_ID=your-project-id
-   export GCP_REGISTRY_REGION=us-central1
-   export GCP_REGISTRY_NAME=your-repository-name
-   ```
-
-3. Allow direnv to load the environment:
-   ```bash
-   direnv allow
-   ```
+Activate by running `mise install` — mise automatically loads env vars from `mise.toml`.
 
 ### CI/CD Secrets
 
@@ -86,13 +75,13 @@ Build and run locally using Docker:
 
 ```bash
 # Build the project
-just build
+mise run build
 
 # Run locally
-just run
+mise run run
 
 # Run tests
-just test
+mise run test
 ```
 
 ### Production Deployment
@@ -114,10 +103,10 @@ Deployments are automated through GitHub Actions:
 3. **Manual Deployment**: If needed, deploy manually:
    ```bash
    # Build production artifacts
-   just build-prod
+   mise run build-prod
 
    # Publish to registry
-   just publish
+   mise run publish
    ```
 
 ## Registry Setup
@@ -205,7 +194,7 @@ gcloud auth configure-docker us-east1-docker.pkg.dev
 docker system prune -a
 
 # Rebuild from scratch
-just clean && just build
+mise run dev:clean && mise run build
 ```
 
 #### Deployment Failures
