@@ -50,6 +50,8 @@ jobs:
       - name: Authenticate with registry
         if: steps.upversion.outputs.new_release_published == 'true' && env.GCP_SA_KEY != ''
         uses: google-github-actions/auth@v2
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
