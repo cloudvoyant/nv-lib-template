@@ -4,7 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: base  # Use minimal base stage (fast build)
     container_name: nv-lib-template-runner
     volumes:
       - .:/workspace
@@ -20,7 +19,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: base  # Use minimal base stage (fast build)
     container_name: nv-lib-template-tester
     volumes:
       - .:/workspace
@@ -28,10 +26,6 @@ services:
     command: bash -c "mise run test"
     networks:
       - lib-network
-
-volumes:
-  dev-cache:
-  test-cache:
 
 networks:
   lib-network:

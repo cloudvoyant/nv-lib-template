@@ -169,29 +169,16 @@ This template provides two custom commands:
 
 All other workflow commands (`/spec:new/go/pause`, `/dev:commit`, `/dev:review`, `/adr:new`, etc.) are provided by the [Claudevoyant plugin](https://github.com/cloudvoyant/claudevoyant). The plugin is automatically configured during scaffolding and provides a comprehensive set of development workflow commands.
 
-### Component: Dockerfile (Multi-Stage)
+### Component: Dockerfile
 
-The `Dockerfile` uses a multi-stage build to support both minimal runtime environments and full development environments from a single file:
+The `Dockerfile` is a single stage following the [mise Docker cookbook](https://mise.jdx.dev/mise-cookbook/docker.html) pattern:
 
-**Base Stage** (`target: base`):
+- Based on `debian:12-slim` — minimal footprint
+- Installs mise with recommended ENV vars (`MISE_DATA_DIR`, `MISE_CONFIG_DIR`, `MISE_CACHE_DIR`, shims on `PATH`)
+- Pre-installs all tools from `mise.toml` at build time for fast container startup
+- Used by `docker-compose.yml` for `mise run docker-run` and `mise run docker-test`
 
-- Used by docker-compose for `mise run docker-run` and `mise run docker-test`
-- Installs mise globally and pre-installs tools from `mise.toml`
-- Fast build time (~1-2 minutes)
-- Minimal image size for quick iteration
-
-**Dev Stage** (`target: dev`):
-
-- Used by VS Code DevContainers
-- Builds on top of base stage
-- Adds development tools: claudevoyant plugin, starship config (binaries already in base via mise)
-- Slower build (~10 minutes), but cached after first build
-
-Configuration:
-
-- `docker-compose.yml` services specify `target: base` for fast builds
-- `.devcontainer/devcontainer.json` specifies `target: dev` for full environment
-- Both share the same base layers, maximizing Docker layer cache efficiency
+VS Code Dev Containers use a separate, simpler configuration (see `.devcontainer/`) that does not depend on this Dockerfile.
 
 ### Component: docker-compose.yml
 
@@ -204,30 +191,28 @@ Provides containerized services for running and testing without installing depen
 
 ### Component: .devcontainer/
 
-The `.devcontainer/` directory provides VS Code Dev Containers configuration for consistent development environments across teams. The devcontainer uses the root-level `Dockerfile` with `target: dev` to build a full development environment.
+The `.devcontainer/` directory provides VS Code Dev Containers configuration using the standard `mcr.microsoft.com/devcontainers/base:ubuntu` image — no custom Dockerfile required.
 
-Features:
+Features (via devcontainer feature flags):
 
-- `git:1` - Git installed from source (credentials auto-shared by VS Code via SSH agent forwarding)
-- `docker-outside-of-docker:1` - Docker CLI that connects to host's Docker daemon
+- `ghcr.io/devcontainers-extra/features/mise:1` - Installs mise and runs `mise install` automatically
+- `git:1` - Git credentials auto-shared via SSH agent forwarding
+- `docker-outside-of-docker:1` - Docker CLI connected to host daemon
+
+`postCreateCommand` runs `mise install && mise run install && mise run install-claude-plugins` on first container start.
 
 Credential Mounting:
 
-- Claude CLI credentials mounted from `~/.claude` directory
-- Uses cross-platform path resolution: `${localEnv:HOME}${localEnv:USERPROFILE}` expands to HOME on Unix or USERPROFILE on Windows
-- Git/GitHub credentials automatically forwarded via SSH agent (requires `ssh-add` on host)
-- gcloud requires manual `gcloud auth login` inside container (credentials persist via Docker volumes)
+- Claude CLI credentials mounted from `~/.claude`
+- Uses cross-platform path: `${localEnv:HOME}${localEnv:USERPROFILE}` (HOME on Unix, USERPROFILE on Windows)
+- Git/GitHub credentials forwarded via SSH agent (requires `ssh-add` on host)
+- gcloud requires manual `gcloud auth login` inside container
 
 VS Code Extensions:
 
+- `hverlin.mise-vscode` - mise task runner and tool management UI
 - `timonwong.shellcheck` and `foxundermoon.shell-format` - Shell script linting and formatting
 - `ms-azuretools.vscode-docker` - Docker support
-
-Cross-Platform Considerations:
-
-- Works on macOS, Linux, and Windows (via Docker Desktop or WSL)
-- Credential paths use environment variable fallback pattern for platform compatibility
-- On Windows, if `~/.claude` doesn't exist at `%USERPROFILE%\.claude`, mount will fail gracefully (container starts without Claude credentials)
 
 ### Tool Installation
 

@@ -12,8 +12,8 @@ GCP_REGISTRY_PROJECT_ID = "devops-466002"
 GCP_REGISTRY_REGION     = "us-east1"
 GCP_REGISTRY_NAME       = "cloudvoyant-generic-registry"
 VERSION                 = "{{exec(command='cat version.txt 2>/dev/null | tr -d [:space:] || echo 0.1.0')}}"
-_.path = ['{{config_root}}/node_modules/.bin']
-BIN_PATH = "{{ config_root }}/node_modules/.bin"
+_.path                  = ['{{config_root}}/node_modules/.bin']
+BIN_PATH                = "{{ config_root }}/node_modules/.bin"
 
 
 # -----------------------------------------------------------------------------
@@ -104,11 +104,33 @@ run         = 'echo "TODO: Implement linting"'
 description = "Lint and auto-fix issues"
 run         = 'echo "TODO: Implement lint auto-fixing"'
 
+[tasks.hide]
+description = "Hide non-essential files in VS Code"
+run         = '.mise-tasks/toggle-files hide'
+
+[tasks.show]
+description = "Show all files in VS Code"
+run         = '.mise-tasks/toggle-files show'
 
 
 # =============================================================================
 # CI/CD
 # =============================================================================
+
+[tasks.publish]
+description = "Publish package to registry"
+depends     = ["test", "build-prod"]
+run         = """
+echo "Publishing package $PROJECT@$VERSION"
+gcloud artifacts generic upload \
+    --project=$GCP_REGISTRY_PROJECT_ID \
+    --location=$GCP_REGISTRY_REGION \
+    --repository=$GCP_REGISTRY_NAME \
+    --package=$PROJECT \
+    --version=$VERSION \
+    --source=dist/artifact.txt
+echo "Published."
+"""
 
 [tasks.build-prod]
 description = "Build for production"
@@ -117,10 +139,6 @@ run         = """
 mkdir -p dist
 echo "$PROJECT $VERSION - Replace with your build artifact" > dist/artifact.txt
 echo "Production artifact created: dist/artifact.txt"
-# Cross-platform build examples (uncomment and adapt as needed):
-# For Go: GOOS=linux GOARCH=amd64 go build -o dist/$PROJECT-linux-amd64
-# For Rust: cross build --target x86_64-unknown-linux-gnu --release
-# For Zig: zig build -Dtarget=x86_64-linux -Doptimize=ReleaseSafe
 """
 
 [tasks.version]
