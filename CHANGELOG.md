@@ -1,3 +1,18 @@
+## [2.2.0](https://github.com/cloudvoyant/nv-lib-template/compare/v2.1.0...v2.2.0) (2026-03-07)
+
+### Features
+
+* migrate commands and tooling to mise, add style guide
+
+- Rename template to mise-lib-template
+- Update Claude commands (upgrade, adapt) with mise/2.x guidance
+- Add Zed editor config, drop VS Code support
+- Add CLAUDE.md context-tagged style guide at repo root
+- Add .style/ infrastructure for style validation
+- Remove toggle-files task
+- Fix script header ordering and stale path references
+- Fix tests for CLAUDE.md relocation to repo root
+
 ## [2.1.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.0.1...v2.1.0) (2026-03-07)
 
 ### Features
