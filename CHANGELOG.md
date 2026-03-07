@@ -1,3 +1,24 @@
+## [2.1.0](https://github.com/cloudvoyant/nv-lib-template/compare/v2.0.1...v2.1.0) (2026-03-07)
+
+### Features
+
+* simplify Docker and devcontainer setup using mise cookbook patterns
+
+- Switch devcontainer to standard mcr.microsoft.com/devcontainers/base:ubuntu
+  with ghcr.io/devcontainers-extra/features/mise:1
+- Simplify Dockerfile to single-stage ubuntu:22.04 with minimal APT
+  dependencies (curl, ca-certificates, python3)
+- Remove custom devcontainer build in favor of standard feature-based setup
+- Move publish, hide, show tasks from .mise-tasks/ files to mise.toml
+- Update architecture docs to reflect simplified approach
+
+
+### Documentation
+
+* replace just and direnv references with mise in README
+
+* replace just/direnv references with mise equivalents
+
 ## [2.0.1](https://github.com/cloudvoyant/nv-lib-template/compare/v2.0.0...v2.0.1) (2026-03-06)
 
 ### Bug Fixes
