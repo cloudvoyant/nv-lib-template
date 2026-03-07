@@ -26,12 +26,12 @@ I'll ask you about:
 I'll create `.claude/plan.md` with phases for:
 
 ```markdown
-# Adaptation Plan: nv-lib-template → <your-project>
+# Adaptation Plan: mise-lib-template → <your-project>
 
 ## Phase 1: Language Setup
 
-- [ ] Update justfile build recipe for <language>
-- [ ] Update justfile test recipe for <language>
+- [ ] Update mise.toml [tasks.build] for <language>
+- [ ] Update mise.toml [tasks.test] for <language>
 - [ ] Add language-specific tools to mise.toml [tools]
 - [ ] Update .gitignore for <language>
 
@@ -39,26 +39,26 @@ I'll create `.claude/plan.md` with phases for:
 
 - [ ] Update .releaserc.json to use language-specific version file (package.json, pyproject.toml, Cargo.toml, etc.)
 - [ ] Update semantic-release prepareCmd to write to your version file
-- [ ] Update get_version() in scripts/utils.sh to read from your version file
+- [ ] Update VERSION reading in mise.toml [env] to read from your version file
 - [ ] Remove version.txt if no longer needed
 
 ## Phase 3: Publishing
 
-- [ ] Update publish recipe for <target>
+- [ ] Update mise.toml [tasks.publish] for <target>
 - [ ] Configure registry authentication
 - [ ] Notify users of any changes needed for GitHub action secrets
 
 ## Phase 4: Tooling
 
 - [ ] Add <tool> configuration
-- [ ] Update justfile recipes for <tool>
-- [ ] Add <tool> to CI override scripts
+- [ ] Update mise.toml tasks for <tool>
+- [ ] Add <tool> to CI workflows if needed
 
-## Phase 4: Documentation
+## Phase 5: Documentation
 
 - [ ] Update README.md with project specifics
 - [ ] Update user-guide.md with custom workflows
-- [ ] Document custom recipes in justfile
+- [ ] Document custom tasks in mise.toml
 ```
 
 ### 3. Work Through Plan
@@ -74,14 +74,9 @@ For each adaptation:
 ### 4. Validate Adaptations
 
 ```bash
-# Test all changes work
-just test
-
-# Verify build works
-just build
-
-# Check CI would pass
-just lint && just format-check && just test
+mise run test
+mise run build
+mise run lint && mise run format-check && mise run test
 ```
 
 ### 5. Update Documentation
@@ -95,7 +90,6 @@ Update project docs to reflect customizations:
 ### 6. Cleanup
 
 ```bash
-# Archive or delete adaptation plan
 mv .claude/plan.md .claude/adaptation-complete-$(date +%Y%m%d).md
 ```
 
@@ -103,8 +97,8 @@ mv .claude/plan.md .claude/adaptation-complete-$(date +%Y%m%d).md
 
 - Create plan before making changes
 - Test after each significant adaptation
-- Keep language-agnostic logic in `scripts/`
-- Put language-specific logic in `justfile`
+- Keep language-agnostic logic in `.mise-tasks/`
+- Put language-specific logic in `mise.toml [tasks]`
 - Document why you made specific choices
 - Update README.md to reflect customizations
 
@@ -112,25 +106,25 @@ mv .claude/plan.md .claude/adaptation-complete-$(date +%Y%m%d).md
 
 ### Always Keep (core framework)
 
-- `scripts/` - bash automation framework
-- `.envrc` - environment variable management
+- `.mise-tasks/` - bash automation scripts
+- `mise.toml` - environment, tools, and task configuration
 - `.github/workflows/` - CI/CD structure
-- `direnv` + `just` pattern
+- mise pattern (`mise run <task>`)
 
 ### Customize (language-specific)
 
-- `justfile` recipes (build, test, run, publish)
+- `mise.toml [tasks]` (build, test, run, publish)
 - `.gitignore` patterns
 - `docs/` content for your project
-- `.envrc` for needed configuration
+- `mise.toml [env]` for needed configuration
 - Publishing targets and authentication
 
 ### Optional Additions
 
 - Language-specific linters/formatters
 - Additional CI checks
-- Custom deployment scripts
-- Development tooling
+- Custom deployment scripts in `.mise-tasks/`
+- Development tooling in `mise.toml [tools]`
 
 ## Version Management for Different Languages
 
@@ -146,23 +140,18 @@ The template uses `version.txt` as a placeholder. **You should replace this with
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     "@semantic-release/changelog",
-    "@semantic-release/npm", // Automatically handles package.json
+    "@semantic-release/npm",
     "@semantic-release/git",
     "@semantic-release/github"
   ]
 }
 ```
 
-2. Update `scripts/utils.sh` get_version():
+2. Update `mise.toml` VERSION env var:
 
-```bash
-get_version() {
-    if [ -f "${PROJECT_ROOT}/package.json" ]; then
-        node -p "require('./package.json').version" 2>/dev/null || echo "0.1.0"
-    else
-        echo "0.1.0"
-    fi
-}
+```toml
+[env]
+VERSION = "{{exec(command='node -p \"require(./package.json).version\" 2>/dev/null || echo 0.1.0')}}"
 ```
 
 3. Remove `version.txt`
@@ -177,29 +166,22 @@ get_version() {
 }
 ```
 
-2. Update `scripts/utils.sh` get_version():
+2. Update `mise.toml` VERSION env var:
 
-```bash
-get_version() {
-    if [ -f "${PROJECT_ROOT}/pyproject.toml" ]; then
-        grep '^version =' pyproject.toml | cut -d'"' -f2
-    else
-        echo "0.1.0"
-    fi
-}
+```toml
+[env]
+VERSION = "{{exec(command='grep \"^version =\" pyproject.toml | cut -d\\'\"\\' -f2 || echo 0.1.0')}}"
 ```
 
-3. Update git assets:
+3. Update git assets in `.releaserc.json`:
 
 ```json
-{
-  "assets": ["CHANGELOG.md", "pyproject.toml"]
-}
+{ "assets": ["CHANGELOG.md", "pyproject.toml"] }
 ```
 
 ### Go (VERSION file or go.mod)
 
-**1. Update `.releaserc.json` prepareCmd:**
+1. Update `.releaserc.json` prepareCmd:
 
 ```json
 {
@@ -207,21 +189,16 @@ get_version() {
 }
 ```
 
-**2. Update `scripts/utils.sh` get_version():**
+2. Update `mise.toml` VERSION env var:
 
-```bash
-get_version() {
-    if [ -f "${PROJECT_ROOT}/VERSION" ]; then
-        cat "${PROJECT_ROOT}/VERSION" | tr -d '[:space:]'
-    else
-        echo "0.1.0"
-    fi
-}
+```toml
+[env]
+VERSION = "{{exec(command='cat VERSION 2>/dev/null | tr -d [:space:] || echo 0.1.0')}}"
 ```
 
 ### Rust (Cargo.toml)
 
-**1. Update `.releaserc.json` prepareCmd:**
+1. Update `.releaserc.json` prepareCmd:
 
 ```json
 {
@@ -229,24 +206,17 @@ get_version() {
 }
 ```
 
-**2. Update `scripts/utils.sh` get_version():**
+2. Update `mise.toml` VERSION env var:
 
-```bash
-get_version() {
-    if [ -f "${PROJECT_ROOT}/Cargo.toml" ]; then
-        grep '^version =' Cargo.toml | cut -d'"' -f2
-    else
-        echo "0.1.0"
-    fi
-}
+```toml
+[env]
+VERSION = "{{exec(command='grep \"^version =\" Cargo.toml | cut -d\\'\"\\' -f2 || echo 0.1.0')}}"
 ```
 
-**3. Update git assets:**
+3. Update git assets:
 
 ```json
-{
-  "assets": ["CHANGELOG.md", "Cargo.toml", "Cargo.lock"]
-}
+{ "assets": ["CHANGELOG.md", "Cargo.toml", "Cargo.lock"] }
 ```
 
 ### Docker (Dockerfile or VERSION)

@@ -1,4 +1,4 @@
-## [2.1.0](https://github.com/cloudvoyant/nv-lib-template/compare/v2.0.1...v2.1.0) (2026-03-07)
+## [2.1.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.0.1...v2.1.0) (2026-03-07)
 
 ### Features
 
@@ -19,32 +19,32 @@
 
 * replace just/direnv references with mise equivalents
 
-## [2.0.1](https://github.com/cloudvoyant/nv-lib-template/compare/v2.0.0...v2.0.1) (2026-03-06)
+## [2.0.1](https://github.com/cloudvoyant/mise-lib-template/compare/v2.0.0...v2.0.1) (2026-03-06)
 
 ### Bug Fixes
 
-* add env block to Authenticate step so GCP_SA_KEY condition passes
+- add env block to Authenticate step so GCP_SA_KEY condition passes
 
 The if condition checks env.GCP_SA_KEY != '' but without an env: block
 the secret is invisible to the expression evaluator, causing the step
 to be skipped while Setup gcloud and Publish (which have the env block)
 still run unauthenticated.
 
-## [2.0.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.16.0...v2.0.0) (2026-03-06)
+## [2.0.0](https://github.com/cloudvoyant/mise-lib-template/compare/v1.16.0...v2.0.0) (2026-03-06)
 
 ### ⚠ BREAKING CHANGES
 
-* replace just, direnv, and scripts/ with mise as
-the single tool manager, task runner, and env loader.
+- replace just, direnv, and scripts/ with mise as
+  the single tool manager, task runner, and env loader.
 
-- justfile removed; all tasks now in mise.toml or .mise-tasks/
-- .envrc/.envrc.template removed; env vars declared in mise.toml [env]
-- scripts/ migrated to file-based mise tasks in .mise-tasks/
-- Complex tasks (scaffold, upversion, registry-login, publish,
+* justfile removed; all tasks now in mise.toml or .mise-tasks/
+* .envrc/.envrc.template removed; env vars declared in mise.toml [env]
+* scripts/ migrated to file-based mise tasks in .mise-tasks/
+* Complex tasks (scaffold, upversion, registry-login, publish,
 
 ### Features
 
-* migrate from justfile/direnv/scripts to mise
+- migrate from justfile/direnv/scripts to mise
 
 BREAKING CHANGE: replace just, direnv, and scripts/ with mise as
 the single tool manager, task runner, and env loader.
@@ -58,53 +58,52 @@ the single tool manager, task runner, and env loader.
 - Claude plugin install moved from Dockerfile to postCreateCommand
 - CI workflows updated to use mise-action and mise run throughout
 
-
 ### Bug Fixes
 
-* exclude node_modules from test rsync and git archive
+- exclude node_modules from test rsync and git archive
 
 Local npm install creates node_modules/ in the project root, causing
 test setup rsync to copy it into temp clones (slowing tests) and
 triggering vanished-file warnings when scaffold ran concurrently.
 
-* install npm deps to project root with --prefix
+- install npm deps to project root with --prefix
 
 Without a package.json in the project directory, npm install walked up
 and installed into $HOME. Adding --prefix "{{config_root}}" forces
-install into the project root so node_modules/.bin is on PATH via the
-_.path mise env entry.
+install into the project root so node*modules/.bin is on PATH via the
+*.path mise env entry.
 
-* install semantic-release plugins via mise npm tools
+- install semantic-release plugins via mise npm tools
 
 Replaces the deleted setup.sh npm install step. All plugins
 declared in .releaserc.json are now managed by mise alongside
 other project tools.
 
-* use mise-installed semantic-release instead of npx
+- use mise-installed semantic-release instead of npx
 
 npx downloads an isolated copy that cannot find the plugins
 installed by mise. Calling semantic-release directly uses the
 mise-managed binary which shares the global npm prefix with all
 declared npm: tools.
 
-## [1.16.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.15.0...v1.16.0) (2025-11-17)
+## [1.16.0](https://github.com/cloudvoyant/mise-lib-template/compare/v1.15.0...v1.16.0) (2025-11-17)
 
 ### Features
 
-* add template commands and cleanup for plugin migration
+- add template commands and cleanup for plugin migration
 
-* complete plugin migration cleanup and scaffolding updates
+- complete plugin migration cleanup and scaffolding updates
 
 Updates template to work with Claudevoyant plugin by removing
 migrated command references, configuring scaffold to copy only
 /upgrade to client repos, and updating all documentation to
 reflect the plugin-based workflow.
 
-## [1.15.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.14.2...v1.15.0) (2025-11-16)
+## [1.15.0](https://github.com/cloudvoyant/mise-lib-template/compare/v1.14.2...v1.15.0) (2025-11-16)
 
 ### Features
 
-* migrate slash commands to Claudevoyant plugin
+- migrate slash commands to Claudevoyant plugin
 
 Moves all slash commands (/plan, /commit, /upgrade, etc.) from template
 files to the Claudevoyant plugin for independent versioning and updates.
@@ -117,127 +116,126 @@ files to the Claudevoyant plugin for independent versioning and updates.
 Users benefit from independently updatable commands without requiring
 template upgrades.
 
-## [1.14.2](https://github.com/cloudvoyant/nv-lib-template/compare/v1.14.1...v1.14.2) (2025-11-15)
+## [1.14.2](https://github.com/cloudvoyant/mise-lib-template/compare/v1.14.1...v1.14.2) (2025-11-15)
 
 ### Bug Fixes
 
-* use action-gh-release for proper glob pattern support
+- use action-gh-release for proper glob pattern support
 
 Replace gh CLI with softprops/action-gh-release@v1 to properly
-handle dist/**/* glob patterns when creating GitHub releases.
+handle dist/\*_/_ glob patterns when creating GitHub releases.
 
-## [1.14.1](https://github.com/cloudvoyant/nv-lib-template/compare/v1.14.0...v1.14.1) (2025-11-15)
+## [1.14.1](https://github.com/cloudvoyant/mise-lib-template/compare/v1.14.0...v1.14.1) (2025-11-15)
 
 ### Bug Fixes
 
-* add build step before creating GitHub release
+- add build step before creating GitHub release
 
 Add build-prod step to generate dist artifacts before release
-creation to prevent "no matches found for dist/**/*" error.
+creation to prevent "no matches found for dist/\*_/_" error.
 
-## [1.14.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.13.0...v1.14.0) (2025-11-15)
+## [1.14.0](https://github.com/cloudvoyant/mise-lib-template/compare/v1.13.0...v1.14.0) (2025-11-15)
 
 ### Features
 
-* improve CI performance and setup script organization
+- improve CI performance and setup script organization
 
-- Add dependency caching to CI and release workflows (binaries, npm, apt)
-- Refactor setup.sh with modular flags (--dev, --ci, --template, --docker-optimize)
-- Add template documentation files for scaffolded projects
-- Improve Docker image optimization support
-
+* Add dependency caching to CI and release workflows (binaries, npm, apt)
+* Refactor setup.sh with modular flags (--dev, --ci, --template, --docker-optimize)
+* Add template documentation files for scaffolded projects
+* Improve Docker image optimization support
 
 ### Bug Fixes
 
-* align workflow cache paths and CI dependencies with template
+- align workflow cache paths and CI dependencies with template
 
-- Update binary cache path to /usr/local/bin for consistency
-- Add bats-core and parallel installation to --ci flag
-- Update setup.sh documentation to reflect CI dependencies
+* Update binary cache path to /usr/local/bin for consistency
+* Add bats-core and parallel installation to --ci flag
+* Update setup.sh documentation to reflect CI dependencies
 
-* correct secret checks in release workflow conditionals
+- correct secret checks in release workflow conditionals
 
 Replace invalid secrets.GCP_SA_KEY references with env.GCP_SA_KEY
 to fix GitHub Actions validation errors. GitHub Actions does not
 allow direct secret access in if conditions.
 
-## [1.13.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.12.0...v1.13.0) (2025-11-02)
+## [1.13.0](https://github.com/cloudvoyant/mise-lib-template/compare/v1.12.0...v1.13.0) (2025-11-02)
 
 ### Features
 
-* add dependency caching to CI and release workflows ([8529dcc](https://github.com/cloudvoyant/nv-lib-template/commit/8529dcc74ea69ab132f93de3ee122ecfefd16c2a))
+- add dependency caching to CI and release workflows ([8529dcc](https://github.com/cloudvoyant/mise-lib-template/commit/8529dcc74ea69ab132f93de3ee122ecfefd16c2a))
 
-## [1.12.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.11.0...v1.12.0) (2025-11-02)
-
-### Features
-
-* add VS Code settings for team consistency ([7b4e8b8](https://github.com/cloudvoyant/nv-lib-template/commit/7b4e8b8600e79662a87aa3fd9bf08e8efed542e6))
-
-## [1.11.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.10.3...v1.11.0) (2025-11-02)
+## [1.12.0](https://github.com/cloudvoyant/mise-lib-template/compare/v1.11.0...v1.12.0) (2025-11-02)
 
 ### Features
 
-* rename platform variables to template for clarity ([c86050f](https://github.com/cloudvoyant/nv-lib-template/commit/c86050f4075719c3685413a5646d1f7debc749ea))
+- add VS Code settings for team consistency ([7b4e8b8](https://github.com/cloudvoyant/mise-lib-template/commit/7b4e8b8600e79662a87aa3fd9bf08e8efed542e6))
 
-## [1.10.3](https://github.com/cloudvoyant/nv-lib-template/compare/v1.10.2...v1.10.3) (2025-11-01)
+## [1.11.0](https://github.com/cloudvoyant/mise-lib-template/compare/v1.10.3...v1.11.0) (2025-11-02)
+
+### Features
+
+- rename platform variables to template for clarity ([c86050f](https://github.com/cloudvoyant/mise-lib-template/commit/c86050f4075719c3685413a5646d1f7debc749ea))
+
+## [1.10.3](https://github.com/cloudvoyant/mise-lib-template/compare/v1.10.2...v1.10.3) (2025-11-01)
 
 ### Performance Improvements
 
-* optimize CI by removing unnecessary dependencies ([c242fe2](https://github.com/cloudvoyant/nv-lib-template/commit/c242fe200272f6acc00d6cc51c6509fbfaff9c15))
+- optimize CI by removing unnecessary dependencies ([c242fe2](https://github.com/cloudvoyant/mise-lib-template/commit/c242fe200272f6acc00d6cc51c6509fbfaff9c15))
 
-## [1.10.2](https://github.com/cloudvoyant/nv-lib-template/compare/v1.10.1...v1.10.2) (2025-11-01)
-
-### Bug Fixes
-
-* consolidate CI workflow into single build-and-test job ([6e8e776](https://github.com/cloudvoyant/nv-lib-template/commit/6e8e776af61a5d50a3b7bdaabb6e08743228bfaa))
-
-## [1.10.1](https://github.com/cloudvoyant/nv-lib-template/compare/v1.10.0...v1.10.1) (2025-11-01)
+## [1.10.2](https://github.com/cloudvoyant/mise-lib-template/compare/v1.10.1...v1.10.2) (2025-11-01)
 
 ### Bug Fixes
 
-* keep .claude directory visible and document search limitation ([815aabd](https://github.com/cloudvoyant/nv-lib-template/commit/815aabd490cecd54c2d00c242fc1abc71e3c89b4))
+- consolidate CI workflow into single build-and-test job ([6e8e776](https://github.com/cloudvoyant/mise-lib-template/commit/6e8e776af61a5d50a3b7bdaabb6e08743228bfaa))
 
-## [1.10.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.9.1...v1.10.0) (2025-11-01)
+## [1.10.1](https://github.com/cloudvoyant/mise-lib-template/compare/v1.10.0...v1.10.1) (2025-11-01)
+
+### Bug Fixes
+
+- keep .claude directory visible and document search limitation ([815aabd](https://github.com/cloudvoyant/mise-lib-template/commit/815aabd490cecd54c2d00c242fc1abc71e3c89b4))
+
+## [1.10.0](https://github.com/cloudvoyant/mise-lib-template/compare/v1.9.1...v1.10.0) (2025-11-01)
 
 ### Features
 
-- add Docker and docker-compose support with multi-stage builds ([46c7aed](https://github.com/cloudvoyant/nv-lib-template/commit/46c7aedd5b1076c50f3c584ac6b8a0464452c62e))
-- add VS Code file visibility toggle commands ([0146f50](https://github.com/cloudvoyant/nv-lib-template/commit/0146f504c0d05606e97a4d79653feec46b713d1f))
-- enhance changelog generation and publishing ([46c796a](https://github.com/cloudvoyant/nv-lib-template/commit/46c796a30452cb1cb2d8389b10fc3d0489b5440c))
+- add Docker and docker-compose support with multi-stage builds ([46c7aed](https://github.com/cloudvoyant/mise-lib-template/commit/46c7aedd5b1076c50f3c584ac6b8a0464452c62e))
+- add VS Code file visibility toggle commands ([0146f50](https://github.com/cloudvoyant/mise-lib-template/commit/0146f504c0d05606e97a4d79653feec46b713d1f))
+- enhance changelog generation and publishing ([46c796a](https://github.com/cloudvoyant/mise-lib-template/commit/46c796a30452cb1cb2d8389b10fc3d0489b5440c))
 
 ### Bug Fixes
 
-- add missing conventionalcommits changelog dependency ([a0f2841](https://github.com/cloudvoyant/nv-lib-template/commit/a0f28414afa9775b83e1ad9cd723542959433077))
+- add missing conventionalcommits changelog dependency ([a0f2841](https://github.com/cloudvoyant/mise-lib-template/commit/a0f28414afa9775b83e1ad9cd723542959433077))
 
 ### Documentation
 
-- add section on viewing hidden files in VS Code ([9dfc104](https://github.com/cloudvoyant/nv-lib-template/commit/9dfc104aa247c2727eacab0ca7af7e454707eb9b))
-- improve architecture.md consistency and add review command ([7426f30](https://github.com/cloudvoyant/nv-lib-template/commit/7426f3035ca10b961380244fc190bb53fd497597))
-- improve commit command workflow instructions ([069bea7](https://github.com/cloudvoyant/nv-lib-template/commit/069bea7ceafddc96259cdd32927d587b147c6649))
-- improve markdown formatting and user guide clarity ([ab4d313](https://github.com/cloudvoyant/nv-lib-template/commit/ab4d313f01ddd60e889e9719a8fcd654c8ae9e0d))
-- refactor template placeholders and fix ADR references ([f1ab275](https://github.com/cloudvoyant/nv-lib-template/commit/f1ab275cdf7a0e62994ece0761494252f6922be9))
+- add section on viewing hidden files in VS Code ([9dfc104](https://github.com/cloudvoyant/mise-lib-template/commit/9dfc104aa247c2727eacab0ca7af7e454707eb9b))
+- improve architecture.md consistency and add review command ([7426f30](https://github.com/cloudvoyant/mise-lib-template/commit/7426f3035ca10b961380244fc190bb53fd497597))
+- improve commit command workflow instructions ([069bea7](https://github.com/cloudvoyant/mise-lib-template/commit/069bea7ceafddc96259cdd32927d587b147c6649))
+- improve markdown formatting and user guide clarity ([ab4d313](https://github.com/cloudvoyant/mise-lib-template/commit/ab4d313f01ddd60e889e9719a8fcd654c8ae9e0d))
+- refactor template placeholders and fix ADR references ([f1ab275](https://github.com/cloudvoyant/mise-lib-template/commit/f1ab275cdf7a0e62994ece0761494252f6922be9))
 
-## [1.9.1](https://github.com/cloudvoyant/nv-lib-template/compare/v1.9.0...v1.9.1) (2025-10-15)
-
-### Bug Fixes
-
-- use get_version() in upversion.sh to properly detect new releases ([a145bc2](https://github.com/cloudvoyant/nv-lib-template/commit/a145bc270bbc01c75100d927ff5aa210caf33842))
-
-# [1.9.0](https://github.com/cloudvoyant/nv-lib-template/compare/v1.8.2...v1.9.0) (2025-10-14)
+## [1.9.1](https://github.com/cloudvoyant/mise-lib-template/compare/v1.9.0...v1.9.1) (2025-10-15)
 
 ### Bug Fixes
 
-- getting version from tags to keep single source of truth, and avoid need for drenv reloads due to .,envrc changes on commits ([6c0004a](https://github.com/cloudvoyant/nv-lib-template/commit/6c0004a58dc66d95fcfa5b2eb45ba86d8a587a94))
+- use get_version() in upversion.sh to properly detect new releases ([a145bc2](https://github.com/cloudvoyant/mise-lib-template/commit/a145bc270bbc01c75100d927ff5aa210caf33842))
+
+# [1.9.0](https://github.com/cloudvoyant/mise-lib-template/compare/v1.8.2...v1.9.0) (2025-10-14)
+
+### Bug Fixes
+
+- getting version from tags to keep single source of truth, and avoid need for drenv reloads due to .,envrc changes on commits ([6c0004a](https://github.com/cloudvoyant/mise-lib-template/commit/6c0004a58dc66d95fcfa5b2eb45ba86d8a587a94))
 
 ### Features
 
-- use version.txt as single source of truth for versioning ([956fe0d](https://github.com/cloudvoyant/nv-lib-template/commit/956fe0d7bab5e14e377ead1de652d31148ed11ee))
+- use version.txt as single source of truth for versioning ([956fe0d](https://github.com/cloudvoyant/mise-lib-template/commit/956fe0d7bab5e14e377ead1de652d31148ed11ee))
 
-## [1.8.2](https://github.com/cloudvoyant/nv-lib-template/compare/v1.8.1...v1.8.2) (2025-10-14)
+## [1.8.2](https://github.com/cloudvoyant/mise-lib-template/compare/v1.8.1...v1.8.2) (2025-10-14)
 
 ### Bug Fixes
 
-- readme badhes ([c2990cb](https://github.com/cloudvoyant/nv-lib-template/commit/c2990cbccd56accccc95ebcf92eec1c102d05947))
+- readme badhes ([c2990cb](https://github.com/cloudvoyant/mise-lib-template/commit/c2990cbccd56accccc95ebcf92eec1c102d05947))
 
 ## [1.8.1](https://github.com/cloudvoyant/lib/compare/v1.8.0...v1.8.1) (2025-10-13)
 

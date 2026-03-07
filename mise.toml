@@ -7,7 +7,7 @@
 # Environment
 # -----------------------------------------------------------------------------
 [env]
-PROJECT                 = "nv-lib-template"
+PROJECT                 = "mise-lib-template"
 GCP_REGISTRY_PROJECT_ID = "devops-466002"
 GCP_REGISTRY_REGION     = "us-east1"
 GCP_REGISTRY_NAME       = "cloudvoyant-generic-registry"
@@ -61,10 +61,10 @@ description = "Run tests"
 depends     = ["build"]
 run         = 'echo "TODO: Implement test"'
 
-[tasks."dev:clean"]
+[tasks."clean"]
 description = "Clean build artifacts"
 run         = """
-rm -rf .nv
+rm -rf .tmp
 echo "TODO: Implement clean"
 """
 
@@ -103,14 +103,6 @@ run         = 'echo "TODO: Implement linting"'
 [tasks.lint-fix]
 description = "Lint and auto-fix issues"
 run         = 'echo "TODO: Implement lint auto-fixing"'
-
-[tasks.hide]
-description = "Hide non-essential files in VS Code"
-run         = '.mise-tasks/toggle-files hide'
-
-[tasks.show]
-description = "Show all files in VS Code"
-run         = '.mise-tasks/toggle-files show'
 
 
 # =============================================================================

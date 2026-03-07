@@ -15,12 +15,14 @@ Before you begin, ensure you have the following installed:
 ### Initial Setup
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/YOUR-ORG/{{PROJECT_NAME}}.git
    cd {{PROJECT_NAME}}
    ```
 
 2. **Install tools**:
+
    ```bash
    mise install
    mise run install
@@ -63,12 +65,13 @@ mise run format
 mise run lint
 
 # Clean build artifacts
-mise run dev:clean
+mise run clean
 ```
 
 ### Making Changes
 
 1. **Create a feature branch**:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -79,6 +82,7 @@ mise run dev:clean
    - Update documentation
 
 3. **Test your changes**:
+
    ```bash
    mise run test
    mise run lint
@@ -86,6 +90,7 @@ mise run dev:clean
    ```
 
 4. **Commit using conventional commits**:
+
    ```bash
    # Feature
    git commit -m "feat: add new capability"
@@ -250,7 +255,7 @@ docker exec -it {{PROJECT_NAME}}-dev bash
 
 ```bash
 # Clean and rebuild
-mise run dev:clean
+mise run clean
 mise run build
 ```
 
@@ -327,6 +332,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 ```
 
 **Types**:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation
@@ -347,6 +353,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 ### External Resources
 
 TODO: Add links to relevant external resources:
+
 - Language-specific docs
 - Framework documentation
 - API references

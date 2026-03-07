@@ -7,7 +7,7 @@ This template uses the **Claudevoyant** plugin for powerful slash commands that 
 The Claudevoyant plugin is **automatically installed** when you run:
 
 ```bash
-just setup --dev
+mise run install-claude-plugins
 ```
 
 The plugin provides all slash commands like `/plan`, `/commit`, `/upgrade`, etc.

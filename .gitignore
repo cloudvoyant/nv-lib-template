@@ -80,7 +80,7 @@ temp/
 .sass-cache/
 .npm/
 .yarn/
-.nv/
+.tmp/
 
 # Coverage and test reports
 coverage/
@@ -101,9 +101,13 @@ test-results/
 .mise.local.toml
 
 # Instance-specific development files
-.claude/plan.md
-.claude/todos.md
-.claude/review.md
-.claude/execution-log.md
 .spec
-.style
+.claude/*
+!.claude/CLAUDE.md
+!.claude/commands/
+!.claude/commands/**
+
+# Style guide learning data (personal, not shared)
+.style/patterns.json
+.style/history.jsonl
+# .style/config.json is committed (team settings)

@@ -2,7 +2,7 @@
 
 ## Overview
 
-`nv-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. Customize for any language by editing `mise.toml` tasks.
+`mise-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. Customize for any language by editing `mise.toml` tasks.
 
 GCP-forward by default (uses GCP Artifact Registry), but easily modified for npm, PyPI, Docker Hub, etc.
 
@@ -92,7 +92,7 @@ lib/
 ├── docs/                    # architecture.md, user-guide.md
 ├── .claude/                 # AI workflows + all commands
 ├── .github/workflows/       # ci.yml, release.yml
-└── .devcontainer/           # VS Code container
+└── .devcontainer/           # Dev container configuration
 ```
 
 ### Scaffolded Projects
@@ -109,7 +109,7 @@ myproject/
 ├── docs/                    # Your docs
 ├── .claude/                 # User-facing commands only
 ├── .github/workflows/       # ci.yml, release.yml
-└── .devcontainer/           # VS Code container
+└── .devcontainer/           # Dev container configuration
 ```
 
 Key difference: The main README.md documents template architecture and is kept in the template repository. During scaffolding, `README.template.md` is renamed to `README.md` in the new project and customized with project-specific information. Template development files (`test/`, `.claude/commands/upgrade.md`, etc.) are removed.
@@ -126,7 +126,7 @@ This section is for template maintainers and advanced users who need to understa
    shfmt). Run `mise install` to install them. GitHub Actions uses `jdx/mise-action`
    to install mise and run `mise install` automatically.
 
-2. **Environment** (`[env]`): static env vars (PROJECT, GCP_*) and dynamic
+2. **Environment** (`[env]`): static env vars (PROJECT, GCP\_\*) and dynamic
    VERSION via `{{exec(command='cat version.txt ...')}}`. All tasks automatically
    have access to these env vars without manual sourcing.
 
@@ -145,8 +145,7 @@ The `.mise-tasks/` directory contains file-based mise tasks — executable bash 
 - `registry-login` - Handles GCP authentication for both local (interactive) and CI (service account) modes
 - `publish` - Uploads build artifacts to GCP Artifact Registry
 - `upgrade` - Runs the Claude `/upgrade` command for template migrations
-- `utils` *(internal)* - Shared functions for logging, version reading, and cross-platform compatibility
-- `toggle-files` *(internal)* - VS Code file visibility logic, called by `hide`/`show` tasks
+- `utils` _(internal)_ - Shared functions for logging, version reading, and cross-platform compatibility
 
 All tasks use `set -euo pipefail` for fail-fast behavior, catching errors immediately rather than continuing with invalid state.
 
@@ -173,12 +172,12 @@ All other workflow commands (`/spec:new/go/pause`, `/dev:commit`, `/dev:review`,
 
 The `Dockerfile` is a single stage following the [mise Docker cookbook](https://mise.jdx.dev/mise-cookbook/docker.html) pattern:
 
-- Based on `debian:12-slim` — minimal footprint
+- Based on `ubuntu:22.04` — consistent with devcontainer base
 - Installs mise with recommended ENV vars (`MISE_DATA_DIR`, `MISE_CONFIG_DIR`, `MISE_CACHE_DIR`, shims on `PATH`)
 - Pre-installs all tools from `mise.toml` at build time for fast container startup
 - Used by `docker-compose.yml` for `mise run docker-run` and `mise run docker-test`
 
-VS Code Dev Containers use a separate, simpler configuration (see `.devcontainer/`) that does not depend on this Dockerfile.
+Dev Containers use a separate, simpler configuration (see `.devcontainer/`) that does not depend on this Dockerfile.
 
 ### Component: docker-compose.yml
 
@@ -186,12 +185,11 @@ Provides containerized services for running and testing without installing depen
 
 - `runner` service: Executes `mise run run` in isolated container
 - `tester` service: Executes `mise run test` in isolated container
-- Both use `target: base` for minimal, fast builds
 - Mount project directory to `/workspace` for live code updates
 
 ### Component: .devcontainer/
 
-The `.devcontainer/` directory provides VS Code Dev Containers configuration using the standard `mcr.microsoft.com/devcontainers/base:ubuntu` image — no custom Dockerfile required.
+The `.devcontainer/` directory provides Dev Containers configuration using the standard `mcr.microsoft.com/devcontainers/base:ubuntu` image — no custom Dockerfile required.
 
 Features (via devcontainer feature flags):
 
@@ -208,7 +206,7 @@ Credential Mounting:
 - Git/GitHub credentials forwarded via SSH agent (requires `ssh-add` on host)
 - gcloud requires manual `gcloud auth login` inside container
 
-VS Code Extensions:
+Dev Container Extensions:
 
 - `hverlin.mise-vscode` - mise task runner and tool management UI
 - `timonwong.shellcheck` and `foxundermoon.shell-format` - Shell script linting and formatting
@@ -219,7 +217,7 @@ VS Code Extensions:
 All binary tools are declared in `mise.toml [tools]` and installed with a single `mise install`:
 
 ```bash
-mise install                        # node, shellcheck, shfmt, bats, taplo, gcloud, starship, claude, docker-cli
+mise install                        # node, shellcheck, shfmt, bats, python, gcloud, starship, claude, docker-cli
 mise run install-claude-plugins     # claudevoyant plugin (Claude CLI plugin, not a binary)
 ```
 

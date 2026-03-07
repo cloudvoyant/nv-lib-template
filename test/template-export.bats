@@ -29,7 +29,7 @@ setup() {
     mkdir -p "$REPO_DIR"
     rsync -a \
         --exclude='.git' \
-        --exclude='.nv' \
+        --exclude='.tmp' \
         --exclude='node_modules' \
         "$ORIGINAL_DIR/" "$REPO_DIR/"
     cd "$REPO_DIR"
@@ -70,10 +70,8 @@ teardown() {
     # Individual command files are now provided via the Claudevoyant plugin
     # and should not be in the template
 
-    # User-facing Claude config files should be included
-    [ -f "$EXTRACT_DIR/.claude/CLAUDE.md" ]
-    [ -f "$EXTRACT_DIR/.claude/style.md" ]
-    [ -f "$EXTRACT_DIR/.claude/workflows.md" ]
+    # Root-level style guide should be included
+    [ -f "$EXTRACT_DIR/CLAUDE.md" ]
 
     # docs/ should exist but not docs/migrations/
     [ -d "$EXTRACT_DIR/docs" ]

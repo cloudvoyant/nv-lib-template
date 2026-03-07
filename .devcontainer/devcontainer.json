@@ -1,14 +1,14 @@
 {
-  "name": "nv-lib-template",
+  "name": "mise-lib-template",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
-    "ghcr.io/devcontainers-extra/features/mise:1": {}
+    "ghcr.io/devcontainers-extra/features/mise:1": {},
   },
   "mounts": [
     // Claude CLI credentials (cross-platform: HOME on Unix, USERPROFILE on Windows)
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached"
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached",
   ],
   "customizations": {
     "vscode": {
@@ -16,13 +16,13 @@
         "ms-azuretools.vscode-docker",
         "timonwong.shellcheck",
         "foxundermoon.shell-format",
-        "hverlin.mise-vscode"
+        "hverlin.mise-vscode",
       ],
       "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash"
-      }
-    }
+        "terminal.integrated.defaultProfile.linux": "bash",
+      },
+    },
   },
   "postCreateCommand": "mise install && mise run install && mise run install-claude-plugins",
-  "remoteUser": "vscode"
+  "remoteUser": "vscode",
 }

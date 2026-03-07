@@ -1,4 +1,4 @@
-Help me migrate this project to the latest nv-ziglib-template version using a spec-driven approach.
+Help me migrate this project to the latest mise-lib-template version using a spec-driven approach.
 
 ## Overview
 
@@ -10,86 +10,104 @@ This workflow helps you systematically upgrade your project to the latest templa
 4. Working through changes methodically
 5. Testing and validating the migration
 
+## Breaking Changes: 1.x → 2.x (just/direnv → mise)
+
+If your project is on **1.x** (has `justfile`, `.envrc`, `scripts/`), you are migrating to a fundamentally different toolchain. Here is a summary of what changed:
+
+| 1.x                   | 2.x                                     |
+| --------------------- | --------------------------------------- |
+| `justfile`            | `mise.toml` `[tasks]` or `.mise-tasks/` |
+| `.envrc` (direnv)     | `mise.toml` `[env]`                     |
+| `scripts/` bash files | `.mise-tasks/` task scripts             |
+| `just <task>`         | `mise run <task>`                       |
+| `direnv allow`        | not needed                              |
+| `scripts/utils.sh`    | `.mise-tasks/utils`                     |
+| `scripts/setup.sh`    | removed (use `mise install`)            |
+| `[tools]` in justfile | `mise.toml` `[tools]`                   |
+
+### 1.x → 2.x Migration Steps
+
+1. **Create `mise.toml`** — move env vars from `.envrc` to `[env]`, tools from scripts to `[tools]`, and recipes from `justfile` to `[tasks]`
+2. **Migrate scripts** — move `scripts/scaffold.sh`, `upversion.sh`, `utils.sh` to `.mise-tasks/scaffold`, `upversion`, `utils` (remove the `.sh` extension; mise runs them directly); delete `toggle-files.sh` (replaced by static `.zed/settings.json`)
+3. **Update CI workflows** — replace manual tool installs with `jdx/mise-action@v2`; add `mise run install` step before running tasks
+4. **Replace `just` calls** — update any `just <task>` references in docs, CI, and scripts to `mise run <task>`
+5. **Remove old files** — delete `justfile`, `.envrc`, `.envrc.template`, `scripts/setup.sh`
+6. **Install dependencies** — run `mise install` to verify all tools install correctly
+
+After migration, mark the version by adding a comment at the top of `mise.toml`:
+
+```toml
+# Template: mise-lib-template v2.x
+```
+
+---
+
 ## Steps
 
 ### 1. Detect Current Version
 
-Check the template version this project is currently using:
+Check the template version this project is currently using. With mise-based projects (2.x), look for a comment at the top of `mise.toml`:
 
-```bash
-grep NV_TEMPLATE_VERSION .envrc
+```toml
+# Template: mise-lib-template v2.x
 ```
 
-If `NV_TEMPLATE_VERSION` doesn't exist in `.envrc`, this project was scaffolded before version tracking was added. Assume an older version and proceed with caution.
+If no version comment exists, check `git log --oneline | head -20` to find when the project was scaffolded. Projects without `mise.toml` as their primary config are on 1.x.
 
 ### 2. Clone Latest Template
 
-Clone the latest template to `.nv/template-upstream-main` for comparison:
+Clone the latest template to `.tmp/template-upstream-main` for comparison:
 
 ```bash
-# Create directory if needed
-mkdir -p .nv
+mkdir -p .tmp
 
-# Clone template (or pull if already exists)
-if [ -d ".nv/template-upstream-main" ]; then
-    cd .nv/template-upstream-main && git pull && cd ../..
+if [ -d ".tmp/template-upstream-main" ]; then
+    cd .tmp/template-upstream-main && git pull && cd ../..
 else
-    git clone https://github.com/cloudvoyant/nv-ziglib-template .nv/template-upstream-main
+    git clone https://github.com/cloudvoyant/mise-lib-template .tmp/template-upstream-main
 fi
 ```
 
 ### 3. Create Migration Plan
 
-Create `.claude/plan.md` with a structured migration plan. I'll help you create this plan with:
-
-Structure:
+Create `.claude/plan.md` with a structured migration plan:
 
 ```markdown
 # Migration Plan: v<current> → v<target>
 
 ## Overview
 
-Migrate from nv-ziglib-template v<current> to v<target>
+Migrate from mise-lib-template v<current> to v<target>
 
 ## Files to Review
 
-### Zig-Specific Files
+### Core Configuration
 
-- [ ] build.zig - Check for build configuration changes
-- [ ] build.zig.zon - Check for dependency updates
-- [ ] src/lib.zig - Check for library structure changes
-- [ ] src/main.zig - Check for CLI changes
+- [ ] mise.toml - Check for task, tool, and env changes
+- [ ] .mise-tasks/scaffold - Check for scaffolding improvements
+- [ ] .mise-tasks/upversion - Check for versioning updates
+- [ ] .mise-tasks/utils - Check for utility function updates
 
-### Critical Infrastructure Files
+### CI/CD Workflows
 
-- [ ] justfile - Check for recipe changes
-- [ ] scripts/scaffold.sh - Check for improvements
-- [ ] scripts/upversion.sh - Check for versioning updates
-- [ ] scripts/utils.sh - Check for utility function updates
-- [ ] scripts/toggle-files.sh - Check for Zig-specific file visibility
 - [ ] .github/workflows/ci.yml - Check for workflow updates
 - [ ] .github/workflows/release.yml - Check for release changes
-- [ ] .envrc - Check for new variables
 
 ### Configuration Files
 
 - [ ] .gitignore - Check for new patterns
 - [ ] .gitattributes - Check for line ending rules
-- [ ] .editorconfig - Check for editor settings
 - [ ] .releaserc.json - Check for semantic-release config
 
 ### Claude Code Configuration
 
-- [ ] .claude/instructions.md - Check for instruction updates
-- [ ] .claude/workflows.md - Check for workflow improvements
-- [ ] .claude/style.md - Check for style guide updates
+- [ ] .claude/CLAUDE.md - Check for instruction updates
 - [ ] .claude/commands/\*.md - Check for new/updated commands
 
 ### IDE Configuration
 
-- [ ] .vscode/settings.json - Check for editor settings
-- [ ] .vscode/extensions.json - Check for recommended extensions
-- [ ] .devcontainer/\* - Check for devcontainer updates
+- [ ] .zed/settings.json - Check for editor settings
+- [ ] .devcontainer/devcontainer.json - Check for devcontainer updates
 
 ### Documentation
 
@@ -99,38 +117,38 @@ Migrate from nv-ziglib-template v<current> to v<target>
 
 ## Changes to Apply
 
-For each file with differences, I'll create tasks like:
+For each file with differences, create tasks like:
 
-### Task 1: Review justfile changes
+### Task 1: Review mise.toml changes
 
-- [ ] Compare: diff justfile .nv/template-upstream-main/justfile
+- [ ] Compare: diff mise.toml .tmp/template-upstream-main/mise.toml
 - [ ] Review changes and decide what to apply
 - [ ] Apply relevant changes (preserve project customizations)
-- [ ] Test: just build && just test
+- [ ] Test: mise run build && mise run test
 
-### Task 2: Review Zig build configuration
+### Task 2: Review CI workflow changes
 
-- [ ] Compare: diff build.zig .nv/template-upstream-main/build.zig
-- [ ] Compare: diff build.zig.zon .nv/template-upstream-main/build.zig.zon
-- [ ] Review changes and decide what to apply
-- [ ] Test: zig build && zig build test
+- [ ] Compare: diff .github/workflows/ci.yml .tmp/template-upstream-main/.github/workflows/ci.yml
+- [ ] Compare: diff .github/workflows/release.yml .tmp/template-upstream-main/.github/workflows/release.yml
+- [ ] Apply relevant changes
 
 [Repeat for each file category]
 
-### Task N: Update version
+### Task N: Update version comment
 
-- [ ] Update NV_TEMPLATE_VERSION in .envrc to <target>
+- [ ] Update template version comment in mise.toml to v<target>
 
 ## Testing
 
-- [ ] Run: just test
+- [ ] Run: mise run test
+- [ ] Run: mise run test-template (if in template repo)
 - [ ] Verify builds work
-- [ ] Check CI passes (if applicable)
+- [ ] Check CI passes
 
 ## Cleanup
 
-- [ ] Remove: rm -rf .nv/template-upstream-main
-- [ ] Archive this migration plan (or delete)
+- [ ] Remove: rm -rf .tmp/template-upstream-main
+- [ ] Archive or delete migration plan
 ```
 
 ### 4. Work Through Plan Systematically
@@ -140,29 +158,26 @@ For each task in the migration plan:
 #### a. Compare Files
 
 ```bash
-# Example: Compare justfile
-diff justfile .nv/template-upstream-main/justfile
-
-# Or for directories
-diff -r scripts/ .nv/template-upstream-main/scripts/
+diff mise.toml .tmp/template-upstream-main/mise.toml
+diff -r .mise-tasks/ .tmp/template-upstream-main/.mise-tasks/
 ```
 
 #### b. Review Changes
 
 Determine if changes apply to this project:
 
-- **Infrastructure changes** (workflows, scripts): Usually apply
-- **Recipe changes** (justfile): May need customization
-- **Configuration** (.envrc.template, .gitignore): Review carefully
+- **Infrastructure changes** (workflows, `.mise-tasks/`): Usually apply
+- **Task changes** (`mise.toml [tasks]`): May need customization to preserve project-specific logic
+- **Configuration** (`.gitignore`, `.releaserc.json`): Review carefully
 - **Claude/IDE configs**: Apply improvements, preserve project-specific settings
 
 #### c. Apply Changes
 
 Apply relevant changes while preserving project-specific customizations:
 
-- Copy improved scripts
+- Merge task updates into `mise.toml`
+- Copy improved `.mise-tasks/` scripts
 - Merge workflow updates
-- Update recipes as needed
 - Preserve project-specific logic
 
 #### d. Mark Complete
@@ -174,41 +189,31 @@ Update `.claude/plan.md` to mark task as completed.
 After applying each significant change:
 
 ```bash
-just test
+mise run test
 ```
 
 ### 5. Update Version
 
-After all changes applied:
+After all changes applied, update the template version comment in `mise.toml`:
 
-```bash
-# Update .envrc with new version
-sed -i.bak 's/^export NV_TEMPLATE_VERSION=.*/export NV_TEMPLATE_VERSION=<new-version>/' .envrc && rm .envrc.bak
-direnv allow
+```toml
+# Template: mise-lib-template v<new-version>
 ```
 
 ### 6. Final Validation
 
-Run full test suite and verify:
-
 ```bash
-# Run tests
-just test
+mise run test
+mise run build
 
-# Check that all expected files exist
-ls -la scripts/ .github/workflows/
-
-# Verify .envrc has correct version
-grep NV_TEMPLATE_VERSION .envrc
+# Verify all expected files exist
+ls -la .mise-tasks/ .github/workflows/
 ```
 
 ### 7. Cleanup
 
 ```bash
-# Remove template clone
-rm -rf .nv/template-upstream-main
-
-# Archive or delete migration plan
+rm -rf .tmp/template-upstream-main
 mv .claude/plan.md .claude/migration-complete-$(date +%Y%m%d).md
 # Or: rm .claude/plan.md
 ```
@@ -224,15 +229,13 @@ mv .claude/plan.md .claude/migration-complete-$(date +%Y%m%d).md
 
 ## Common Issues
 
-### Missing NV_TEMPLATE_VERSION
+### No version tracking
 
-If `.envrc` doesn't have `NV_TEMPLATE_VERSION`, add it:
+If there's no template version comment in `mise.toml`, add one:
 
 ```bash
-echo '' >> .envrc
-echo '# Nedavellir template tracking' >> .envrc
-echo 'export NV_TEMPLATE=nv-ziglib-template' >> .envrc
-echo 'export NV_TEMPLATE_VERSION=<current-version>' >> .envrc
+# Add at the top of mise.toml (after # mise.toml header comment)
+# Template: mise-lib-template v<version>
 ```
 
 ### Conflicting Changes
@@ -248,6 +251,6 @@ If you've heavily customized files that also changed in the template:
 If tests fail after applying changes:
 
 1. Review what changed
-2. Check if you need to update test configuration
-3. Verify all dependencies are installed
-4. Consult template's CHANGELOG.md for breaking changes
+2. Verify `mise install` was run and all tools are available
+3. Check if `mise run install` (npm deps) is needed
+4. Consult the template's CHANGELOG.md for breaking changes

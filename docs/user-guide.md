@@ -1,6 +1,6 @@
 # User Guide
 
-`nv-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. It uses GCP Artifact Registry for publishing generic packages by default, but can be easily adapted for npm, PyPI, NuGet, CodeArtifact, etc.
+`mise-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. It uses GCP Artifact Registry for publishing generic packages by default, but can be easily adapted for npm, PyPI, NuGet, CodeArtifact, etc.
 
 ## Features
 
@@ -12,7 +12,7 @@ Here's what this template gives you off the bat:
 - Easy CI/CD customization with language-agnostic bash scripting - No need to get too deep into GitHub Actions for customization. Modify the publish task, set GitHub Secrets and you're good to go.
 - Trunk based development and automated versioning with conventional commits - semantic-release will handle version bumping for you! Work on feature branches and merge to main for bumps.
 - GCP Artifact Registry publishing (easily modified for other registries)
-- Cross-platform (macOS, Linux, Windows via WSL) - use the setup script to install dependencies, or alternately develop with Dev Containers or run tasks via Docker
+- Cross-platform (macOS, Linux, Windows via WSL) - run `mise install` to install dependencies, or alternately develop with Dev Containers or run tasks via Docker
 
 ## Requirements
 
@@ -21,17 +21,11 @@ Here's what this template gives you off the bat:
 
 Run `mise install` to install all tool dependencies declared in `mise.toml`.
 
-## Getting Started
-
 ## Quick Start
 
 Scaffold a new project:
 
 ```bash
-# Option 1: Nedavellir CLI (automated)
-nv create your-project-name --template nv-lib-template
-
-# Option 2: GitHub template + scaffold script
 # Click "Use this template" on GitHub, then:
 git clone <your-new-repo>
 cd <your-new-repo>
@@ -66,11 +60,11 @@ Build, run and test with `mise run`. The template will show TODO messages in con
 
 ```bash
 mise run run
-TODO: Implement build for nv-lib-template@1.9.1
+TODO: Implement build for mise-lib-template@2.x
 TODO: Implement run
 
 mise run test
-TODO: Implement build for nv-lib-template@1.9.1
+TODO: Implement build for mise-lib-template@2.x
 TODO: Implement test
 ```
 
@@ -107,20 +101,13 @@ The template includes a pre-configured devcontainer for consistent cross-platfor
 Prerequisites on host:
 
 - Docker Desktop or Docker Engine
-- VS Code with Dev Containers extension
+- An editor with Dev Containers support (e.g. Cursor, VS Code)
 
-If you have Docker running and the Dev Container extension installed, then you can simply:
-
-1. Open project in VS Code
-2. Command Palette (Cmd/Ctrl+Shift+P) → "Dev Containers: Reopen in Container"
-3. Wait for container build (first time only)
-
-VS Code should reopen. In your terminal, you will now find everything you need including `mise`, `gcloud` and more:
+Open the project in your editor and select "Reopen in Container". In your terminal you will find everything pre-installed including `mise`, `gcloud` and more:
 
 - Git, GitHub CLI, and Google Cloud CLI pre-installed
 - Git credentials automatically shared from host via SSH agent forwarding
 - Claude CLI credentials mounted from `~/.claude`
-- All VS Code extensions for shell development (shellcheck, etc.)
 - Docker-in-Docker support for building containers
 
 Authentication:
@@ -138,7 +125,7 @@ mise run install    # Install project dependencies
 mise run build      # Build for development
 mise run test       # Run tests
 mise run run        # Run locally
-mise run clean      # Clean build artifacts
+mise run clean  # Clean build artifacts
 ```
 
 ### Commit and Release
@@ -159,30 +146,6 @@ git push origin main
 ```
 
 CI/CD automatically runs tests, creates a release, and publishes to your configured registry.
-
-### Viewing Hidden Files (VS Code)
-
-The template provides `mise run hide` and `mise run show` commands to toggle file visibility in VS Code, helping you focus on code or see the full project structure as needed.
-
-Hide non-essential files (show only code and documentation):
-
-```bash
-mise run hide
-```
-
-This hides infrastructure files and shows only: `docs/`, `src/`, `test/`, `.claude/`, `mise.toml`, and `README.md`.
-
-Show all files:
-
-```bash
-mise run show
-```
-
-This reveals all hidden configuration files (`.github/`, `.vscode/`, `.devcontainer/`, `Dockerfile`, `docker-compose.yml`, `scripts/`, etc.).
-
-**Note**: These commands are VS Code-specific and modify `.vscode/settings.json`. If you use a different editor, you'll need to configure file visibility using your editor's native settings.
-
-**Limitation**: Hidden files won't appear in VS Code search results (Cmd+Shift+F) unless you run `mise run show` first or toggle "Use Exclude Settings" in the search panel.
 
 ## Customizing The Template For Your Needs
 

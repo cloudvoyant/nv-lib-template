@@ -7,10 +7,10 @@ Called by Nedavellir CLI after copying platform files to destination.
 Updates project-specific configuration in the destination directory.
 
 Usage:
-  bash scripts/scaffold.sh --src /path/to/template --dest /path/to/project
-  bash scripts/scaffold.sh --src /path/to/template --dest /path/to/project --non-interactive
-  bash scripts/scaffold.sh --src /path/to/template --dest /path/to/project --project myapp
-  bash scripts/scaffold.sh  # Uses current directory for both src and dest
+  mise run scaffold -- --src /path/to/template --dest /path/to/project
+  mise run scaffold -- --src /path/to/template --dest /path/to/project --non-interactive
+  mise run scaffold -- --src /path/to/template --dest /path/to/project --project myapp
+  mise run scaffold  # Uses current directory for both src and dest
 
 Options:
   --src PATH           Path to template source directory (default: project root)
@@ -21,8 +21,9 @@ Options:
 DOCUMENTATION
 
 # IMPORTS ----------------------------------------------------------------------
-source "$(dirname "$0")/utils"
 set -euo pipefail
+
+source "$(dirname "$0")/utils"
 
 # Load template name and version from mise.toml / version.txt
 unset PROJECT VERSION
@@ -55,8 +56,8 @@ cleanup_on_error() {
             chmod u+w "$DEST_DIR" 2>/dev/null || true
             chmod -R u+w "$DEST_DIR" 2>/dev/null || true
 
-            # Remove all files from destination (except .nv backup)
-            find "$DEST_DIR" -mindepth 1 -maxdepth 1 ! -name '.nv' -exec rm -rf {} + 2>/dev/null || true
+            # Remove all files from destination (except .tmp backup)
+            find "$DEST_DIR" -mindepth 1 -maxdepth 1 ! -name '.tmp' -exec rm -rf {} + 2>/dev/null || true
 
             # Restore entire directory from backup
             rsync -a "$BACKUP_DIR/" "$DEST_DIR/"
@@ -261,12 +262,12 @@ fi
 # BACKUP DESTINATION DIRECTORY ------------------------------------------------
 log_info "Creating backup of destination directory"
 
-BACKUP_DIR="$DEST_DIR/.nv/.scaffold-backup"
+BACKUP_DIR="$DEST_DIR/.tmp/.scaffold-backup"
 mkdir -p "$BACKUP_DIR"
 
-# Backup entire destination directory (excluding .nv to avoid recursion)
+# Backup entire destination directory (excluding .tmp to avoid recursion)
 rsync -a \
-    --exclude='.nv' \
+    --exclude='.tmp' \
     "$DEST_DIR/" "$BACKUP_DIR/"
 
 # Mark that we've started making changes
@@ -278,10 +279,10 @@ log_success "Backup created"
 log_info "Copying platform files to destination"
 
 # Copy all files from source to destination
-# Exclude: .git, .nv, test/, docs/migrations/, docs/decisions/, CHANGELOG.md, RELEASE_NOTES.md
+# Exclude: .git, .tmp, test/, docs/migrations/, docs/decisions/, CHANGELOG.md, RELEASE_NOTES.md
 rsync -a \
     --exclude='.git' \
-    --exclude='.nv' \
+    --exclude='.tmp' \
     --exclude='test/' \
     --exclude='docs/migrations/' \
     --exclude='docs/decisions/' \
@@ -313,7 +314,7 @@ PROJECT_CAMEL=$(words_to_camel "$PROJECT_WORDS")
 PROJECT_FLAT=$(words_to_flat "$PROJECT_WORDS")
 
 # Replace in all text files (excluding binary files and .git)
-find "$DEST_DIR" -type f ! -path "*/.git/*" ! -path "$DEST_DIR/.nv/*" 2>/dev/null | while IFS= read -r file; do
+find "$DEST_DIR" -type f ! -path "*/.git/*" ! -path "$DEST_DIR/.tmp/*" 2>/dev/null | while IFS= read -r file; do
     # Replace all variants (order matters: longer strings first to avoid partial replacements)
     sed_inplace "s/${TEMPLATE_PASCAL}/${PROJECT_PASCAL}/g" "$file" || true
     sed_inplace "s/${TEMPLATE_CAMEL}/${PROJECT_CAMEL}/g" "$file" || true
@@ -390,6 +391,18 @@ if [ -f "$MISE_TOML" ]; then
     sed_inplace '/^# TEMPLATE$/,$ {/^# TEMPLATE$/d; d;}' "$MISE_TOML"
 fi
 
+# Remove template-only sections from CLAUDE.md (test/bats section is template-specific)
+CLAUDE_MD="$DEST_DIR/CLAUDE.md"
+if [ -f "$CLAUDE_MD" ]; then
+    # Remove from <!-- @context: test, bats --> through the closing --- separator
+    awk '
+    /<!-- @context: test, bats -->/ { skip=1 }
+    skip && /^---$/ { skip=0; next }
+    !skip { print }
+    ' "$CLAUDE_MD" > "$CLAUDE_MD.tmp" && mv "$CLAUDE_MD.tmp" "$CLAUDE_MD"
+    log_info "Removed template-only sections from CLAUDE.md"
+fi
+
 
 # PROCESS DOCUMENTATION TEMPLATES ----------------------------------------------
 log_info "Processing documentation templates"
@@ -397,7 +410,7 @@ log_info "Processing documentation templates"
 TEMPLATES_PROCESSED=0
 
 # Find and process all *.template.md files
-find "$DEST_DIR" -type f -name "*.template.md" ! -path "*/.git/*" ! -path "$DEST_DIR/.nv/*" 2>/dev/null | while IFS= read -r template_file; do
+find "$DEST_DIR" -type f -name "*.template.md" ! -path "*/.git/*" ! -path "$DEST_DIR/.tmp/*" 2>/dev/null | while IFS= read -r template_file; do
     # Get output filename (remove .template extension)
     output_file="${template_file%.template.md}.md"
 

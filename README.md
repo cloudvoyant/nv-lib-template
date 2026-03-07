@@ -1,9 +1,9 @@
-# nv-lib-template
+# mise-lib-template
 
-![Version](https://img.shields.io/github/v/release/cloudvoyant/nv-lib-template?label=version)
-![Release](https://github.com/cloudvoyant/nv-lib-template/workflows/Release/badge.svg)
+![Version](https://img.shields.io/github/v/release/cloudvoyant/mise-lib-template?label=version)
+![Release](https://github.com/cloudvoyant/mise-lib-template/workflows/Release/badge.svg)
 
-`nv-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. It uses GCP Artifact Registry for publishing generic packages by default, but can be easily adapted for npm, PyPI, NuGet, CodeArtifact, etc.
+`mise-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. It uses GCP Artifact Registry for publishing generic packages by default, but can be easily adapted for npm, PyPI, NuGet, CodeArtifact, etc.
 
 ## Features
 
@@ -15,7 +15,7 @@ Here's what this template gives you off the bat:
 - Easy CI/CD customization with language-agnostic bash scripting - No need to get too deep into GitHub Actions for customization. Modify the publish recipe, set GitHub Secrets and you're good to go.
 - Trunk based development and automated versioning with conventional commits - semantic-release will handle version bumping for you! Work on feature branches and merge to main for bumps.
 - GCP Artifact Registry publishing (easily modified for other registries)
-- Cross-platform (macOS, Linux, Windows via WSL) - use the setup script to install dependencies, or alternately develop with Dev Containers or run tasks via Docker
+- Cross-platform (macOS, Linux, Windows via WSL) - run `mise install` to install dependencies, or alternately develop with Dev Containers or run tasks via Docker
 
 ## Requirements
 
@@ -29,10 +29,6 @@ Run `mise install` to install all tools, then `mise run install` for npm depende
 Scaffold a new project:
 
 ```bash
-# Option 1: Nedavellir CLI (automated)
-nv create your-project-name --platform nv-lib-template
-
-# Option 2: GitHub template + scaffold script
 # Click "Use this template" on GitHub, then:
 git clone <your-new-repo>
 cd <your-new-repo>
@@ -52,7 +48,7 @@ Type `mise tasks` to see all available tasks:
 ```bash
 ❯ mise tasks
 build        Build the project
-dev:clean    Clean build artifacts
+clean    Clean build artifacts
 install      Install dependencies
 publish      Publish package to registry
 run          Run project locally
@@ -64,11 +60,11 @@ Build, run, and test with `mise run`. The template will show TODO messages in co
 
 ```bash
 ❯ mise run run
-TODO: Implement build for nv-lib-template@2.0.0
+TODO: Implement build for mise-lib-template@2.0.0
 TODO: Implement run
 
 ❯ mise run test
-TODO: Implement build for nv-lib-template@2.0.0
+TODO: Implement build for mise-lib-template@2.0.0
 TODO: Implement test
 ```
 

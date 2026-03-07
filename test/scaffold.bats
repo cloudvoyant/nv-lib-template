@@ -11,17 +11,17 @@ setup() {
     # BATS encodes special chars as -XX (hex), decode them using perl
     TEST_NAME_DECODED=$(printf '%s' "$BATS_TEST_NAME" | perl -pe 's/-([0-9a-f]{2})/chr(hex($1))/gie')
     TEST_NAME_SANITIZED=$(printf '%s' "$TEST_NAME_DECODED" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g')
-    export PROJECT_DIR="$ORIGINAL_DIR/.nv/$TEST_NAME_SANITIZED"
+    export PROJECT_DIR="$ORIGINAL_DIR/.tmp/$TEST_NAME_SANITIZED"
     mkdir -p "$PROJECT_DIR"
 
-    # Clone template repo to project/.nv/$PROJECT (simulating nv CLI behavior)
-    export TEMPLATE_CLONE="$PROJECT_DIR/.nv/$PROJECT"
+    # Clone template repo to project/.tmp/$PROJECT (simulating scripting CLI behavior)
+    export TEMPLATE_CLONE="$PROJECT_DIR/.tmp/$PROJECT"
     mkdir -p "$TEMPLATE_CLONE"
 
     # Copy all files except .git and gitignored directories to template clone
     rsync -a \
         --exclude='.git' \
-        --exclude='.nv' \
+        --exclude='.tmp' \
         --exclude='node_modules' \
         "$ORIGINAL_DIR/" "$TEMPLATE_CLONE/"
 
@@ -110,7 +110,7 @@ teardown() {
     # Adds template tracking (reads from source mise.toml)
     run grep 'NV_TEMPLATE' "$DEST_DIR/mise.toml"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"nv-lib-template"* ]]
+    [[ "$output" == *"mise-lib-template"* ]]
 
     run grep 'NV_TEMPLATE_VERSION' "$DEST_DIR/mise.toml"
     [ "$status" -eq 0 ]
@@ -155,9 +155,8 @@ teardown() {
         --keep-claude
 
     [ -d "$DEST_DIR/.claude" ]
-    [ -f "$DEST_DIR/.claude/CLAUDE.md" ]
+    [ -f "$DEST_DIR/CLAUDE.md" ]
     [ -f "$DEST_DIR/.claude/workflows.md" ]
-    [ -f "$DEST_DIR/.claude/style.md" ]
 }
 
 
@@ -196,7 +195,7 @@ teardown() {
     [ "$status" -eq 0 ]
 
     # Should contain template name
-    run grep "nv-lib-template" "$DEST_DIR/README.md"
+    run grep "mise-lib-template" "$DEST_DIR/README.md"
     [ "$status" -eq 0 ]
 
     # Should contain platform version
@@ -222,13 +221,13 @@ teardown() {
 
 @test "uses destination directory name as default project name" {
     # Create a properly named destination directory
-    NEW_DEST="$ORIGINAL_DIR/.nv/my-awesome-project"
+    NEW_DEST="$ORIGINAL_DIR/.tmp/my-awesome-project"
     mkdir -p "$NEW_DEST"
 
     # Copy platform files to the new destination
     rsync -a \
         --exclude='.git' \
-        --exclude='.nv' \
+        --exclude='.tmp' \
         --exclude='node_modules' \
         . "$NEW_DEST/"
 
@@ -245,8 +244,8 @@ teardown() {
 }
 
 @test "restores original directory on failure" {
-    # Destination starts empty (only .nv directory from setup)
-    INITIAL_FILE_COUNT=$(find "$DEST_DIR" -mindepth 1 -maxdepth 1 ! -name '.nv' | wc -l)
+    # Destination starts empty (only .tmp directory from setup)
+    INITIAL_FILE_COUNT=$(find "$DEST_DIR" -mindepth 1 -maxdepth 1 ! -name '.tmp' | wc -l)
     [ "$INITIAL_FILE_COUNT" -eq 0 ]
 
     # Make README.template.md unreadable to cause failure during template substitution
@@ -266,8 +265,8 @@ teardown() {
     [ "$status" -ne 0 ]
     [[ "$output" == *"Restoring original directory"* ]]
 
-    # Should be restored to empty (only .nv directory should exist)
-    FILE_COUNT=$(find "$DEST_DIR" -mindepth 1 -maxdepth 1 ! -name '.nv' | wc -l)
+    # Should be restored to empty (only .tmp directory should exist)
+    FILE_COUNT=$(find "$DEST_DIR" -mindepth 1 -maxdepth 1 ! -name '.tmp' | wc -l)
     [ "$FILE_COUNT" -eq 0 ]
 }
 
@@ -279,7 +278,7 @@ teardown() {
         --project testproject
 
     # Backup directory should not exist after successful scaffold
-    [ ! -d "$DEST_DIR/.nv/.scaffold-backup" ]
+    [ ! -d "$DEST_DIR/.tmp/.scaffold-backup" ]
 }
 
 @test "replaces template name in all case variants across all files" {
@@ -308,7 +307,7 @@ teardown() {
     [ "$status" -eq 0 ]
 
     # Verify template name no longer appears in mise.toml PROJECT line
-    run grep -r 'PROJECT.*=.*"nv-lib-template"' "$DEST_DIR" --exclude-dir=.nv
+    run grep -r 'PROJECT.*=.*"mise-lib-template"' "$DEST_DIR" --exclude-dir=.tmp
     [ "$status" -eq 1 ]
 }
 
@@ -386,4 +385,3 @@ teardown() {
     [ ! -f "$DEST_DIR/.claude/commands/commit.md" ]
     [ ! -f "$DEST_DIR/.claude/commands/review.md" ]
 }
-

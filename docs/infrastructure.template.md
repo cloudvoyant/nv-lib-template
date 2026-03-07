@@ -89,6 +89,7 @@ mise run test
 Deployments are automated through GitHub Actions:
 
 1. **Commit Changes**: Push commits using conventional commit messages
+
    ```bash
    git commit -m "feat: add new feature"
    git push
@@ -101,6 +102,7 @@ Deployments are automated through GitHub Actions:
    - Artifacts published to registries (if configured)
 
 3. **Manual Deployment**: If needed, deploy manually:
+
    ```bash
    # Build production artifacts
    mise run build-prod
@@ -114,6 +116,7 @@ Deployments are automated through GitHub Actions:
 ### GCP Artifact Registry
 
 1. **Create Repository**:
+
    ```bash
    gcloud artifacts repositories create {{PROJECT_NAME}} \
        --repository-format=docker \
@@ -122,6 +125,7 @@ Deployments are automated through GitHub Actions:
    ```
 
 2. **Configure Service Account**:
+
    ```bash
    # Create service account
    gcloud iam service-accounts create {{PROJECT_NAME}}-publisher \
@@ -194,12 +198,13 @@ gcloud auth configure-docker us-east1-docker.pkg.dev
 docker system prune -a
 
 # Rebuild from scratch
-mise run dev:clean && mise run build
+mise run clean && mise run build
 ```
 
 #### Deployment Failures
 
 Check GitHub Actions logs:
+
 1. Go to repository → Actions tab
 2. Select failed workflow run
 3. Review step-by-step logs
@@ -214,6 +219,7 @@ Check GitHub Actions logs:
 ## Support
 
 For infrastructure-related questions:
+
 - File an issue in the GitHub repository
 - Contact the DevOps team (TODO: Add contact info)
 

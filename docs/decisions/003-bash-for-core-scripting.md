@@ -32,4 +32,4 @@ Use bash for all core platform scripts.
 - Excellent for system automation and file operations
 - Cross-platform with WSL on Windows
 - Sufficient for scripts under 100 lines (per Google style guide)
-- Can be replaced by dedicated CLI tool (`nv` CLI) to remove all scripting downstream
+- Can be replaced by dedicated CLI tool to remove all scripting downstream

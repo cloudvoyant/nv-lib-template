@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: nv-lib-template-runner
+    container_name: mise-lib-template-runner
     volumes:
       - .:/workspace
     working_dir: /workspace
@@ -19,7 +19,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: nv-lib-template-tester
+    container_name: mise-lib-template-tester
     volumes:
       - .:/workspace
     working_dir: /workspace

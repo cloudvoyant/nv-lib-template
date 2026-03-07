@@ -2,33 +2,33 @@
 
 # Test cases using template name in different formats:
 
-test_nv_lib_template_functionality() {
+test_mise_lib_template_functionality() {
     # snake_case usage
-    assert nv_lib_template == "template"
+    assert mise_lib_template == "template"
 }
 
-test-nv-lib-template-integration() {
+test-mise-lib-template-integration() {
     # kebab-case usage
-    config.template-name = nv-lib-template
+    config.template-name = mise-lib-template
 }
 
-class TestNvLibTemplate {
+class TestMiseLibTemplate {
     // PascalCase usage
-    NvLibTemplate instance;
-    NvLibTemplateService service;
+    MiseLibTemplate instance;
+    MiseLibTemplateService service;
 }
 
-describe('nvLibTemplate', () => {
+describe('miseLibTemplate', () => {
     // camelCase usage
-    const nvLibTemplateInstance = new NvLibTemplate();
-    const nvLibTemplateConfig = getNvLibTemplateConfig();
+    const miseLibTemplateInstance = new MiseLibTemplate();
+    const miseLibTemplateConfig = getMiseLibTemplateConfig();
 });
 
 # Configuration examples
-NV_LIB_TEMPLATE_CONFIG_PATH=/etc/nv-lib-template/config
-nv_lib_template_database_url=postgres://nv-lib-template:password@localhost/nv_lib_template
+NV_LIB_TEMPLATE_CONFIG_PATH=/etc/mise-lib-template/config
+mise_lib_template_database_url=postgres://mise_lib_template:password@localhost/mise_lib_template
 
 # Function names
-function initialize_nv_lib_template() { }
-function createNvLibTemplateService() { }
-function NvLibTemplateFactory() { }
+function initialize_mise_lib_template() { }
+function createMiseLibTemplateService() { }
+function MiseLibTemplateFactory() { }
