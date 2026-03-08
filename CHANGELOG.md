@@ -1,3 +1,14 @@
+## [2.4.2](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.1...v2.4.2) (2026-03-08)
+
+### Bug Fixes
+
+* remove publishCmd from releaserc to fix CI failure
+
+Template publishing is handled by the dedicated CI step which has
+GH_TOKEN and UV_PUBLISH_TOKEN set. The publishCmd ran in the upversion
+step where those env vars are unavailable, causing semantic-release to
+throw a lodash ReferenceError.
+
 ## [2.4.1](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.0...v2.4.1) (2026-03-08)
 
 ### Bug Fixes
