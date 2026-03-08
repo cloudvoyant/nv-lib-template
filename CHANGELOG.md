@@ -1,3 +1,11 @@
+## [2.4.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.3.0...v2.4.0) (2026-03-08)
+
+### Features
+
+* align templates with source files and streamline docs
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+
 ## [2.3.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.2.0...v2.3.0) (2026-03-08)
 
 ### Features
