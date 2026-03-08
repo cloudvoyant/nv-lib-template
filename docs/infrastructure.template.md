@@ -1,45 +1,23 @@
-# Infrastructure Guide
-
-> Infrastructure setup and deployment guide for {{PROJECT_NAME}}
+# Infrastructure
 
 ## Overview
 
-This document describes the infrastructure setup, deployment process, and operational considerations for {{PROJECT_NAME}}.
+`{{PROJECT_NAME}}` is a [`mise`](https://mise.jdx.dev/)-powered project with automated versioning, testing, and GitHub Actions CI/CD.
 
-## Architecture
+## Design
 
-### Components
+- Mise manages environment, dev tools, and tasks
+- GitHub Actions drives CI/CD using mise tasks
+- Org-level secrets avoid per-project secret configuration
+- The build system is project-structure agnostic — only mise tasks need to work
 
-- **Application**: Core {{PROJECT_NAME}} service
-- **Artifact Registry**: GCP Artifact Registry for container/package storage
-- **CI/CD**: GitHub Actions for automated builds and deployments
+## Implementation
 
-### Deployment Environments
+### Mise For Environment & Tasks
 
-- **Development**: Local development environment (Docker)
-- **Staging**: Pre-production testing environment (TODO: Configure as needed)
-- **Production**: Live production environment (TODO: Configure as needed)
+Mise is the environment management tool and task runner. Since mise can manage a large array of languages and tools, it is a sensible choice for a language-agnostic build system that hooks into CI/CD and can be modified for any language.
 
-## Prerequisites
-
-### Required Tools
-
-- [Docker](https://docs.docker.com/get-docker/) - Container runtime
-- [mise](https://mise.jdx.dev/) - Tool and task runner
-- [gcloud CLI](https://cloud.google.com/sdk/docs/install) - Google Cloud tools (if using GCP, managed via mise)
-
-### Cloud Accounts
-
-Configure the following accounts as needed:
-
-- **GitHub**: For repository hosting and CI/CD
-- **GCP**: For Artifact Registry and cloud deployments (optional)
-
-## Environment Configuration
-
-### Local Environment
-
-Environment is managed via `mise.toml`. Update the `[env]` section with your configuration:
+Environment is configured in `mise.toml` under `[env]`:
 
 ```toml
 [env]
@@ -48,180 +26,46 @@ GCP_REGISTRY_REGION     = "us-central1"
 GCP_REGISTRY_NAME       = "your-repository-name"
 ```
 
-Activate by running `mise install` — mise automatically loads env vars from `mise.toml`.
+### GitHub Actions For CI/CD
+
+The `ci` workflow runs on feature branch commits and publishes pre-release packages for testing. The `release` workflow runs on merge to main, where `semantic-release` bumps versions and updates the changelog.
 
 ### CI/CD Secrets
 
-Configure these secrets in your GitHub repository settings:
+Org-level secrets are utilized to avoid the need for setting up secrets for every new project. This means setup is only needed once.
 
-#### Required for Releases
+For GCP (default):
 
-- `GITHUB_TOKEN` - Automatically provided by GitHub Actions
+- `GCP_SA_KEY` - Service account JSON key
+- `GCP_REGISTRY_PROJECT_ID`, `GCP_REGISTRY_REGION`, `GCP_REGISTRY_NAME` - Registry configuration
 
-#### Optional for GCP Publishing
+For other registries (see [user-guide.md](user-guide.md#cicd-secrets) for details):
 
-- `GCP_SA_KEY` - Service account key JSON for GCP authentication
-- `GCP_REGISTRY_PROJECT_ID` - GCP project ID
-- `GCP_REGISTRY_REGION` - GCP region (e.g., us-east1)
-- `GCP_REGISTRY_NAME` - Artifact Registry repository name
+- npm: `NPM_TOKEN`
+- PyPI: `PYPI_TOKEN`
+- Docker Hub: `DOCKER_USERNAME`, `DOCKER_PASSWORD`
 
-> **Note**: Publishing to GCP is conditional. If `GCP_SA_KEY` is not configured, the release workflow will skip GCP publishing.
+### Cross-Platform Support
 
-## Deployment
+The project works on macOS, Linux, and Windows (via WSL) without requiring platform-specific tools.
 
-### Local Deployment
+Key compatibility measures:
 
-Build and run locally using Docker:
+- Mise handles installation of tools across host platforms
+- Line endings enforced to LF via `.editorconfig`
+- Bash 3.2+ required (macOS ships with Bash 3.2)
 
-```bash
-# Build the project
-mise run build
+### Docker & Dev-Containers
 
-# Run locally
-mise run run
+Supported for workflows that require containerization or publishing containers.
 
-# Run tests
-mise run test
-```
+## References
 
-### Production Deployment
-
-Deployments are automated through GitHub Actions:
-
-1. **Commit Changes**: Push commits using conventional commit messages
-
-   ```bash
-   git commit -m "feat: add new feature"
-   git push
-   ```
-
-2. **Automated Release**: On push to `main`:
-   - Tests run automatically
-   - semantic-release determines the version
-   - Release is created with artifacts
-   - Artifacts published to registries (if configured)
-
-3. **Manual Deployment**: If needed, deploy manually:
-
-   ```bash
-   # Build production artifacts
-   mise run build-prod
-
-   # Publish to registry
-   mise run publish
-   ```
-
-## Registry Setup
-
-### GCP Artifact Registry
-
-1. **Create Repository**:
-
-   ```bash
-   gcloud artifacts repositories create {{PROJECT_NAME}} \
-       --repository-format=docker \
-       --location=us-east1 \
-       --description="{{PROJECT_NAME}} container images"
-   ```
-
-2. **Configure Service Account**:
-
-   ```bash
-   # Create service account
-   gcloud iam service-accounts create {{PROJECT_NAME}}-publisher \
-       --display-name="{{PROJECT_NAME}} Publisher"
-
-   # Grant permissions
-   gcloud artifacts repositories add-iam-policy-binding {{PROJECT_NAME}} \
-       --location=us-east1 \
-       --member="serviceAccount:{{PROJECT_NAME}}-publisher@YOUR-PROJECT.iam.gserviceaccount.com" \
-       --role="roles/artifactregistry.writer"
-
-   # Create and download key
-   gcloud iam service-accounts keys create key.json \
-       --iam-account={{PROJECT_NAME}}-publisher@YOUR-PROJECT.iam.gserviceaccount.com
-   ```
-
-3. **Add to GitHub Secrets**:
-   - Copy contents of `key.json` to `GCP_SA_KEY` secret
-   - Set other GCP-related secrets
-
-## Monitoring
-
-### Health Checks
-
-TODO: Add health check endpoints and monitoring configuration
-
-### Logs
-
-TODO: Add logging configuration and access instructions
-
-### Metrics
-
-TODO: Add metrics collection and dashboard links
-
-## Backup & Recovery
-
-TODO: Add backup procedures and disaster recovery plan
-
-## Security
-
-### Access Control
-
-- Repository access managed through GitHub teams
-- Cloud resource access via IAM roles
-- Secrets stored in GitHub Secrets (encrypted at rest)
-
-### Best Practices
-
-- Use least-privilege IAM roles
-- Rotate service account keys regularly
-- Enable audit logging in cloud environments
-- Review dependency vulnerabilities regularly
-
-## Troubleshooting
-
-### Common Issues
-
-#### Authentication Failures
-
-```bash
-# Re-authenticate with GCP
-gcloud auth login
-gcloud auth configure-docker us-east1-docker.pkg.dev
-```
-
-#### Build Failures
-
-```bash
-# Clear Docker build cache
-docker system prune -a
-
-# Rebuild from scratch
-mise run clean && mise run build
-```
-
-#### Deployment Failures
-
-Check GitHub Actions logs:
-
-1. Go to repository → Actions tab
-2. Select failed workflow run
-3. Review step-by-step logs
-
-## Cost Optimization
-
-- Use caching in CI/CD workflows
-- Clean up old artifacts regularly
-- Right-size cloud resources
-- Monitor usage and set budget alerts
-
-## Support
-
-For infrastructure-related questions:
-
-- File an issue in the GitHub repository
-- Contact the DevOps team (TODO: Add contact info)
+- [mise - the dev tool manager](https://mise.jdx.dev/)
+- [semantic-release](https://semantic-release.gitbook.io/)
+- [GitHub Actions](https://docs.github.com/en/actions)
+- [GCP Artifact Registry](https://cloud.google.com/artifact-registry/docs)
+- [Conventional Commits](https://www.conventionalcommits.org/)
 
 ---
 

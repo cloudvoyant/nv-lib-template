@@ -1,25 +1,28 @@
 # User Guide
 
-`mise-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. It uses GCP Artifact Registry for publishing generic packages by default, but can be easily adapted for npm, PyPI, NuGet, CodeArtifact, etc.
+`mise-lib-template` is a language-agnostic [`mise`](https://mise.jdx.dev/)-powered [1] template for building library/executable projects. It uses GCP Artifact Registry for publishing generic packages by default, but can be easily adapted for npm, PyPI, NuGet, CodeArtifact, etc.
 
 ## Features
 
 Here's what this template gives you off the bat:
 
 - A language-agnostic self-documenting command interface via `mise` — keep all your project tasks, tool versions, and environment config in one `mise.toml`!
-- Auto-load environment variables with `mise` — project-scoped env vars defined in `mise.toml`, no shell hooks required
+- Cross-platform environment management - mise installs any dev-tools your project defines
 - CI/CD with GitHub Actions - run test on MR commits, tag and release on merges to main.
-- Easy CI/CD customization with language-agnostic bash scripting - No need to get too deep into GitHub Actions for customization. Modify the publish task, set GitHub Secrets and you're good to go.
-- Trunk based development and automated versioning with conventional commits - semantic-release will handle version bumping for you! Work on feature branches and merge to main for bumps.
+- Easy CI/CD customization - simply modify mise tasks that hook into actions
+- Trunk-based development and automated versioning with conventional commits - just on feature branches and merge to main for bumps, semantic-release will handle version bumping for you!
 - GCP Artifact Registry publishing (easily modified for other registries)
-- Cross-platform (macOS, Linux, Windows via WSL) - run `mise install` to install dependencies, or alternately develop with Dev Containers or run tasks via Docker
 
 ## Requirements
 
 - bash 3.2+
 - [mise](https://mise.jdx.dev/) — manages tools, tasks, and environment
 
-Run `mise install` to install all tool dependencies declared in `mise.toml`.
+To install mise, run:
+
+```bash
+❯ curl https://mise.jdx.dev/install.sh | sh
+```
 
 ## Quick Start
 
@@ -27,48 +30,40 @@ Scaffold a new project:
 
 ```bash
 # Click "Use this template" on GitHub, then:
-git clone <your-new-repo>
-cd <your-new-repo>
-bash .mise-tasks/scaffold --project your-project-name
+❯ git clone <your-new-repo>
+❯ cd <your-new-repo>
+❯ bash .mise-tasks/scaffold --project your-project-name
 ```
 
-Install dependencies and adapt the template for your needs:
+Install dependencies and scaffold the template for your needs:
 
 ```bash
-# Install mise (if not already installed)
-curl https://mise.jdx.dev/install.sh | sh
-# or: brew install mise
-
 # Install project tools
-mise install
-
-# Optional: install claudevoyant plugin for Claude slash commands
-mise run install-claude-plugins
+❯ mise install
 
 # Scaffold project for your language
-mise run scaffold
-claude /adapt
+❯ mise run scaffold
 ```
 
 Type `mise tasks` to see all the tasks at your disposal:
 
 ```bash
-mise tasks
+❯ mise tasks
 ```
 
 Build, run and test with `mise run`. The template will show TODO messages in console prior to adapting.
 
 ```bash
-mise run run
+❯ mise run run
 TODO: Implement build for mise-lib-template@2.x
 TODO: Implement run
 
-mise run test
+❯ mise run test
 TODO: Implement build for mise-lib-template@2.x
 TODO: Implement test
 ```
 
-Note how mise runs the necessary task dependencies automatically!
+Mise runs the necessary task dependencies automatically!
 
 Commit using conventional commits (`feat:`, `fix:`, `docs:`). Merge/push to main and CI/CD will run automatically bumping your project version and publishing a package.
 
@@ -83,9 +78,9 @@ Prerequisites:
 Available Docker commands:
 
 ```bash
-mise run docker-build    # Build the Docker image
-mise run docker-run      # Run the project in a container
-mise run docker-test     # Run tests in a container
+❯ mise run docker-build    # Build the Docker image
+❯ mise run docker-run      # Run the project in a container
+❯ mise run docker-test     # Run tests in a container
 ```
 
 The `Dockerfile` and `docker-compose.yml` are configured to install all required dependencies automatically. This is useful for:
@@ -101,9 +96,9 @@ The template includes a pre-configured devcontainer for consistent cross-platfor
 Prerequisites on host:
 
 - Docker Desktop or Docker Engine
-- An editor with Dev Containers support (e.g. Cursor, VS Code)
+- An editor with Dev Containers support (e.g. VS Code, Zed, WebStorm, etc.)
 
-Open the project in your editor and select "Reopen in Container". In your terminal you will find everything pre-installed including `mise`, `gcloud` and more:
+Open the project in your editor and select "Reopen in Container". In your terminal you will find everything pre-installed including mise, gcloud and more:
 
 - Git, GitHub CLI, and Google Cloud CLI pre-installed
 - Git credentials automatically shared from host via SSH agent forwarding
@@ -118,14 +113,14 @@ Authentication:
 
 ## The Basics
 
-### Daily Commands
+### Development
 
 ```bash
 mise run install    # Install project dependencies
 mise run build      # Build for development
 mise run test       # Run tests
 mise run run        # Run locally
-mise run clean  # Clean build artifacts
+mise run clean      # Clean build artifacts
 ```
 
 ### Commit and Release
@@ -229,15 +224,15 @@ All projects automatically inherit organization secrets.
 
 ### Customizing Behavior
 
-Tasks in `.mise-tasks/` provide hooks for overriding CI/CD behavior:
+`mise` tasks provide hooks for overriding CI/CD behavior:
 
-- `.mise-tasks/upversion` - Modify versioning logic here
+- **build-prod**: specifies how to create production builds in CI
+- **test**: specifies hot to test your build
+- **publish**: specifies how to publish to your artifact regiistry
 
 Edit these tasks to change how CI/CD runs, but avoid editing `.github/workflows/` directly.
 
-### Example: Custom Versioning
-
-To change how versions are calculated, edit `.mise-tasks/upversion` or modify `.releaserc.json` to add semantic-release plugins.
+To modify semantic versioning behavior or to deviate fromt trunk-based development, modify your .releaserc.json to modify semantic-versioning CLI's behavior.
 
 ## LLM Assistance with Claude
 
@@ -255,13 +250,9 @@ claude /upgrade                 # Migrate to newer template version
 ```bash
 claude /spec:new                # Create a new project plan
 claude /spec:go                 # Execute the plan with spec-driven development
-claude /spec:pause              # Capture insights for resuming work later
-claude /spec:refresh            # Update plan status
-claude /adr:new                 # Create architectural decision record
-claude /adr:capture             # Capture decisions from conversation
-claude /dev:docs                    # Validate documentation
-claude /dev:commit                  # Create conventional commit
-claude /dev:review                  # Perform code review
+claude /dev:docs                # Validate documentation
+claude /dev:commit              # Create conventional commit
+claude /dev:review              # Perform code review
 ```
 
 ### Upgrading Projects
@@ -273,49 +264,6 @@ claude /upgrade
 ```
 
 This creates a comprehensive migration plan, compares files, and walks you through changes while preserving your customizations.
-
-## Troubleshooting
-
-### mise not found
-
-Install mise:
-
-```bash
-curl https://mise.jdx.dev/install.sh | sh
-# or: brew install mise
-```
-
-### Tasks not seeing environment variables
-
-Run `mise env` to verify variables are set. Ensure `mise.toml` exists in
-the project root. If using `mise activate bash` in your shell, reload your
-shell: `exec bash`.
-
-### Tests pass locally but fail in CI
-
-Check that:
-
-- Runtime versions match CI (Node.js, Python, Go versions)
-- Lock files are committed (package-lock.json, requirements.txt)
-- All dependencies are declared
-
-### Publish fails with authentication error
-
-Verify GitHub organization secrets are configured:
-
-1. Organization → Settings → Secrets → Actions
-2. Check secrets exist (GCP_SA_KEY, NPM_TOKEN, etc.)
-3. Ensure repository access is enabled
-
-For GCP, verify service account has `roles/artifactregistry.writer` permission.
-
-### semantic-release fails
-
-Ensure:
-
-- Default branch is named `main` (or update `.releaserc.json`)
-- At least one commit uses conventional format
-- GITHUB_TOKEN secret is accessible
 
 ## Next Steps
 

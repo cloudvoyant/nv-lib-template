@@ -79,11 +79,6 @@ To learn more about using this template, read the docs:
 - [User Guide](docs/user-guide.md) - Complete setup and usage guide
 - [Architecture](docs/architecture.md) - Design and implementation details
 
-## TODO
-
-- [ ] Pre-release publishing
-- [ ] Template docs improvements
-
 ## References
 
 - [mise - dev tool manager](https://mise.jdx.dev/)
