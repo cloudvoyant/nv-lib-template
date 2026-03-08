@@ -1,3 +1,9 @@
+## [2.4.4](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.3...v2.4.4) (2026-03-08)
+
+### Bug Fixes
+
+* make uv publish depend on build to produce dist/ before publishing
+
 ## [2.4.3](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.2...v2.4.3) (2026-03-08)
 
 ### Bug Fixes
