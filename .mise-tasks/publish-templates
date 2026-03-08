@@ -16,6 +16,7 @@ log_info "Publishing template packages for mise-lib-template v$VERSION..."
 
 # --- mise-uv-template → PyPI ---
 log_info "Scaffolding mise-uv-template..."
+mkdir -p "$TMP_DIR/mise-uv-template"
 mise run scaffold -- \
     --src . --dest "$TMP_DIR/mise-uv-template" \
     --project mise-uv-template --template uv --non-interactive
@@ -31,6 +32,7 @@ log_success "mise-uv-template $VERSION published to PyPI"
 # The mise-lib-template GitHub Release at v$VERSION is created by semantic-release
 # before publish-templates runs. GH_REPO ensures gh targets the right repo from .tmp/.
 log_info "Scaffolding mise-zig-template..."
+mkdir -p "$TMP_DIR/mise-zig-template"
 mise run scaffold -- \
     --src . --dest "$TMP_DIR/mise-zig-template" \
     --project mise-zig-template --template zig --non-interactive
