@@ -1,3 +1,13 @@
+## [2.4.1](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.0...v2.4.1) (2026-03-08)
+
+### Bug Fixes
+
+* remove UV_PUBLISH_TOKEN from lodash template in releaserc
+
+Lodash template throws ReferenceError if the env var is undefined.
+UV_PUBLISH_TOKEN is passed to uv publish via the shell environment
+automatically when set as a CI secret — no explicit interpolation needed.
+
 ## [2.4.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.3.0...v2.4.0) (2026-03-08)
 
 ### Features
