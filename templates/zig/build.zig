@@ -7,16 +7,16 @@ pub fn build(b: *std.Build) void {
     // Library module (importable by other Zig projects)
     const lib_mod = b.addModule("mise_lib_template", .{
         .root_source_file = b.path("src/lib.zig"),
-        .target = target,
-        .optimize = optimize,
     });
 
     // Executable
     const exe = b.addExecutable(.{
         .name = "mise-lib-template",
-        .root_source_file = b.path("src/main.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
     exe.root_module.addImport("mise_lib_template", lib_mod);
     b.installArtifact(exe);
@@ -30,9 +30,11 @@ pub fn build(b: *std.Build) void {
 
     // Test step: `zig build test`
     const lib_tests = b.addTest(.{
-        .root_source_file = b.path("src/lib.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/lib.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
     const run_lib_tests = b.addRunArtifact(lib_tests);
     const test_step = b.step("test", "Run unit tests");
