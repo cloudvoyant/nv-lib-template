@@ -1,3 +1,16 @@
+## [2.4.9](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.8...v2.4.9) (2026-03-08)
+
+### Bug Fixes
+
+* produce platform-suffixed zig release binaries to avoid upload conflicts
+
+Copy each cross-compiled binary with its target name appended
+(e.g. mise-zig-template-x86_64-linux) so all five platform assets
+have unique filenames and can be uploaded to a GitHub release in
+one gh release upload call without 404 conflicts.
+
+Update publish to search maxdepth 1 for the suffixed files only.
+
 ## [2.4.8](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.7...v2.4.8) (2026-03-08)
 
 ### Bug Fixes
