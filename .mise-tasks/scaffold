@@ -18,12 +18,14 @@ Options:
   --non-interactive    Skip prompts, use defaults
   --project NAME       Project name (default: destination directory name)
   --keep-claude        Keep .claude/ directory for AI workflows
+  --template NAME      Language template to apply: uv, zig (default: agnostic)
 DOCUMENTATION
 
 # IMPORTS ----------------------------------------------------------------------
 set -euo pipefail
 
 source "$(dirname "$0")/utils"
+source "$(dirname "$0")/template-utils"
 
 # Load template name and version from mise.toml / version.txt
 unset PROJECT VERSION
@@ -76,11 +78,13 @@ trap cleanup_on_error EXIT
 NON_INTERACTIVE=false
 KEEP_CLAUDE=false
 PROJECT_NAME=""
+TEMPLATE=""
 
 # Default to project root directory
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SRC_DIR="$PROJECT_ROOT"
 DEST_DIR="$PROJECT_ROOT"
+TEMPLATES_DIR="$(get_templates_dir)"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -104,12 +108,31 @@ while [[ $# -gt 0 ]]; do
             KEEP_CLAUDE=true
             shift
             ;;
+        --template)
+            TEMPLATE="$2"
+            shift 2
+            ;;
         *)
             log_error "Unknown option: $1"
             exit 1
             ;;
     esac
 done
+
+# Discover valid templates dynamically from templates/ subdirectories
+VALID_TEMPLATES=()
+while IFS= read -r t; do VALID_TEMPLATES+=("$t"); done < <(list_templates)
+
+if [[ -n "$TEMPLATE" ]]; then
+    valid=false
+    for t in "${VALID_TEMPLATES[@]}"; do
+        [[ "$TEMPLATE" == "$t" ]] && valid=true && break
+    done
+    if ! $valid; then
+        log_error "Unknown template '$TEMPLATE'. Valid options: ${VALID_TEMPLATES[*]}"
+        exit 1
+    fi
+fi
 
 # VALIDATION -------------------------------------------------------------------
 # Convert to absolute paths
@@ -174,6 +197,105 @@ words_to_camel() {
 # Convert word array to flatcase (no separators)
 words_to_flat() {
     echo "$1" | tr -d '\n'
+}
+
+# Apply language template overlay to destination
+apply_template() {
+    local template="$1"
+    local dest="$2"
+    local template_src="$TEMPLATES_DIR/$template"
+
+    if [[ ! -d "$template_src" ]]; then
+        log_error "Template directory not found: $template_src"
+        exit 1
+    fi
+
+    log_info "Applying $template template overlay..."
+
+    # Overlay template files (exclude meta files not for scaffolded projects)
+    rsync -a \
+        --exclude='CLAUDE.md.append' \
+        --exclude='README.md' \
+        --exclude='node_modules' \
+        "$template_src/" "$dest/"
+
+    # Ensure .mise-tasks/ scripts are executable
+    if [[ -d "$dest/.mise-tasks" ]]; then
+        chmod +x "$dest/.mise-tasks/"* 2>/dev/null || true
+    fi
+
+    # Re-run name substitutions on newly overlaid files
+    # (the bulk sed pass ran before this overlay)
+    find "$dest" -type f ! -path "*/.git/*" ! -path "$dest/.tmp/*" 2>/dev/null | while IFS= read -r file; do
+        sed_inplace "s/${TEMPLATE_PASCAL}/${PROJECT_PASCAL}/g" "$file" || true
+        sed_inplace "s/${TEMPLATE_CAMEL}/${PROJECT_CAMEL}/g"   "$file" || true
+        sed_inplace "s/${TEMPLATE_SNAKE}/${PROJECT_SNAKE}/g"   "$file" || true
+        sed_inplace "s/${TEMPLATE_KEBAB}/${PROJECT_KEBAB}/g"   "$file" || true
+        sed_inplace "s/${TEMPLATE_FLAT}/${PROJECT_FLAT}/g"     "$file" || true
+    done
+
+    # Rename mise_lib_template/ directory inside src/ if template created it
+    # (directory names are not changed by sed — requires explicit mv)
+    local src_pkg_dir="$dest/src/mise_lib_template"
+    if [[ -d "$src_pkg_dir" ]]; then
+        mv "$src_pkg_dir" "$dest/src/$PROJECT_SNAKE"
+        log_info "Renamed src/mise_lib_template/ → src/$PROJECT_SNAKE/"
+    fi
+
+    log_success "$template template applied"
+}
+
+# Append CLAUDE.md.append from template to destination CLAUDE.md
+append_claude_md() {
+    local template="$1"
+    local dest="$2"
+    local append_file="$TEMPLATES_DIR/$template/CLAUDE.md.append"
+    local dest_claude="$dest/CLAUDE.md"
+
+    if [[ -f "$append_file" ]] && [[ -f "$dest_claude" ]]; then
+        log_info "Appending $template conventions to CLAUDE.md..."
+        printf '\n---\n' >> "$dest_claude"
+        cat "$append_file" >> "$dest_claude"
+        log_success "CLAUDE.md updated with $template conventions"
+    fi
+}
+
+# Remove agnostic placeholder files when a template is applied
+cleanup_agnostic_placeholders() {
+    local dest="$1"
+    log_info "Removing agnostic placeholder files..."
+
+    # Remove language-agnostic sample code (replaced by real template source)
+    rm -f "$dest/src/sample-code.txt"
+
+    # Remove src/.gitkeep if real source files now exist
+    if find "$dest/src" -type f ! -name '.gitkeep' | grep -q .; then
+        rm -f "$dest/src/.gitkeep"
+    fi
+
+    log_info "Agnostic placeholders removed"
+}
+
+# Update TEMPLATE tracking var in output mise.toml to match chosen template
+update_template_tracking() {
+    local template="$1"
+    local dest="$2"
+    local mise_toml="$dest/mise.toml"
+    local template_pkg="mise-${template}-template"
+
+    if [[ -f "$mise_toml" ]]; then
+        if grep -q "^TEMPLATE[[:space:]]*=" "$mise_toml"; then
+            # TEMPLATE line already exists (injected by base awk) — update it
+            sed_inplace "s|^TEMPLATE[[:space:]]*= *\".*\"|TEMPLATE         = \"$template_pkg\"|" "$mise_toml"
+        else
+            # Template overlay replaced mise.toml with one that has no TEMPLATE key — inject after PROJECT line
+            awk -v pkg="$template_pkg" '
+                /^PROJECT[[:space:]]*=/ { print; print "TEMPLATE         = \"" pkg "\""; next }
+                { print }
+            ' "$mise_toml" > "$mise_toml.tmp" && mv "$mise_toml.tmp" "$mise_toml"
+        fi
+        log_info "TEMPLATE set to $template_pkg"
+    fi
 }
 
 # GET TEMPLATE NAME AND VERSION -----------------------------------------------
@@ -244,6 +366,25 @@ if [ "$NON_INTERACTIVE" = false ]; then
         CONFIGURE_INSTALL=false
     fi
 
+    # Prompt for language template — menu built dynamically from templates/ subdirs
+    if [[ -z "$TEMPLATE" ]]; then
+        echo ""
+        echo "Select a language template:"
+        echo "  0) agnostic  — language-neutral starter (fill in your own tasks)"
+        i=1
+        for t in "${VALID_TEMPLATES[@]}"; do
+            printf "  %d) %s\n" "$i" "$t"
+            (( i++ ))
+        done
+        echo ""
+        read -rp "Template [0-${#VALID_TEMPLATES[@]}] (default: 0 agnostic): " template_choice
+        if [[ "$template_choice" =~ ^[1-9][0-9]*$ ]] && (( template_choice >= 1 && template_choice <= ${#VALID_TEMPLATES[@]} )); then
+            TEMPLATE="${VALID_TEMPLATES[$((template_choice - 1))]}"
+        else
+            TEMPLATE=""  # agnostic
+        fi
+    fi
+
     echo ""
 else
     # Non-interactive mode: use defaults
@@ -257,6 +398,11 @@ else
     fi
 
     log_info "Non-interactive mode: project=$PROJECT_NAME"
+    if [[ -n "$TEMPLATE" ]]; then
+        log_info "Non-interactive mode: template=$TEMPLATE"
+    else
+        log_info "Non-interactive mode: no language template (agnostic)"
+    fi
 fi
 
 # BACKUP DESTINATION DIRECTORY ------------------------------------------------
@@ -268,6 +414,7 @@ mkdir -p "$BACKUP_DIR"
 # Backup entire destination directory (excluding .tmp to avoid recursion)
 rsync -a \
     --exclude='.tmp' \
+    --exclude='node_modules' \
     "$DEST_DIR/" "$BACKUP_DIR/"
 
 # Mark that we've started making changes
@@ -283,7 +430,9 @@ log_info "Copying platform files to destination"
 rsync -a \
     --exclude='.git' \
     --exclude='.tmp' \
+    --exclude='node_modules' \
     --exclude='test/' \
+    --exclude='templates/' \
     --exclude='docs/migrations/' \
     --exclude='docs/decisions/' \
     --exclude='CHANGELOG.md' \
@@ -346,13 +495,13 @@ if [ "$CONFIGURE_GCP" = true ]; then
     log_success "GCP registry configured in mise.toml"
 fi
 
-# Add NV_TEMPLATE tracking vars to [env] section if not already present
-if ! grep -q '^NV_TEMPLATE' "$MISE_TOML"; then
+# Add TEMPLATE tracking vars to [env] section if not already present
+if ! grep -q '^TEMPLATE' "$MISE_TOML"; then
     awk -v template="$TEMPLATE_NAME" -v version="$TEMPLATE_VERSION" '
     /^GCP_REGISTRY_NAME/ {
         print $0
-        print "NV_TEMPLATE         = \"" template "\""
-        print "NV_TEMPLATE_VERSION = \"" version "\""
+        print "TEMPLATE         = \"" template "\""
+        print "TEMPLATE_VERSION = \"" version "\""
         next
     }
     { print }
@@ -360,6 +509,13 @@ if ! grep -q '^NV_TEMPLATE' "$MISE_TOML"; then
 fi
 
 log_success "Configured mise.toml"
+
+# APPLY LANGUAGE TEMPLATE OVERLAY ----------------------------------------
+if [[ -n "$TEMPLATE" ]]; then
+    apply_template "$TEMPLATE" "$DEST_DIR"
+    cleanup_agnostic_placeholders "$DEST_DIR"
+    update_template_tracking "$TEMPLATE" "$DEST_DIR"
+fi
 
 # CLEAN UP .CLAUDE/ DIRECTORY --------------------------------------------------
 if [ "$KEEP_CLAUDE" = false ]; then
@@ -391,6 +547,32 @@ if [ -f "$MISE_TOML" ]; then
     sed_inplace '/^# TEMPLATE$/,$ {/^# TEMPLATE$/d; d;}' "$MISE_TOML"
 fi
 
+# Remove template-only .mise-tasks scripts — not needed in scaffolded projects
+rm -f "$DEST_DIR/.mise-tasks/template-utils"
+rm -f "$DEST_DIR/.mise-tasks/publish-templates"
+rm -f "$DEST_DIR/.mise-tasks/publish-templates-rc"
+log_info "Removed template-only scripts from scaffolded project"
+
+# Strip template-only steps/jobs from CI workflows
+CI_YML="$DEST_DIR/.github/workflows/ci.yml"
+if [ -f "$CI_YML" ]; then
+    # Remove "Run template tests" step (test-template) and collapse extra blank line
+    awk '/- name: Run template tests/{skip=2; next} skip>0{skip--; next} {print}' "$CI_YML" | \
+        awk 'prev=="" && /^$/{next} {prev=$0; print}' > "$CI_YML.tmp" && mv "$CI_YML.tmp" "$CI_YML"
+    # Rewrite publish-rc job to call project's own publish-rc task (not template-specific)
+    sed_inplace 's/mise run publish-templates-rc/mise run publish-rc/' "$CI_YML"
+    sed_inplace 's/Publish RC template packages/Publish RC package/' "$CI_YML"
+    sed_inplace 's/TEST_PYPI_TOKEN/PYPI_TOKEN/' "$CI_YML"
+fi
+
+RELEASE_YML="$DEST_DIR/.github/workflows/release.yml"
+if [ -f "$RELEASE_YML" ]; then
+    # Remove "Run template tests" step (test-template)
+    awk '/- name: Run template tests/{skip=2; next} skip>0{skip--; next} {print}' "$RELEASE_YML" > "$RELEASE_YML.tmp" && mv "$RELEASE_YML.tmp" "$RELEASE_YML"
+    # Remove "Publish template packages" step (name + if + run + env block = ~5 lines)
+    awk '/- name: Publish template packages/{skip=5; next} skip>0{skip--; next} {print}' "$RELEASE_YML" > "$RELEASE_YML.tmp" && mv "$RELEASE_YML.tmp" "$RELEASE_YML"
+fi
+
 # Remove template-only sections from CLAUDE.md (test/bats section is template-specific)
 CLAUDE_MD="$DEST_DIR/CLAUDE.md"
 if [ -f "$CLAUDE_MD" ]; then
@@ -403,6 +585,10 @@ if [ -f "$CLAUDE_MD" ]; then
     log_info "Removed template-only sections from CLAUDE.md"
 fi
 
+# APPEND TEMPLATE CLAUDE.md CONTENT ----------------------------------------
+if [[ -n "$TEMPLATE" ]]; then
+    append_claude_md "$TEMPLATE" "$DEST_DIR"
+fi
 
 # PROCESS DOCUMENTATION TEMPLATES ----------------------------------------------
 log_info "Processing documentation templates"
@@ -484,6 +670,9 @@ log_success "✓ Scaffolding complete!"
 echo ""
 echo "Project: $PROJECT_NAME"
 echo "Template: $TEMPLATE_NAME v$TEMPLATE_VERSION"
+if [[ -n "$TEMPLATE" ]]; then
+    echo "Language: $TEMPLATE"
+fi
 echo ""
 log_info "Next steps:"
 echo "  1. Review mise.toml for project configuration (env vars and tasks)"

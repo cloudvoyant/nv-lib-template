@@ -22,7 +22,7 @@
 *.py text diff=python
 *.pyw text diff=python
 *.pyi text diff=python
-*.zig text
+*.zig text diff=zig
 *.rs text diff=rust
 *.java text diff=java
 *.cs text diff=csharp
@@ -120,7 +120,6 @@ docs/migrations/ export-ignore
 docs/decisions/ export-ignore
 CHANGELOG.md export-ignore
 RELEASE_NOTES.md export-ignore
-install.sh.template export-ignore
 .claude/plan.md export-ignore
 .claude/tasks.md export-ignore
 .claude/migrations/generate-migration-guide.md export-ignore

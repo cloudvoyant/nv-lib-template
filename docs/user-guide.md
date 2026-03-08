@@ -24,6 +24,16 @@ To install mise, run:
 ❯ curl https://mise.jdx.dev/install.sh | sh
 ```
 
+## Choosing a Template
+
+| Template | When to use | Language | Registry |
+|---|---|---|---|
+| agnostic | Any language — fill in your own tasks | Any | GCP Artifact Registry |
+| uv | Python library or CLI | Python 3.12+ | PyPI |
+| zig | Zig library or binary with cross-platform builds | Zig 0.15.x | GitHub Releases |
+
+All tools are installed automatically by mise — you do not need to install Python or Zig separately.
+
 ## Quick Start
 
 Scaffold a new project:
@@ -32,7 +42,9 @@ Scaffold a new project:
 # Click "Use this template" on GitHub, then:
 ❯ git clone <your-new-repo>
 ❯ cd <your-new-repo>
-❯ bash .mise-tasks/scaffold --project your-project-name
+❯ bash .mise-tasks/scaffold --project your-project-name --template uv    # Python
+❯ bash .mise-tasks/scaffold --project your-project-name --template zig   # Zig
+❯ bash .mise-tasks/scaffold --project your-project-name                   # agnostic (prompted)
 ```
 
 Install dependencies and scaffold the template for your needs:
@@ -110,6 +122,20 @@ Authentication:
 - Git/GitHub: Automatic via SSH agent forwarding (no setup needed)
 - gcloud: Run `gcloud auth login` inside the container on first use
 - Claude: Automatically available if configured on host
+
+## Template-Specific Tasks
+
+Regardless of which template you chose, the same `mise run` commands work identically:
+
+```bash
+mise run build         # build your project
+mise run test          # run tests
+mise run lint          # run static analysis
+mise run format        # format code
+mise run publish       # publish to your registry
+```
+
+`mise run install` installs the correct toolchain for your template (Python + uv, Zig, or node for semantic-release).
 
 ## The Basics
 
@@ -207,16 +233,18 @@ GCP_REGISTRY_NAME       = "my-registry"
 
 Configure secrets once at the organization level (Settings → Secrets → Actions):
 
-For GCP (default):
+For GCP (agnostic template, default):
 
 - `GCP_SA_KEY` - Service account JSON key
 - `GCP_REGISTRY_PROJECT_ID`, `GCP_REGISTRY_REGION`, `GCP_REGISTRY_NAME`
 
-For other registries:
+For PyPI (uv template):
 
-- npm: `NPM_TOKEN`
-- PyPI: `PYPI_TOKEN`
-- Docker Hub: `DOCKER_USERNAME`, `DOCKER_PASSWORD`
+- `UV_PUBLISH_TOKEN` — PyPI API token (or configure [OIDC trusted publishing](https://docs.pypi.org/trusted-publishers/))
+
+For GitHub Releases (zig template):
+
+- `GH_TOKEN` or `GITHUB_TOKEN` — already present via GitHub Actions default token
 
 All projects automatically inherit organization secrets.
 

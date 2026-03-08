@@ -61,6 +61,58 @@ Key compatibility measures:
 
 This is supported for workflows that may require containerization or publishing containers.
 
+## Template System
+
+### Template Overlay Design
+
+The `templates/` directory contains language-specific override and extension files that are layered over the agnostic base during scaffold:
+
+1. Base scaffold runs first — copies all base files to the destination, excluding `templates/`, `test/`, and other dev-only paths
+2. Template overlay — if `--template <name>` is given, `rsync` overlays `templates/<name>/` over the scaffolded output (excluding `CLAUDE.md.append` and `README.md`)
+3. CLAUDE.md merge — `templates/<name>/CLAUDE.md.append` is appended (not replaced) to the output `CLAUDE.md` after the bats/test section is stripped
+4. Name replacement — sed replaces `mise_lib_template`/`mise-lib-template` with the project name in all overlaid files; `src/mise_lib_template/` directories are renamed via `mv`
+5. Agnostic cleanup — `src/sample-code.txt` and `src/.gitkeep` are removed when a template is applied
+
+Files templates must NOT override (scaffold infrastructure):
+
+- `.mise-tasks/scaffold` — scaffold entrypoint
+- `.mise-tasks/utils` — shared logging/utilities
+- `.mise-tasks/upversion` — versioning logic
+
+`CLAUDE.md` is always merged, never replaced. Templates must provide `CLAUDE.md.append` instead.
+
+### Task Contract
+
+All templates must implement the same mise tasks so base GitHub Actions workflows work without modification:
+
+| Task           | Description                       |
+| -------------- | --------------------------------- |
+| `build`        | Compile / build artifacts         |
+| `test`         | Run test suite                    |
+| `lint`         | Static analysis                   |
+| `lint-fix`     | Auto-fix lint issues              |
+| `format`       | Format source in-place            |
+| `format-check` | Check formatting (CI)             |
+| `publish`      | Publish to registry               |
+| `docker-build` | Build Docker image                |
+| `docker-run`   | Run in Docker                     |
+| `docker-test`  | Test in Docker                    |
+| `upversion`    | Bump version via semantic-release |
+| `version`      | Print current version             |
+| `version-next` | Preview next version              |
+
+`jdx/mise-action@v2` reads `mise.toml` and installs all declared tools (uv, zig, etc.) automatically — no template-specific GitHub Actions files needed.
+
+### Publishing Pipeline
+
+| Template | Package           | Registry              | Trigger  |
+| -------- | ----------------- | --------------------- | -------- |
+| agnostic | mise-lib-template | GCP Artifact Registry | `v*` tag |
+| uv       | mise-uv-template  | PyPI                  | `v*` tag |
+| zig      | mise-zig-template | GitHub Releases       | `v*` tag |
+
+All template packages share the same version tag as `mise-lib-template`. `publish-templates` scaffolds each template into `.tmp/`, sets the version, and calls `mise run publish` from the scaffolded project. The template's own `publish` task handles registry-specific logic.
+
 ## References
 
 - [mise - the dev tool manager](https://mise.jdx.dev/)

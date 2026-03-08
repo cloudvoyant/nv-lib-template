@@ -108,11 +108,11 @@ teardown() {
     [ "$status" -eq 0 ]
 
     # Adds template tracking (reads from source mise.toml)
-    run grep 'NV_TEMPLATE' "$DEST_DIR/mise.toml"
+    run grep 'TEMPLATE' "$DEST_DIR/mise.toml"
     [ "$status" -eq 0 ]
     [[ "$output" == *"mise-lib-template"* ]]
 
-    run grep 'NV_TEMPLATE_VERSION' "$DEST_DIR/mise.toml"
+    run grep 'TEMPLATE_VERSION' "$DEST_DIR/mise.toml"
     [ "$status" -eq 0 ]
     [[ "$output" == *"$VERSION"* ]]
 
@@ -129,7 +129,7 @@ teardown() {
         --non-interactive \
         --project testproject
 
-    count=$(grep -c "^NV_TEMPLATE" "$DEST_DIR/mise.toml")
+    count=$(grep -c "^TEMPLATE" "$DEST_DIR/mise.toml")
     [ "$count" -eq 2 ]
 }
 
@@ -384,4 +384,12 @@ teardown() {
     [ ! -f "$DEST_DIR/.claude/commands/plan.md" ]
     [ ! -f "$DEST_DIR/.claude/commands/commit.md" ]
     [ ! -f "$DEST_DIR/.claude/commands/review.md" ]
+}
+
+@test "scaffold without --template flag uses agnostic mode" {
+    run bash "$SRC_DIR/.mise-tasks/scaffold" \
+        --src "$SRC_DIR" --dest "$DEST_DIR" \
+        --project "my-lib" --non-interactive
+    [ "$status" -eq 0 ]
+    grep -q 'TEMPLATE.*"mise-lib-template"' "$DEST_DIR/mise.toml"
 }

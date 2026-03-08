@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+#MISE hide=true
+set -euo pipefail
+source "$(dirname "$0")/utils"
+
+SHORT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "dev")
+RC_TAG="v${VERSION}-rc.${SHORT_SHA}"           # semver: v2.2.0-rc.abc1234
+RC_VERSION_PEP="${VERSION}rc${SHORT_SHA}"       # PEP 440: 2.2.0rcabc1234
+
+# Capture GH_REPO before changing directories
+BASE_GH_REPO="${GITHUB_REPOSITORY:-$(git remote get-url origin 2>/dev/null \
+    | sed 's|.*github.com[:/]\([^/]*/[^/.]*\).*|\1|')}"
+
+TMP_DIR=".tmp/publish-templates-rc"
+rm -rf "$TMP_DIR"
+mkdir -p "$TMP_DIR"
+
+log_info "Publishing RC template packages at $RC_TAG..."
+
+# --- Clean up previous RC pre-releases for this base version ---
+log_info "Cleaning up previous RC pre-releases for v${VERSION}-rc.*..."
+while IFS= read -r tag; do
+    [[ "$tag" == "$RC_TAG" ]] && continue
+    gh release delete "$tag" --yes --cleanup-tag 2>/dev/null || true
+done < <(gh release list --json tagName,isPrerelease \
+    --jq '.[] | select(.isPrerelease) | .tagName' \
+    | grep "^v${VERSION}-rc\." || true)
+
+# --- Create GitHub pre-release for RC tag ---
+# No upversion runs on feature branches, so we create the pre-release explicitly
+# before calling zig publish (which always uploads to an existing release).
+log_info "Creating GitHub pre-release $RC_TAG..."
+gh release create "$RC_TAG" \
+    --title "RC: $RC_TAG" \
+    --notes "Pre-release build from commit $SHORT_SHA. Not for production use." \
+    --prerelease
+
+# --- mise-uv-template RC → TestPyPI ---
+log_info "Scaffolding mise-uv-template RC..."
+mise run scaffold -- \
+    --src . --dest "$TMP_DIR/mise-uv-template" \
+    --project mise-uv-template --template uv --non-interactive
+
+sed_inplace "s/^version = .*/version = \"$RC_VERSION_PEP\"/" \
+    "$TMP_DIR/mise-uv-template/pyproject.toml"
+
+log_info "Publishing mise-uv-template $RC_VERSION_PEP to TestPyPI..."
+(cd "$TMP_DIR/mise-uv-template" && \
+    UV_PUBLISH_URL="https://upload.test.pypi.org/legacy/" mise run publish)
+log_success "mise-uv-template $RC_VERSION_PEP published to TestPyPI"
+
+# --- mise-zig-template RC → assets on GitHub pre-release ---
+# Pre-release already created above; zig publish uploads to existing release.
+log_info "Scaffolding mise-zig-template RC..."
+mise run scaffold -- \
+    --src . --dest "$TMP_DIR/mise-zig-template" \
+    --project mise-zig-template --template zig --non-interactive
+
+echo "${RC_TAG#v}" > "$TMP_DIR/mise-zig-template/version.txt"
+sed_inplace "s/.version = \".*\"/.version = \"${RC_TAG#v}\"/" \
+    "$TMP_DIR/mise-zig-template/build.zig.zon"
+
+log_info "Uploading mise-zig-template $RC_TAG binaries to GitHub pre-release..."
+(cd "$TMP_DIR/mise-zig-template" && GH_REPO="$BASE_GH_REPO" mise run publish)
+log_success "mise-zig-template $RC_TAG assets uploaded to GitHub pre-release"
+
+rm -rf "$TMP_DIR"
+log_success "RC template packages published at $RC_TAG"

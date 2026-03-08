@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#MISE description="Cross-compile for all supported platforms"
+#MISE hide=true
+set -euo pipefail
+source "$(dirname "$0")/utils"
+
+TARGETS=(
+    "x86_64-linux"
+    "aarch64-linux"
+    "x86_64-macos"
+    "aarch64-macos"
+    "x86_64-windows"
+)
+
+mkdir -p zig-out/release
+
+for target in "${TARGETS[@]}"; do
+    log_info "Building for $target..."
+    zig build -Doptimize=ReleaseFast \
+        -Dtarget="$target" \
+        --prefix "zig-out/release/$target"
+done
+
+log_success "All platform builds complete in zig-out/release/"

@@ -1,0 +1,91 @@
+# =============================================================================
+# mise.toml - zig template
+# Overlays the base mise.toml during scaffold.
+# =============================================================================
+
+[env]
+PROJECT = "mise-lib-template"
+VERSION = "{{exec(command='cat version.txt 2>/dev/null || echo 0.1.0')}}"
+
+[tools]
+zig        = "0.15.1"
+node       = "lts"
+bats       = "latest"
+shellcheck = "latest"
+shfmt      = "latest"
+
+[tasks.install]
+description = "Fetch Zig build dependencies"
+run         = "zig build --fetch 2>/dev/null || true"
+
+[tasks.build]
+description = "Build Zig project (debug)"
+run         = "zig build"
+
+[tasks.build-prod]
+description = "Build optimized release binary"
+run         = "zig build -Doptimize=ReleaseFast"
+
+[tasks.run]
+description = "Build and run the project"
+run         = "zig build run"
+
+[tasks.test]
+description = "Run Zig test suite"
+run         = "zig build test"
+
+[tasks.format]
+description = "Format Zig source files in-place"
+run         = "zig fmt src/"
+
+[tasks.format-check]
+description = "Check Zig formatting without modifying files"
+run         = "zig fmt --check src/"
+
+[tasks.lint]
+description = "Lint .mise-tasks/ shell scripts with shellcheck"
+run         = "shellcheck .mise-tasks/*"
+
+[tasks.lint-fix]
+description = "Auto-fix .mise-tasks/ shell script formatting with shfmt"
+run         = "shfmt -w .mise-tasks/*"
+
+[tasks.clean]
+description = "Remove Zig build artifacts"
+run         = "rm -rf zig-out/ zig-cache/ .zig-cache/"
+
+[tasks.build-all-platforms]
+description = "Cross-compile for Linux/macOS/Windows x86_64+aarch64"
+run         = ".mise-tasks/build-all-platforms"
+
+[tasks.publish]
+description = "Create GitHub release with cross-platform binaries"
+run         = ".mise-tasks/publish"
+
+[tasks.docker-build]
+description = "Build Docker image"
+run         = "docker build -t $PROJECT:$VERSION ."
+
+[tasks.docker-run]
+description = "Run Docker container"
+run         = "docker run --rm $PROJECT:$VERSION"
+
+[tasks.docker-test]
+description = "Run tests inside Docker"
+run         = "docker run --rm $PROJECT:$VERSION zig build test"
+
+[tasks.version]
+description = "Print current version"
+run         = "cat version.txt"
+
+[tasks.version-next]
+description = "Preview next semantic-release version"
+run         = "mise run upversion -- --dry-run"
+
+[tasks.upversion]
+description = "Run semantic-release to version and changelog"
+run         = ".mise-tasks/upversion"
+
+[tasks.publish-rc]
+description = "Publish RC binaries to GitHub pre-release"
+run         = ".mise-tasks/publish-rc"

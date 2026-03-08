@@ -43,3 +43,20 @@ jobs:
           name: build-artifacts
           path: src/
           retention-days: 7
+
+  publish-rc:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: jdx/mise-action@v2
+      - name: Install dependencies
+        run: mise run install
+      - name: Publish RC template packages
+        run: mise run publish-templates-rc
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

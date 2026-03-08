@@ -16,8 +16,14 @@ ENV PATH="/mise/shims:$PATH"
 
 RUN curl https://mise.run | sh
 
-# Pre-install all tools declared in mise.toml
-COPY mise.toml /workspace/mise.toml
-RUN cd /workspace && mise trust && mise install --yes
-
 WORKDIR /workspace
+
+# Copy manifest first for tool installation layer caching
+COPY mise.toml .
+RUN mise trust && mise install --yes
+
+# Copy source and build
+COPY . .
+RUN mise run build
+
+CMD ["mise", "run", "run"]

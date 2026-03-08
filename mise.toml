@@ -109,6 +109,10 @@ run         = 'echo "TODO: Implement lint auto-fixing"'
 # CI/CD
 # =============================================================================
 
+[tasks.publish-rc]
+description = "Publish RC package for pre-release validation"
+run         = 'echo "TODO: Implement RC publishing for $PROJECT@$VERSION"'
+
 [tasks.publish]
 description = "Publish package to registry"
 depends     = ["test", "build-prod"]
@@ -144,6 +148,18 @@ run         = "bash -c 'source .mise-tasks/utils && get_next_version'"
 # TEMPLATE
 # =============================================================================
 
+[tasks.list-templates]
+description = "List available language templates"
+run         = "find templates/ -mindepth 1 -maxdepth 1 -type d -exec basename {} \\; | sort"
+
+[tasks.publish-templates]
+description = "Publish template packages to their respective registries"
+run         = ".mise-tasks/publish-templates"
+
+[tasks.publish-templates-rc]
+description = "Publish RC versions of template packages (CI pre-release validation)"
+run         = ".mise-tasks/publish-templates-rc"
+
 [tasks.test-template]
-description = "Run template tests"
-run         = "bats test/"
+description = "Run bats tests for scaffold, all templates, and docker contracts"
+run         = "bats --jobs 4 test/scaffold.bats test/scaffold-templates.bats test/docker.bats test/template-export.bats"

@@ -3,7 +3,11 @@
 ![Version](https://img.shields.io/github/v/release/cloudvoyant/mise-lib-template?label=version)
 ![Release](https://github.com/cloudvoyant/mise-lib-template/workflows/Release/badge.svg)
 
-`mise-lib-template` is a language-agnostic template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. It uses GCP Artifact Registry for publishing generic packages by default, but can be easily adapted for npm, PyPI, NuGet, CodeArtifact, etc.
+`mise-lib-template` is a template for building projects with automated versioning, testing, and GitHub Action powered CI/CD workflows. It is equipped with powerfulw scaffolding capabilities that support the following use cases:
+
+1. language agnostic libs built around mise -> adapt these as you need
+2. uv based python packages
+3. zig libraries and executables
 
 ## Features
 
@@ -32,8 +36,10 @@ Scaffold a new project:
 # Click "Use this template" on GitHub, then:
 git clone <your-new-repo>
 cd <your-new-repo>
-bash .mise-tasks/scaffold --project your-project-name
+bash .mise-tasks/scaffold --project your-project-name [--template uv|zig]
 ```
+
+Or just run the scaffold script without flags for an interactive setup!
 
 Install dependencies and adapt the template for your needs:
 
@@ -48,7 +54,7 @@ Type `mise tasks` to see all available tasks:
 ```bash
 ❯ mise tasks
 build        Build the project
-clean    Clean build artifacts
+clean        Clean build artifacts
 install      Install dependencies
 publish      Publish package to registry
 run          Run project locally
@@ -71,6 +77,16 @@ TODO: Implement test
 Task dependencies run automatically — `mise run test` runs `build` first!
 
 Commit using conventional commits (`feat:`, `fix:`, `docs:`). Merge/push to main and CI/CD will run automatically bumping your project version and publishing a package.
+
+## Templates
+
+This template supports three modes:
+
+| Template | Language | Package Manager | Test Framework | Publish Target        |
+| -------- | -------- | --------------- | -------------- | --------------------- |
+| agnostic | (any)    | —               | —              | GCP Artifact Registry |
+| uv       | Python   | uv              | pytest         | PyPI                  |
+| zig      | Zig      | zig build       | zig test       | GitHub Releases       |
 
 ## Documentation
 

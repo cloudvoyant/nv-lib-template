@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#MISE description="Publish RC package to TestPyPI for pre-release validation"
+set -euo pipefail
+source "$(dirname "$0")/utils"
+
+SHORT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "dev")
+RC_VERSION="${VERSION}rc${SHORT_SHA}"   # PEP 440: 2.2.0rcabc1234
+
+log_info "Setting RC version $RC_VERSION in pyproject.toml..."
+sed_inplace "s/^version = .*/version = \"$RC_VERSION\"/" pyproject.toml
+
+log_info "Publishing $PROJECT $RC_VERSION to TestPyPI..."
+UV_PUBLISH_URL="https://upload.test.pypi.org/legacy/" mise run publish
+
+log_success "Published $PROJECT $RC_VERSION to TestPyPI"

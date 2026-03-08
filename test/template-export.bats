@@ -120,3 +120,39 @@ teardown() {
     [ ! -f "$EXTRACT_DIR/.claude/commands/adr-new.md" ]
     [ ! -f "$EXTRACT_DIR/.claude/commands/adr-capture.md" ]
 }
+
+@test "git archive includes templates/ directory" {
+    run git -C "$REPO_DIR" archive HEAD --format=tar -- templates/
+    [ "$status" -eq 0 ]
+}
+
+@test "git archive includes templates/uv/mise.toml" {
+    local listing
+    listing=$(git -C "$REPO_DIR" archive HEAD --format=tar | tar -t)
+    echo "$listing" | grep -q "templates/uv/mise.toml"
+}
+
+@test "git archive includes templates/zig/mise.toml" {
+    local listing
+    listing=$(git -C "$REPO_DIR" archive HEAD --format=tar | tar -t)
+    echo "$listing" | grep -q "templates/zig/mise.toml"
+}
+
+@test "git archive includes templates/uv/CLAUDE.md.append" {
+    local listing
+    listing=$(git -C "$REPO_DIR" archive HEAD --format=tar | tar -t)
+    echo "$listing" | grep -q "templates/uv/CLAUDE.md.append"
+}
+
+@test "git archive includes templates/zig/CLAUDE.md.append" {
+    local listing
+    listing=$(git -C "$REPO_DIR" archive HEAD --format=tar | tar -t)
+    echo "$listing" | grep -q "templates/zig/CLAUDE.md.append"
+}
+
+@test "templates/uv/CLAUDE.md.append not in export-ignore" {
+    # Ensure .gitattributes does not accidentally exclude templates/
+    run git -C "$REPO_DIR" check-attr export-ignore -- templates/uv/CLAUDE.md.append
+    # Should either be unset or not export-ignore
+    ! echo "$output" | grep -q "export-ignore: set"
+}
