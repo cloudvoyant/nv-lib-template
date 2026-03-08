@@ -1,3 +1,9 @@
+## [2.4.8](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.7...v2.4.8) (2026-03-08)
+
+### Bug Fixes
+
+* run native build first in build-all-platforms to fix fingerprint
+
 ## [2.4.7](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.6...v2.4.7) (2026-03-08)
 
 ### Bug Fixes
