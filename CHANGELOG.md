@@ -1,3 +1,19 @@
+## [2.4.7](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.6...v2.4.7) (2026-03-08)
+
+### Bug Fixes
+
+* auto-fix build.zig.zon fingerprint after scaffold name substitution
+
+Zig requires the fingerprint to match the package name hash. After scaffold
+renames mise_lib_template → project name, the fingerprint becomes invalid.
+The build task now detects this, extracts zig's suggested value, and retries.
+
+* correct zig 0.15.x incompatibilities in template source files
+
+- Update build.zig.zon fingerprint to match current package content
+- Replace std.io.getStdOut() with std.debug.print (API removed in 0.15)
+- Add build and test to RUNNABLE_TASKS to catch compile errors locally
+
 ## [2.4.6](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.5...v2.4.6) (2026-03-08)
 
 ### Bug Fixes
