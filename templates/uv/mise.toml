@@ -57,7 +57,7 @@ run         = "uv run ruff format --check ."
 
 [tasks.publish]
 description = "Publish package to PyPI"
-depends     = ["install"]
+depends     = ["build"]
 run         = "uv publish"
 
 [tasks.docker-build]
