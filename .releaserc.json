@@ -50,7 +50,7 @@
       }
     ],
     ["@semantic-release/exec", {
-      "publishCmd": "UV_PUBLISH_TOKEN=${UV_PUBLISH_TOKEN} GH_TOKEN=${GH_TOKEN} mise run publish-templates"
+      "publishCmd": "GH_TOKEN=${GH_TOKEN} mise run publish-templates"
     }]
   ]
 }
