@@ -9,7 +9,7 @@ mise run build-all-platforms
 # Collect built assets
 ASSETS=()
 while IFS= read -r bin; do ASSETS+=("$bin"); done \
-    < <(find zig-out/release -type f -name "$PROJECT*" 2>/dev/null)
+    < <(find zig-out/release -maxdepth 1 -type f -name "$PROJECT-*" 2>/dev/null)
 
 log_info "Uploading binaries to GitHub release v$VERSION..."
 gh release upload "v$VERSION" "${ASSETS[@]}" --clobber
