@@ -19,9 +19,11 @@ CONTRACT_TASKS=(
 )
 
 # Tasks safe to actually execute in a scaffolded project (no external deps, no side effects).
-# format-check depends on install in the uv template, so uv sync runs automatically.
+# build/test are included to catch compilation errors early; uv tasks auto-install via depends.
 RUNNABLE_TASKS=(
     "version"
+    "build"
+    "test"
     "format-check"
 )
 
