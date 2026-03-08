@@ -1,3 +1,12 @@
+## [2.4.3](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.2...v2.4.3) (2026-03-08)
+
+### Bug Fixes
+
+* mkdir dest dirs before scaffolding in publish-templates
+
+scaffold requires --dest to exist; publish-templates only created the
+parent .tmp/publish-templates/ but not the per-template subdirectories.
+
 ## [2.4.2](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.1...v2.4.2) (2026-03-08)
 
 ### Bug Fixes
