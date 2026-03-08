@@ -20,7 +20,25 @@ run         = "zig build --fetch 2>/dev/null || true"
 
 [tasks.build]
 description = "Build Zig project (debug)"
-run         = "zig build"
+run         = """
+  # After scaffold, build.zig.zon fingerprint may not match the renamed package.
+  # Zig detects this and suggests the correct value; apply it automatically.
+  if out=$(zig build 2>&1); then
+    printf '%s\\n' "$out"
+  else
+    fp=$(printf '%s\\n' "$out" | grep -oE 'use this value: 0x[0-9a-f]+' | grep -oE '0x[0-9a-f]+' | head -1)
+    if [ -n "$fp" ] && printf '%s\\n' "$out" | grep -q 'invalid fingerprint'; then
+      if sed --version 2>/dev/null | grep -q GNU; then
+        sed -i "s/.fingerprint = 0x[0-9a-f]*/.fingerprint = $fp/" build.zig.zon
+      else
+        sed -i '' "s/.fingerprint = 0x[0-9a-f]*/.fingerprint = $fp/" build.zig.zon
+      fi
+      zig build
+    else
+      printf '%s\\n' "$out" >&2; exit 1
+    fi
+  fi
+"""
 
 [tasks.build-prod]
 description = "Build optimized release binary"
