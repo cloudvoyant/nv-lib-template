@@ -12,6 +12,9 @@ TARGETS=(
     "x86_64-windows"
 )
 
+# Run a native build first to ensure fingerprint is current (auto-fixed after scaffold rename)
+mise run build >/dev/null
+
 mkdir -p zig-out/release
 
 for target in "${TARGETS[@]}"; do
