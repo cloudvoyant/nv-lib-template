@@ -1,3 +1,9 @@
+## [2.4.5](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.4...v2.4.5) (2026-03-08)
+
+### Bug Fixes
+
+* add fingerprint field to build.zig.zon for Zig 0.15.x compatibility
+
 ## [2.4.4](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.3...v2.4.4) (2026-03-08)
 
 ### Bug Fixes
