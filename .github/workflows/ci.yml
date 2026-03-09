@@ -11,6 +11,7 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    if: "github.event_name == 'pull_request' || github.event.before != '0000000000000000000000000000000000000000'"
 
     steps:
       - name: Checkout code
@@ -47,7 +48,7 @@ jobs:
   publish-rc:
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: "github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000'"
     steps:
       - uses: actions/checkout@v4
         with:
