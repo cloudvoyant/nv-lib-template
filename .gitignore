@@ -31,6 +31,10 @@ node_modules/
 bower_components/
 vendor/
 
+# Zig build artifacts
+zig-out/
+.zig-cache/
+
 # Package manager files
 *.lock
 package-lock.json

@@ -31,14 +31,14 @@ else
     mkdir -p "$INSTALL_DIR"
 fi
 
-# Get latest version
+# Get latest release tag
 echo "Fetching latest $PROJECT release..."
 LATEST_URL="https://api.github.com/repos/$REPO/releases/latest"
-VERSION=$(curl -fsSL "$LATEST_URL" | grep '"tag_name"' | sed 's/.*"tag_name": *"\(.*\)".*/\1/')
+TAG=$(curl -fsSL "$LATEST_URL" | grep '"tag_name"' | sed 's/.*"tag_name": *"\(.*\)".*/\1/')
 
 # Download
-ASSET_NAME="${PROJECT}-${VERSION}-${TARGET}.tar.gz"
-DOWNLOAD_URL="https://github.com/$REPO/releases/download/$VERSION/$ASSET_NAME"
+ASSET_NAME="${PROJECT}-${TAG}-${TARGET}.tar.gz"
+DOWNLOAD_URL="https://github.com/$REPO/releases/download/$TAG/$ASSET_NAME"
 
 echo "Downloading $ASSET_NAME..."
 TMP_DIR=$(mktemp -d)
@@ -49,5 +49,5 @@ curl -fsSL "$DOWNLOAD_URL" | tar -xz -C "$TMP_DIR"
 cp "$TMP_DIR/$PROJECT" "$INSTALL_DIR/$PROJECT"
 chmod +x "$INSTALL_DIR/$PROJECT"
 
-echo "Installed $PROJECT $VERSION to $INSTALL_DIR/$PROJECT"
+echo "Installed $PROJECT $TAG to $INSTALL_DIR/$PROJECT"
 echo "Make sure $INSTALL_DIR is in your PATH."

@@ -517,6 +517,13 @@ if [[ -n "$TEMPLATE" ]]; then
     update_template_tracking "$TEMPLATE" "$DEST_DIR"
 fi
 
+# Strip stale .fingerprint from build.zig.zon so `zig build` generates the correct one
+ZIG_ZON="$DEST_DIR/build.zig.zon"
+if [[ -f "$ZIG_ZON" ]]; then
+    sed_inplace '/\.fingerprint[[:space:]]*=/d' "$ZIG_ZON"
+    log_info "Removed stale .fingerprint from build.zig.zon (will be set on first build)"
+fi
+
 # CLEAN UP .CLAUDE/ DIRECTORY --------------------------------------------------
 if [ "$KEEP_CLAUDE" = false ]; then
     log_info "Removing .claude/ directory"
@@ -571,6 +578,11 @@ if [ -f "$RELEASE_YML" ]; then
     awk '/- name: Run template tests/{skip=2; next} skip>0{skip--; next} {print}' "$RELEASE_YML" > "$RELEASE_YML.tmp" && mv "$RELEASE_YML.tmp" "$RELEASE_YML"
     # Remove "Publish template packages" step (name + if + run + env block = ~5 lines)
     awk '/- name: Publish template packages/{skip=5; next} skip>0{skip--; next} {print}' "$RELEASE_YML" > "$RELEASE_YML.tmp" && mv "$RELEASE_YML.tmp" "$RELEASE_YML"
+    # For zig/uv: publish does not use GCP — remove GCP guard from Publish package step
+    if [[ "$TEMPLATE" == "zig" || "$TEMPLATE" == "uv" ]]; then
+        sed_inplace "s/steps.upversion.outputs.new_release_published == 'true' && env.GCP_SA_KEY != ''/steps.upversion.outputs.new_release_published == 'true'/" "$RELEASE_YML"
+        log_info "Removed GCP_SA_KEY guard from Publish package step ($TEMPLATE publishes without GCP)"
+    fi
 fi
 
 # Remove template-only sections from CLAUDE.md (test/bats section is template-specific)
