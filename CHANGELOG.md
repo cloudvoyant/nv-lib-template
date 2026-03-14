@@ -1,3 +1,26 @@
+## [2.5.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.9...v2.5.0) (2026-03-14)
+
+### Features
+
+* fix zig template post-scaffold issues
+
+- Simplify build task (scaffold already strips stale fingerprint)
+- Add npm install + _.path to install task so semantic-release works in CI
+- Package release binaries as versioned tar.gz to match install.sh
+- Rename VERSION→TAG in install.sh.template for clarity
+- Strip GCP_SA_KEY guard from Publish package step for zig and uv templates
+- Add zig-out/ and .zig-cache/ to base .gitignore
+
+
+### Bug Fixes
+
+* handle missing fingerprint in zig build task for Zig 0.15.1
+
+Zig 0.15.1 errors with "suggested value: 0x..." when fingerprint is
+absent (scaffold strips the stale value). Update the auto-fix to match
+both "use this value" and "suggested value" patterns, and handle the
+missing-line case by inserting the fingerprint before .paths with awk.
+
 ## [2.4.9](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.8...v2.4.9) (2026-03-08)
 
 ### Bug Fixes
