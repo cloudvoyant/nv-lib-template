@@ -115,3 +115,12 @@ test-results/
 .style/patterns.json
 .style/history.jsonl
 # .style/config.json is committed (team settings)
+
+# Claudevoyant style guide learning data (personal observations)
+.claudevoyant/style/patterns.json
+.claudevoyant/style/history.jsonl
+# Keep config (team settings)
+!.claudevoyant/style/config.json
+
+# Codevoyant style guide learning data (personal observations)
+.codevoyant/

@@ -1,5 +1,20 @@
 # mise-lib-template Style Guide
 
+<!-- CRITICAL RULES — always apply these; load relevant sections below for your current task -->
+## Critical Rules
+
+- Use `mise run <task>` for all build/test/run commands — check `mise tasks` first, never run npm/bash directly if a task exists
+- Conventional Commits only (`feat:`, `fix:`, `chore:`, etc.) — no AI attributions, subject ≤72 chars
+- Read files before editing; use **Edit** for modifications, **Write** only for new files
+- All `.mise-tasks/` scripts must start with `set -euo pipefail` and `source "$(dirname "$0")/utils"`
+- Template files (`.mise-tasks/scaffold`, `utils`, `upversion`, `version.txt`, `README.template.md`) must NOT be overridden
+
+> **For agents:** This file has additional context-specific rules in tagged sections below.
+> Before starting any task, load the section(s) relevant to what you're doing (e.g. `## Build System`, `## Git Commit Messages`, `## Template Development`).
+<!-- END CRITICAL RULES -->
+
+---
+
 <!-- @context: build, tools, shell -->
 
 ## Build System
