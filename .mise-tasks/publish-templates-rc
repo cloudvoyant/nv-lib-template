@@ -79,6 +79,7 @@ fs.writeFileSync('$TMP_DIR/mise-pnpm-template/package.json', JSON.stringify(pkg,
 "
 
 log_info "Publishing mise-pnpm-template $RC_TAG to npm with tag 'next'..."
+echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > "$TMP_DIR/mise-pnpm-template/.npmrc"
 (cd "$TMP_DIR/mise-pnpm-template" && corepack enable && mise run install && \
     pnpm publish --access public --no-git-checks --tag next)
 log_success "mise-pnpm-template $RC_TAG published to npm (tag: next)"

@@ -60,6 +60,7 @@ fs.writeFileSync('$TMP_DIR/mise-pnpm-template/package.json', JSON.stringify(pkg,
 "
 
 log_info "Publishing mise-pnpm-template $VERSION to npm..."
+echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > "$TMP_DIR/mise-pnpm-template/.npmrc"
 (cd "$TMP_DIR/mise-pnpm-template" && corepack enable && mise run install && mise run publish)
 log_success "mise-pnpm-template $VERSION published to npm"
 
