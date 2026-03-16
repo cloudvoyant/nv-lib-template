@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#MISE description="Publish RC package to npm with 'next' tag"
+set -euo pipefail
+source "$(dirname "$0")/utils"
+
+SHORT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "dev")
+RC_VERSION="${VERSION}-rc.${SHORT_SHA}" # semver: 2.2.0-rc.abc1234
+
+log_info "Setting RC version $RC_VERSION in package.json..."
+node -e "
+const fs = require('fs');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+pkg.version = '$RC_VERSION';
+fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+"
+
+log_info "Publishing $PROJECT $RC_VERSION to npm with tag 'next'..."
+pnpm publish --access public --no-git-checks --tag next
+
+log_info "Restoring original version $VERSION in package.json..."
+node -e "
+const fs = require('fs');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+pkg.version = '$VERSION';
+fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+"
+
+log_success "Published $PROJECT@$RC_VERSION to npm (tag: next)"

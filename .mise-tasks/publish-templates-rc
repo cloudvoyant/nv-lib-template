@@ -64,5 +64,24 @@ log_info "Uploading mise-zig-template $RC_TAG binaries to GitHub pre-release..."
 (cd "$TMP_DIR/mise-zig-template" && GH_REPO="$BASE_GH_REPO" mise run publish)
 log_success "mise-zig-template $RC_TAG assets uploaded to GitHub pre-release"
 
+# --- mise-pnpm-template RC → npm ---
+log_info "Scaffolding mise-pnpm-template RC..."
+mkdir -p "$TMP_DIR/mise-pnpm-template"
+mise run scaffold -- \
+    --src . --dest "$TMP_DIR/mise-pnpm-template" \
+    --project mise-pnpm-template --template pnpm --non-interactive
+
+node -e "
+const fs = require('fs');
+const pkg = JSON.parse(fs.readFileSync('$TMP_DIR/mise-pnpm-template/package.json', 'utf8'));
+pkg.version = '${RC_TAG#v}';
+fs.writeFileSync('$TMP_DIR/mise-pnpm-template/package.json', JSON.stringify(pkg, null, 2) + '\n');
+"
+
+log_info "Publishing mise-pnpm-template $RC_TAG to npm with tag 'next'..."
+(cd "$TMP_DIR/mise-pnpm-template" && corepack enable && mise run install && \
+    pnpm publish --access public --no-git-checks --tag next)
+log_success "mise-pnpm-template $RC_TAG published to npm (tag: next)"
+
 rm -rf "$TMP_DIR"
 log_success "RC template packages published at $RC_TAG"

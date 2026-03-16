@@ -45,5 +45,23 @@ log_info "Uploading mise-zig-template $VERSION binaries to GitHub release v$VERS
 (cd "$TMP_DIR/mise-zig-template" && GH_REPO="$BASE_GH_REPO" mise run publish)
 log_success "mise-zig-template $VERSION assets attached to GitHub release v$VERSION"
 
+# --- mise-pnpm-template → npm ---
+log_info "Scaffolding mise-pnpm-template..."
+mkdir -p "$TMP_DIR/mise-pnpm-template"
+mise run scaffold -- \
+    --src . --dest "$TMP_DIR/mise-pnpm-template" \
+    --project mise-pnpm-template --template pnpm --non-interactive
+
+node -e "
+const fs = require('fs');
+const pkg = JSON.parse(fs.readFileSync('$TMP_DIR/mise-pnpm-template/package.json', 'utf8'));
+pkg.version = '$VERSION';
+fs.writeFileSync('$TMP_DIR/mise-pnpm-template/package.json', JSON.stringify(pkg, null, 2) + '\n');
+"
+
+log_info "Publishing mise-pnpm-template $VERSION to npm..."
+(cd "$TMP_DIR/mise-pnpm-template" && corepack enable && mise run install && mise run publish)
+log_success "mise-pnpm-template $VERSION published to npm"
+
 rm -rf "$TMP_DIR"
 log_success "All template packages published"

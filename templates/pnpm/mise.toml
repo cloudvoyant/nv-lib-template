@@ -1,0 +1,92 @@
+# =============================================================================
+# mise.toml - pnpm (TypeScript) template
+# Overlays the base mise.toml during scaffold.
+# =============================================================================
+
+[env]
+_.path   = ['{{config_root}}/node_modules/.bin']
+PROJECT  = "mise-lib-template"
+VERSION  = "{{exec(command='node -p \"require(\\\"./package.json\\\").version\" 2>/dev/null || echo 0.1.0')}}"
+
+[tools]
+node       = "lts"
+pnpm       = "latest"
+bats       = "latest"
+shellcheck = "latest"
+shfmt      = "latest"
+
+[tasks.install]
+description = "Install npm dependencies"
+run         = "pnpm install"
+
+[tasks.build]
+description = "Compile TypeScript to dist/"
+depends     = ["install"]
+run         = "pnpm run build"
+
+[tasks.run]
+description = "Run the compiled project"
+depends     = ["build"]
+run         = "node dist/index.js"
+
+[tasks.test]
+description = "Run vitest test suite"
+depends     = ["install"]
+run         = "pnpm run test"
+
+[tasks.lint]
+description = "Lint with ESLint and typecheck with tsc"
+depends     = ["install"]
+run         = "pnpm run lint"
+
+[tasks.lint-fix]
+description = "Auto-fix ESLint issues (does not fix type errors)"
+depends     = ["install"]
+run         = "pnpm run lint:fix"
+
+[tasks.format]
+description = "Format code with Prettier"
+depends     = ["install"]
+run         = "pnpm run format"
+
+[tasks.format-check]
+description = "Check formatting without modifying files"
+depends     = ["install"]
+run         = "pnpm run format:check"
+
+[tasks.publish]
+description = "Publish package to npm"
+depends     = ["build"]
+run         = "pnpm publish --access public --no-git-checks"
+
+[tasks.docker-build]
+description = "Build Docker image"
+run         = "COMPOSE_BAKE=true docker compose build"
+
+[tasks.docker-run]
+description = "Run project in Docker"
+run         = "docker compose run --rm runner"
+
+[tasks.docker-test]
+description = "Run tests in Docker"
+run         = "docker compose run --rm tester"
+
+[tasks.clean]
+description = "Remove build artifacts"
+run         = "rm -rf dist/ node_modules/"
+
+[tasks.version]
+description = "Print current version"
+run         = "node -p \"require('./package.json').version\""
+
+[tasks.version-next]
+description = "Preview next semantic-release version"
+run         = "mise run upversion -- --dry-run"
+
+[tasks.upversion]
+description = "Run semantic-release to version and changelog"
+run         = ".mise-tasks/upversion"
+
+[tasks.publish-rc]
+description = "Publish RC package to npm with 'next' tag"
+run         = ".mise-tasks/publish-rc"

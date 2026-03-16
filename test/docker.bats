@@ -67,6 +67,16 @@ run_scaffold() {
     assert_tasks_runnable "$DEST"
 }
 
+@test "pnpm scaffold preserves docker task contract" {
+    run_scaffold "pnpm"
+    assert_docker_tasks "$DEST"
+}
+
+@test "pnpm scaffold: contract tasks are runnable" {
+    run_scaffold "pnpm"
+    assert_tasks_runnable "$DEST"
+}
+
 # ── docker-build task has a run command ───────────────────────────────────────
 
 @test "agnostic: docker-build task has a run command" {
@@ -81,6 +91,11 @@ run_scaffold() {
 
 @test "zig: docker-build task has a run command" {
     run_scaffold "zig"
+    grep -A2 '^\[tasks\.docker-build\]' "$DEST/mise.toml" | grep -q 'run'
+}
+
+@test "pnpm: docker-build task has a run command" {
+    run_scaffold "pnpm"
     grep -A2 '^\[tasks\.docker-build\]' "$DEST/mise.toml" | grep -q 'run'
 }
 

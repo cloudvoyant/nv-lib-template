@@ -215,6 +215,97 @@ run_scaffold() {
     grep -q 'my_lib' "$DEST/src/lib.zig"
 }
 
+# ── pnpm template ─────────────────────────────────────────────────────────────
+
+@test "pnpm: scaffold succeeds" {
+    run run_scaffold "pnpm"
+    [ "$status" -eq 0 ]
+}
+
+@test "pnpm: honors full task contract" {
+    run_scaffold "pnpm"
+    assert_contract_tasks "$DEST"
+}
+
+@test "pnpm: contract tasks are runnable" {
+    run_scaffold "pnpm"
+    assert_tasks_runnable "$DEST"
+}
+
+@test "pnpm: docker tasks present" {
+    run_scaffold "pnpm"
+    assert_docker_tasks "$DEST"
+}
+
+@test "pnpm: package.json created with project name" {
+    run_scaffold "pnpm" "my-lib"
+    [ -f "$DEST/package.json" ]
+    grep -q '"name": "my-lib"' "$DEST/package.json"
+}
+
+@test "pnpm: src/index.ts and src/lib.ts created" {
+    run_scaffold "pnpm"
+    [ -f "$DEST/src/index.ts" ]
+    [ -f "$DEST/src/lib.ts" ]
+}
+
+@test "pnpm: tests/lib.test.ts created" {
+    run_scaffold "pnpm"
+    [ -f "$DEST/tests/lib.test.ts" ]
+}
+
+@test "pnpm: TEMPLATE is mise-pnpm-template" {
+    run_scaffold "pnpm"
+    grep -q 'TEMPLATE.*"mise-pnpm-template"' "$DEST/mise.toml"
+}
+
+@test "pnpm: CLAUDE.md contains pnpm conventions" {
+    run_scaffold "pnpm"
+    grep -q "pnpm" "$DEST/CLAUDE.md"
+}
+
+@test "pnpm: sample-code.txt removed" {
+    run_scaffold "pnpm"
+    [ ! -f "$DEST/src/sample-code.txt" ]
+}
+
+@test "pnpm: no pyproject.toml created" {
+    run_scaffold "pnpm"
+    [ ! -f "$DEST/pyproject.toml" ]
+}
+
+@test "pnpm: no build.zig created" {
+    run_scaffold "pnpm"
+    [ ! -f "$DEST/build.zig" ]
+}
+
+@test "pnpm: .mise-tasks/publish-rc is executable" {
+    run_scaffold "pnpm"
+    [ -x "$DEST/.mise-tasks/publish-rc" ]
+}
+
+@test "pnpm: ci.yml has publish-rc job calling publish-rc task" {
+    run_scaffold "pnpm"
+    grep -q 'mise run publish-rc' "$DEST/.github/workflows/ci.yml"
+}
+
+@test "pnpm: ci.yml has no template-only tasks" {
+    run_scaffold "pnpm"
+    ! grep -q 'publish-templates-rc\|test-template' "$DEST/.github/workflows/ci.yml"
+}
+
+@test "pnpm: scaffolded project passes lint (ESLint + tsc)" {
+    run_scaffold "pnpm"
+    mise trust --yes "$DEST" >/dev/null 2>&1
+    mise run --cd "$DEST" lint
+}
+
+@test "pnpm: scaffolded project passes format-check" {
+    run_scaffold "pnpm"
+    mise trust --yes "$DEST" >/dev/null 2>&1
+    mise run --cd "$DEST" format-check
+}
+
 # ── CI workflow cleanup ───────────────────────────────────────────────────────
 
 @test "agnostic: ci.yml has publish-rc job calling publish-rc task" {

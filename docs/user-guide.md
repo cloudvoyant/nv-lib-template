@@ -31,6 +31,7 @@ To install mise, run:
 | agnostic | Any language — fill in your own tasks | Any | GCP Artifact Registry |
 | uv | Python library or CLI | Python 3.12+ | PyPI |
 | zig | Zig library or binary with cross-platform builds | Zig 0.15.x | GitHub Releases |
+| pnpm | TypeScript library published to npm | TypeScript / Node.js LTS | npm |
 
 All tools are installed automatically by mise — you do not need to install Python or Zig separately.
 
@@ -246,7 +247,116 @@ For GitHub Releases (zig template):
 
 - `GH_TOKEN` or `GITHUB_TOKEN` — already present via GitHub Actions default token
 
+For npm (pnpm template):
+
+- `NPM_TOKEN` — npm access token with publish rights (see [npm Setup](#npm-setup) below)
+
 All projects automatically inherit organization secrets.
+
+### npm Setup
+
+The `pnpm` template publishes to [npm](https://www.npmjs.com/). Follow these steps to configure publishing for your project and CI/CD.
+
+#### 1. Create an npm Account
+
+Sign up at [npmjs.com](https://www.npmjs.com/signup) if you don't have one.
+
+#### 2. Create an npm Organization (optional, for scoped packages)
+
+Scoped packages (`@your-org/package-name`) require an npm organization:
+
+1. Go to [npmjs.com/org/create](https://www.npmjs.com/org/create)
+2. Choose a name (this becomes your scope, e.g. `@your-org`)
+3. Free orgs can publish public scoped packages
+
+To use a scoped name, update `"name"` in your project's `package.json`:
+```json
+{
+  "name": "@your-org/my-library"
+}
+```
+
+#### 3. Create an npm Access Token
+
+1. Log in to [npmjs.com](https://www.npmjs.com/)
+2. Click your avatar → **Access Tokens** → **Generate New Token**
+3. Choose **Granular Access Token** (recommended) or **Classic Token → Automation**
+   - **Granular**: set expiry, select the specific packages to allow publishing, set permission to **Read and write**
+   - **Classic Automation**: no expiry, grants publish to all packages in the account — simpler but broader scope
+4. Copy the token — it is only shown once
+
+#### 4. Add `NPM_TOKEN` to GitHub Secrets
+
+**Per-repository** (for a single project):
+1. Go to your repository → **Settings** → **Secrets and variables** → **Actions**
+2. Click **New repository secret**
+3. Name: `NPM_TOKEN`, Value: paste your token
+4. Click **Add secret**
+
+**Organization-level** (shared across all repos — recommended):
+1. Go to your GitHub organization → **Settings** → **Secrets and variables** → **Actions**
+2. Click **New organization secret**
+3. Name: `NPM_TOKEN`, Value: paste your token
+4. Set **Repository access** to **All repositories** (or select specific ones)
+5. Click **Add secret**
+
+All repositories in the org automatically inherit organization-level secrets. This means every project using the `pnpm` template will be able to publish without configuring secrets per-repo.
+
+#### 5. Token Expiration
+
+**npm Granular Access Tokens expire after 90 days by default.** Set a calendar reminder to rotate before expiry, or use Trusted Publishing (below) to eliminate tokens entirely.
+
+Classic Automation tokens can be set to no expiry — simpler but grants broader access.
+
+#### 6. Trusted Publishing (Recommended — no token rotation)
+
+npm supports OIDC-based trusted publishing, letting GitHub Actions publish without storing any token. Set it up once per package after the first manual publish.
+
+**Setup (on npmjs.com):**
+1. Publish the package at least once manually first (npm requires the package to exist)
+2. Go to the package page → **Settings** → **Publishing access** → **Require two-factor authentication or automation token** → switch to **Allow publishing from CI/CD with a generated token**
+3. Set:
+   - **Repository owner**: your GitHub username or org
+   - **Repository name**: your repo name
+   - **Workflow**: `release.yml`
+
+**Update `release.yml`** to use OIDC instead of `NPM_TOKEN`:
+```yaml
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write   # ← add this for OIDC
+
+# In the Publish package step, remove NPM_TOKEN from env.
+# pnpm publish will authenticate via the OIDC token automatically.
+```
+
+Also add `--provenance` to the publish command in `mise.toml`:
+```toml
+[tasks.publish]
+run = "pnpm publish --access public --no-git-checks --provenance"
+```
+
+Once trusted publishing is configured, remove `NPM_TOKEN` from GitHub secrets — it is no longer needed.
+
+#### 7. Verify
+
+After setting the secret (or configuring trusted publishing), push a `feat:` or `fix:` commit to `main`. CI will:
+1. Run `mise run upversion` — bumps version in `package.json`, creates git tag
+2. Run `mise run publish` — calls `pnpm publish --access public --no-git-checks`
+
+Check the Actions tab to confirm both steps succeed.
+
+#### Troubleshooting
+
+| Error | Cause | Fix |
+|---|---|---|
+| `403 Forbidden` | Token lacks publish rights or wrong package name | Regenerate token with correct scope; verify `"name"` in `package.json` |
+| `402 Payment Required` | Scoped package requires paid account or org | Use a free org, or publish unscoped |
+| `ENEEDAUTH` | `NPM_TOKEN` secret not set or misspelled | Check GitHub secrets; ensure secret name is exactly `NPM_TOKEN` |
+| `Cannot publish over existing version` | Version already published | Bump version with a new commit; never re-publish the same version |
+| `OIDC token error` | Trusted publishing misconfigured | Verify repo name, owner, and workflow name match exactly on npmjs.com |
 
 ## Overriding CI/CD
 

@@ -8,6 +8,7 @@ Templates are sets of language-specific override and extension files that are la
 |------|----------|----------|-------------|
 | `uv` | Python | PyPI | Python library using uv, ruff, pytest |
 | `zig` | Zig | GitHub Releases + GCP | Zig library/binary with cross-platform build |
+| `pnpm` | TypeScript | npm | TypeScript library using pnpm, vitest, ESLint, Prettier |
 
 ## Task Contract
 
