@@ -1,3 +1,13 @@
+## [2.6.1](https://github.com/cloudvoyant/mise-lib-template/compare/v2.6.0...v2.6.1) (2026-03-16)
+
+### Bug Fixes
+
+* write npm auth token to .npmrc before pnpm publish
+
+pnpm does not pick up NPM_TOKEN from the environment automatically.
+Write the token to .npmrc in the scaffolded project dir before
+calling mise run publish / pnpm publish.
+
 ## [2.6.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.5.0...v2.6.0) (2026-03-16)
 
 ### Features
