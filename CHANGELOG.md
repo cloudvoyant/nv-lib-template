@@ -1,3 +1,9 @@
+## [2.6.2](https://github.com/cloudvoyant/mise-lib-template/compare/v2.6.1...v2.6.2) (2026-03-16)
+
+### Bug Fixes
+
+* use NODE_AUTH_TOKEN for pnpm v10 npm publish auth
+
 ## [2.6.1](https://github.com/cloudvoyant/mise-lib-template/compare/v2.6.0...v2.6.1) (2026-03-16)
 
 ### Bug Fixes
