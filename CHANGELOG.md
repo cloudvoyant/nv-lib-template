@@ -1,3 +1,20 @@
+## [2.6.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.5.0...v2.6.0) (2026-03-16)
+
+### Features
+
+* add pnpm TypeScript template with npm publishing
+
+Add templates/pnpm/ implementing all 13 contract tasks using
+TypeScript, vitest, ESLint (flat config), Prettier, and tsc.
+Publishes to npm via pnpm; supports RC publishing with --tag next.
+
+- Wire mise-pnpm-template into publish-templates and
+  publish-templates-rc pipeline scripts
+- Add NPM_TOKEN to release.yml and ci.yml workflow envs
+- Add 20 bats tests (17 scaffold + 3 docker)
+- Update templates/README.md and docs/user-guide.md with full
+  npm setup section (tokens, OIDC trusted publishing, scopes)
+
 ## [2.5.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.4.9...v2.5.0) (2026-03-14)
 
 ### Features
