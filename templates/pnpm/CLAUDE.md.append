@@ -35,8 +35,8 @@ import { greet } from './lib';
 
 **Publishing to npm:**
 - `mise run publish` -- calls `pnpm publish --access public --no-git-checks`
-- Set `NPM_TOKEN` env var: `export NPM_TOKEN=npm_xxx...`
-- In CI: add `NPM_TOKEN` to GitHub repository secrets (Settings -> Secrets and variables -> Actions)
+- Set `NODE_AUTH_TOKEN` env var: `export NODE_AUTH_TOKEN=npm_xxx...`
+- In CI: add `NPM_TOKEN` to GitHub repository secrets (Settings -> Secrets and variables -> Actions); the workflow maps it to `NODE_AUTH_TOKEN` automatically
 - Scoped packages: update `"name"` in `package.json` to `"@your-org/package"`
 - Pre-release: `mise run publish-rc` -- publishes to npm with `--tag next`
 - **Token expiry**: npm Granular tokens expire after 90 days -- rotate before expiry or configure Trusted Publishing (OIDC) to avoid tokens entirely (see `docs/user-guide.md`)
