@@ -1,3 +1,13 @@
+## [2.7.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.6.2...v2.7.0) (2026-03-17)
+
+### Features
+
+* add .npmrc to pnpm template and unignore rc files
+
+pnpm v10 requires NODE_AUTH_TOKEN via .npmrc placeholder for auth.
+Remove blanket .npmrc/.pypirc gitignore rules that prevented
+committing placeholder-only config files.
+
 ## [2.6.2](https://github.com/cloudvoyant/mise-lib-template/compare/v2.6.1...v2.6.2) (2026-03-16)
 
 ### Bug Fixes
