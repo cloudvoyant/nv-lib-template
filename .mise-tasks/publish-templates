@@ -60,7 +60,6 @@ fs.writeFileSync('$TMP_DIR/mise-pnpm-template/package.json', JSON.stringify(pkg,
 "
 
 log_info "Publishing mise-pnpm-template $VERSION to npm..."
-printf '//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}\n' > "$TMP_DIR/mise-pnpm-template/.npmrc"
 (cd "$TMP_DIR/mise-pnpm-template" && NODE_AUTH_TOKEN="${NPM_TOKEN}" mise run install && NODE_AUTH_TOKEN="${NPM_TOKEN}" mise run publish)
 log_success "mise-pnpm-template $VERSION published to npm"
 

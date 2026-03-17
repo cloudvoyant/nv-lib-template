@@ -71,8 +71,6 @@ service-account*.json
 *.crt
 *.cer
 id_rsa*
-.npmrc
-.pypirc
 
 # Cache and temporary files
 *.cache
