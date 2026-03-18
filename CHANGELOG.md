@@ -1,3 +1,9 @@
+## [2.9.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.8.0...v2.9.0) (2026-03-18)
+
+### Features
+
+* clarify npm automation token requirement in pnpm docs
+
 ## [2.8.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.7.0...v2.8.0) (2026-03-18)
 
 ### Features
