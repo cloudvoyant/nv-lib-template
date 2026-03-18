@@ -33,7 +33,7 @@ import { greet } from './lib';
 - Watch mode: `pnpm run test -- --watch`
 - Coverage: `pnpm run test -- --coverage`
 
-**Publishing to npm:**
+**Publishing to npm:** (requires an npm Automation token for CI)
 - `mise run publish` -- calls `pnpm publish --access public --no-git-checks`
 - Set `NODE_AUTH_TOKEN` env var: `export NODE_AUTH_TOKEN=npm_xxx...`
 - In CI: add `NPM_TOKEN` to GitHub repository secrets (Settings -> Secrets and variables -> Actions); the workflow maps it to `NODE_AUTH_TOKEN` automatically
