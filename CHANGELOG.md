@@ -1,3 +1,9 @@
+## [2.10.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.9.0...v2.10.0) (2026-03-18)
+
+### Features
+
+* add NPM_TOKEN secret name to pnpm publish docs
+
 ## [2.9.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.8.0...v2.9.0) (2026-03-18)
 
 ### Features
