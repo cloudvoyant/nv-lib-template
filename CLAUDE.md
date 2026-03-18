@@ -78,6 +78,10 @@ Use Conventional Commits. No Claude attributions.
 
 - Subject max 72 chars, imperative mood, no trailing period
 - No "Co-Authored-By: Claude" or similar AI attributions
+- Use `feat:` or `fix:` (not `docs:` or `chore:`) when a commit must trigger a semantic-release publish
+- Always `git pull --rebase` before pushing — semantic-release pushes version bumps that will reject your push
+- After pushing, always monitor CI (`/dev:ci`) — do not consider work done until checks pass
+- If a semantic-release publish step fails and CI skips it on re-run, push a new `feat:`/`fix:` commit instead of re-running — re-runs lose the `new_release_published` output
 
 ---
 
