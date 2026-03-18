@@ -1,3 +1,14 @@
+## [2.8.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.7.0...v2.8.0) (2026-03-18)
+
+### Features
+
+* note automation token requirement in pnpm publish docs
+
+
+### Documentation
+
+* update pnpm auth docs to use NODE_AUTH_TOKEN
+
 ## [2.7.0](https://github.com/cloudvoyant/mise-lib-template/compare/v2.6.2...v2.7.0) (2026-03-17)
 
 ### Features
